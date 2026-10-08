@@ -1,0 +1,130 @@
+{
+    "bomFormat": "CycloneDX",
+    "specVersion": "1.5",
+    "serialNumber": "urn:uuid:0a436f6a-da5b-481f-a3aa-2389232c21b7",
+    "version": 1,
+    "metadata": {
+        "timestamp": "2026-09-03T09:51:56+08:00",
+        "component": {
+            "type": "application",
+            "bom-ref": "pkg:generic/voting-system-frontend@1.0.0",
+            "name": "voting-system-frontend",
+            "version": "1.0.0",
+            "description": "Voting System Frontend Dependencies"
+        },
+        "tools": [
+            {
+                "vendor": "Custom",
+                "name": "SBOM Generator",
+                "version": "1.0.0"
+            }
+        ]
+    },
+    "components": [
+        {
+            "type": "library",
+            "bom-ref": "pkg:npm/overlayscrollbars@1.13.1",
+            "name": "overlayscrollbars",
+            "version": "1.13.1",
+            "purl": "pkg:npm/overlayscrollbars@1.13.1",
+            "description": "A javascript scrollbar plugin which hides native scrollbars, provides custom styleable overlay scrollbars and keeps the native functionality and feeling.",
+            "licenses": [
+                {
+                    "license": {
+                        "id": "MIT"
+                    }
+                }
+            ],
+            "externalReferences": [
+                {
+                    "type": "vcs",
+                    "url": "https://github.com/KingSora/OverlayScrollbars"
+                }
+            ]
+        },
+        {
+            "type": "library",
+            "bom-ref": "pkg:npm/bootstrap-select@1.13.18",
+            "name": "bootstrap-select",
+            "version": "1.13.18",
+            "purl": "pkg:npm/bootstrap-select@1.13.18",
+            "description": "The jQuery plugin that brings select elements into the 21st century with intuitive multiselection, searching, and much more. Now with Bootstrap 4 support.",
+            "licenses": [
+                {
+                    "license": {
+                        "id": "MIT"
+                    }
+                }
+            ],
+            "externalReferences": [
+                {
+                    "type": "vcs",
+                    "url": "git://github.com/snapappointments/bootstrap-select.git"
+                }
+            ]
+        },
+        {
+            "type": "library",
+            "bom-ref": "pkg:npm/bootstrap-steps@1.0.3",
+            "name": "bootstrap-steps",
+            "version": "1.0.3",
+            "purl": "pkg:npm/bootstrap-steps@1.0.3",
+            "description": "A simple Bootstrap 4 steps plugin, support mobile client.",
+            "licenses": [
+                {
+                    "license": {
+                        "id": "MIT"
+                    }
+                }
+            ],
+            "externalReferences": [
+                {
+                    "type": "vcs",
+                    "url": "git+https://github.com/ycs77/bootstrap-steps.git"
+                }
+            ]
+        },
+        {
+            "type": "library",
+            "bom-ref": "pkg:npm/@highlightjs/cdn-assets@11.11.1",
+            "name": "@highlightjs/cdn-assets",
+            "version": "11.11.1",
+            "purl": "pkg:npm/@highlightjs/cdn-assets@11.11.1",
+            "description": "Syntax highlighting with language autodetection. (pre-compiled CDN assets)",
+            "licenses": [
+                {
+                    "license": {
+                        "id": "BSD-3-Clause"
+                    }
+                }
+            ],
+            "externalReferences": [
+                {
+                    "type": "vcs",
+                    "url": "git://github.com/highlightjs/highlight.js.git"
+                }
+            ]
+        },
+        {
+            "type": "library",
+            "bom-ref": "pkg:npm/highlightjs-curl@1.3.0",
+            "name": "highlightjs-curl",
+            "version": "1.3.0",
+            "purl": "pkg:npm/highlightjs-curl@1.3.0",
+            "description": "Support for using highlight.js to syntax highlight cURL commands.",
+            "licenses": [
+                {
+                    "license": {
+                        "id": "Apache-2.0"
+                    }
+                }
+            ],
+            "externalReferences": [
+                {
+                    "type": "vcs",
+                    "url": "https://github.com/highlightjs/highlightjs-curl.git"
+                }
+            ]
+        }
+    ]
+}

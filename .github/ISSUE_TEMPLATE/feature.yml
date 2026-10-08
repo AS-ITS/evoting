@@ -1,0 +1,19 @@
+name: 功能建議
+description: 建議新功能或改進（不含機敏需求細節）
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 要解決的問題
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 建議作法
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: 請勿在 Issue 貼真實場次、密碼或個資。

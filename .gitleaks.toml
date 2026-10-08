@@ -1,0 +1,8 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Vendored highlightjs-curl syntax fixtures use fake curl credentials"
+paths = [
+  '''(^|[\\/])frontend[\\/]highlightjs-curl[\\/](test|spec)[\\/]''',
+]

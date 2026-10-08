@@ -1,0 +1,139 @@
+/** 邊欄開啟迷你邊欄時，處理邊欄優先權處理 */
+.sidebar-mini.sidebar-collapse .main-sidebar,
+.sidebar-mini-md.sidebar-collapse .main-sidebar,
+.sidebar-mini-xs.sidebar-collapse .main-sidebar {
+    z-index: 1070;
+}
+.z-index-1060 {
+    z-index: 1060;
+}
+/** 導航欄宣告(Header Options未啟用Fixed時，貌似影響 Customize AdminLTE 展開後無法收起) */
+.wrapper .main-header {
+    position: relative;
+    z-index: 1060;
+}
+/** 導航欄宣告(Header Options啟用Fixed時，使優先權在頁面之上) */
+.layout-navbar-fixed .wrapper .main-header {
+    z-index: 1060;
+}
+/** 取消左邊欄與內容之間的漸層 */
+.elevation-4 {
+    box-shadow: none !important;
+}
+/** 內容頁，電腦版大小 */
+.wrapper .content-wrapper {
+    z-index: 1050;
+    position: relative;
+    background-color: unset; /** 取消右側內容頁底色 */
+}
+.content-wrapper {
+    background-color: unset; /** 取消右側內容頁底色 */
+}
+/** 內容頁，頁面過小，展開邊欄時，將內容轉為靜態(停用z-index) */
+.sidebar-open .content-wrapper {
+    position: static;
+}
+.sidebar-open .main-header {
+    position: static;
+}
+/** 處理 Customize AdminLTE 展開後，將內容轉為靜態(停用z-index) */
+.control-sidebar-slide-open .content-wrapper {
+    position: static;
+}
+/** AI:確保在桌面版和手機版之間適當地分配空間 */
+@media (max-width: 767.98px) {
+    .main-header .navbar-nav.d-sm-none {
+        display: flex !important;
+        justify-content: space-between;
+        width: 100%;
+    }
+    .main-header .navbar-nav.d-sm-block {
+        display: none !important;
+    }
+}
+
+/** 右上角-深色模式按鈕(官方文檔的程式碼) */
+.theme-switch-wrapper{padding:0!important;padding-right:0!important;padding-left:0!important;}
+.theme-switch{display:inline-block;height:24px;position:relative;width:3rem;}
+.theme-switch input{display:none}
+.slider{background-color:#ccc;bottom:0;cursor:pointer;left:0;position:absolute;right:0;top:0;transition:400ms}
+.slider::before{background-color:#fff;bottom:4px;content:"";height:16px;left:4px;position:absolute;transition:400ms;width:16px}
+input:checked+.slider{background-color:#66bb6a}
+input:checked+.slider::before{transform:translateX(26px)}
+.slider.round{border-radius:34px}
+.slider.round::before{border-radius:50%}
+
+/** Enhanced GridView with various utilities 夜間模式 */
+/* .dark-mode .kv-table-header {background: #343a40;} */
+.dark-mode .kv-table-header {background: linear-gradient(to bottom, #454d55 0%, #414951 100%);}
+.dark-mode a {color: #0AABF0;}
+.dark-mode .custom-select {background-color: #454d55;}
+.dark-mode .jumbotron {background-color: #343a40;}
+/** 夜間模式樣式調整(客製化顏色) */
+.dark-table-light tbody+tbody, .dark-table-light td, .dark-table-light th, .dark-table-light thead th {
+    border-color: #fbfcfc;
+}
+.dark-table-light, .dark-table-light>td, .dark-table-light>th {background-color: #fbfcfc;}
+.dark-mode .dark-table-light {background-color: #454d55;}
+.dark-bg-light {background-color: #fbfcfc;}
+.dark-mode .dark-bg-light {background-color: #454d55;}
+
+/** 右側邊欄卷軸問題，非原生外框問題(是否為ASPA問題有待釐清) */
+.layout-fixed .wrapper .sidebar {
+    /* 6rem 要隨著項目增加變大???? */
+    height: calc(100vh - 6rem);
+}
+
+/** 瓜哥:標題上下間距縮小 */
+.content-header {
+    padding: 10px 0.5rem!important;
+}
+/** 系統名稱字放大 */
+.brand-link {
+    font-size: 1.6rem;
+}
+.brand-link .brand-image {
+    line-height: 1;
+    margin-top: 0px;
+    max-height: 35px;
+}
+
+/** 擴充 Bootstrap 的 grid 系統，p表示百分點 (point) */
+.col-md-1p2, .col-md-1p8, .col-md-2p4, .col-md-4p8, .col-md-7p2 {
+    position: relative; /** 保持相對定位，適用於建立內部定位基準 */
+    width: 100%; /** 預設全寬度 */
+    padding-right: 15px; /** 右邊距15px */
+    padding-left: 15px;  /** 左邊距15px */
+}
+@media (min-width: 768px) {
+    /** 定義各種百分點的列寬度比例 */
+    .col-md-1p2 {-ms-flex: 0 0 10%; flex: 0 0 10%; max-width: 10%;} /* 占寬度10% */
+    .col-md-1p8 {-ms-flex: 0 0 15%; flex: 0 0 15%; max-width: 15%;} /* 占寬度15% */
+    .col-md-2p4 {-ms-flex: 0 0 20%; flex: 0 0 20%; max-width: 20%;} /* 占寬度20% */
+    .col-md-4p8 {-ms-flex: 0 0 40%; flex: 0 0 40%; max-width: 40%;} /* 占寬度40% */
+    .col-md-7p2 {-ms-flex: 0 0 60%; flex: 0 0 60%; max-width: 60%;} /* 占寬度60% */
+}
+
+/** 邊欄點選第二階以上的群組時，被點選的群組應該高亮 */
+[class*=sidebar-dark-] .nav.nav-treeview>.nav-item.menu-open>.nav-link {
+    background-color: rgba(255,255,255,.1);
+    color: #fff;
+}
+
+/** Select2 ReadOnly Start
+ * This is Solution for Latest select2 (Tested With 4.0.7) using css only
+ * https://stackoverflow.com/questions/41807096/select2-make-it-readonly-not-disabled-from-js/55001516#55001516
+ **/
+select[readonly].select2-hidden-accessible + .select2-container {
+    pointer-events: none;
+    touch-action: none;
+}
+select[readonly].select2-hidden-accessible + .select2-container .select2-selection {
+    background: #E9ECEF;
+    box-shadow: none;
+}
+
+/** 解決select2不換行 */
+.select2-selection { overflow: hidden !important; }
+.select2-selection__rendered { white-space: normal !important; word-break: break-all !important; }
+/* .select2-search--inline { float: none !important; } */

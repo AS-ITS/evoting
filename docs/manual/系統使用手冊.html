@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-TW"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>電子投票系統 系統使用手冊（管理者）</title>
+<style>
+:root{--bg:#fff;--text:#222;--border:#ddd;--accent:#2c5282;--muted:#666;--soft:#f7f9fc;--note:#fff8e6;--note-border:#f0d78c}
+body{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.7;color:var(--text);max-width:960px;margin:0 auto;padding:2rem 1.5rem 4rem}
+h1{color:var(--accent);border-bottom:2px solid var(--accent);padding-bottom:.4em;margin-top:2.8em}
+h1:first-of-type{margin-top:0}
+header h1{margin-top:0;border-bottom:2px solid var(--accent)}
+h2{color:var(--accent);margin-top:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h3{margin-top:1.6em}h4{margin-top:1.2em;color:#444}
+table{width:100%;border-collapse:collapse;margin:1em 0;font-size:.9rem}
+th,td{border:1px solid var(--border);padding:.5em .75em;vertical-align:top}th{background:#edf2f7}
+figure{margin:1.2em 0;text-align:center}figure img{max-width:100%;border:1px solid var(--border);border-radius:4px}
+figcaption,.caption{font-size:.85rem;color:var(--muted)}code{background:#f1f5f9;padding:.1em .35em;border-radius:3px}
+a{color:var(--accent)}
+.toc{background:var(--soft);border:1px solid var(--border);border-radius:6px;padding:1em 1.5em;margin:1.5em 0}
+.toc ol{margin:.4em 0}.toc li{margin:.2em 0}
+.meta{color:var(--muted);font-size:.9rem}
+.lead{font-size:1.05rem;color:#333;background:var(--soft);border-left:4px solid var(--accent);padding:.75em 1em;margin:1em 0}
+.note{background:var(--note);border:1px solid var(--note-border);border-radius:4px;padding:.6em .9em;margin:1em 0}
+ol.workflow{background:var(--soft);border:1px solid var(--border);border-radius:6px;padding:1em 1em 1em 2.2em}
+ol.workflow li{margin:.45em 0}
+ol.workflow li.optional{color:var(--muted)}
+@media print{body{max-width:none}figure{page-break-inside:avoid}.toc{break-after:page}}
+</style></head><body>
+<header>
+<h1>電子投票系統 系統使用手冊（管理者）</h1>
+<p class="meta">適用對象：投票活動管理者（va）、群組管理者（ga）、系統管理者（sa）<br>
+現行投票類型：表決（無須驗證）、匿名（亂數密碼）。網址與存取路徑依 Web Server 及 <code>.env</code> 設定而定。</p>
+
+<nav class="toc" aria-label="目錄">
+<p><strong>目錄</strong></p>
+<ol>
+<li><a href="#前言">前言與注意事項</a></li>
+<li><a href="#作業流程">作業流程總覽</a>
+  <ul>
+    <li><a href="#輪次資料共用">輪次與資料是否共用</a></li>
+    <li><a href="#角色權限">角色權限</a></li>
+  </ul>
+</li>
+<li><a href="#場次設定">場次設定</a>
+  <ul>
+    <li><a href="#場次-基本設定">基本設定</a></li>
+    <li><a href="#顯示及流程">顯示及流程</a></li>
+    <li><a href="#場次-預設投票規則">預設投票規則</a></li>
+    <li><a href="#進階">進階</a></li>
+  </ul>
+</li>
+<li><a href="#輪次">輪次</a></li>
+<li><a href="#問題">問題</a>
+  <ul>
+    <li><a href="#問題-投票規則">問題投票規則</a></li>
+    <li><a href="#投票母數">投票母數</a></li>
+  </ul>
+</li>
+<li><a href="#候選">候選</a></li>
+<li><a href="#密碼">密碼</a></li>
+<li><a href="#選票">選票</a></li>
+<li><a href="#計票開票結果">計票、開票與結果</a></li>
+<li><a href="#重啟與列印">重啟與列印</a></li>
+<li><a href="#群組管理">群組管理</a></li>
+<li><a href="#網站管理">網站與帳號管理</a></li>
+<li><a href="#二次驗證與雙因素驗證">二次驗證與雙因素驗證</a></li>
+<li><a href="#投票設定案例">投票設定案例</a>
+  <ul>
+    <li><a href="#案例A-單場次多分組並行">A. 單場次多分組並行</a></li>
+    <li><a href="#案例B-各組獨立場次">B. 各組獨立場次</a></li>
+    <li><a href="#案例C-名單同意審核">C. 名單同意／審核</a></li>
+    <li><a href="#案例D-多問題多輪選舉">D. 多問題多輪選舉</a></li>
+    <li><a href="#案例E-參考投票至正式投票">E. 參考投票 → 正式投票</a></li>
+  </ul>
+</li>
+</ol>
+</nav>
+
+</header>
+<main>
+<h1 id="前言">1. 前言與注意事項</h1>
+<p class="lead">本手冊說明後台管理者如何建立與執行投票場次。建議依「作業流程總覽」章節順序設定；各功能細節見後續章節。</p>
+<h2 id="注意事項">注意事項</h2>
+<ol>
+<li><strong>網址與存取路徑</strong>（依 Web Server 與 <code>.env</code> 設定而定，詳見 SETUP.md、CONFIGURATION.md）：</li>
+<ul>
+<li>投票首頁：<code>https://{您的網域}/</code>（Document Root 應指向專案的 <code>web/</code> 目錄）</li>
+<li>管理者登入：<code>https://{您的網域}/admin</code></li>
+<li>場次短網址：<code>https://{您的網域}/{短網址編號}</code>（於投票編輯頁設定）</li>
+<li>環境識別：由 <code>.env</code> 的 <code>APP_ENV</code>（production / testing / development）決定</li>
+<li><strong>必須</strong>在 <code>.env</code> 設定 <code>ALLOWED_HOSTS</code>（逗號分隔，支援萬用字元），否則所有請求會被拒絕</li>
+</ul>
+<li><strong>分組專屬網域轉址</strong>（選用，於 Web Server 設定）：</li>
+<ul>
+<li>可為各分組設定獨立網域，透過 nginx/Apache 轉址至對應場次的短網址</li>
+<li>例：<code>https://group-a.example.com</code> → <code>https://voting.example.com/abc123</code></li>
+<li>變更短網址編號時，需同步更新 Web Server 轉址規則</li>
+</ul>
+    
+</ol>
+
+<h1 id="作業流程">2. 作業流程總覽</h1>
+<p class="lead">依下列順序建立與執行一場投票。灰色項目為選用。</p>
+<ol class="workflow">
+<li><a href="#場次設定">建立／編輯場次</a>（類型、分組、時間、流程）</li>
+<li><a href="#輪次">輪次</a>（單輪可略；多輪時於選票產生後再建下一輪）</li>
+<li><a href="#問題">問題</a>與投票規則（含選用：投票母數）</li>
+<li><a href="#候選">候選名單</a>與畫面配置</li>
+<li><a href="#密碼">密碼</a>（僅匿名投票）→ 啟用後開放投票</li>
+<li><a href="#選票">選票</a>（查詢／補登／匯入）</li>
+<li><a href="#計票開票結果">計票 → 開票 → 結果</a></li>
+<li class="optional"><a href="#重啟與列印">重啟</a>／列印簽名（選用）</li>
+</ol>
+<h2 id="輪次資料共用">輪次與資料是否共用</h2>
+<p>多輪投票時，下列功能是否沿用各輪資料：</p>
+<table>
+<thead><tr><th>功能</th><th>不同輪次是否共用</th></tr></thead>
+<tbody>
+<tr><td>場次設定（編輯）</td><td>✔️ 共用</td></tr>
+<tr><td>問題</td><td>❌ 各輪獨立</td></tr>
+<tr><td>候選</td><td>❌ 各輪獨立</td></tr>
+<tr><td>密碼</td><td>✔️ 共用</td></tr>
+<tr><td>選票</td><td>❌ 各輪獨立</td></tr>
+<tr><td>計票／開票</td><td>❌ 各輪獨立</td></tr>
+<tr><td>結果顯示設定</td><td>✔️ 共用</td></tr>
+</tbody></table>
+<h2 id="角色權限">角色權限（簡表）</h2>
+<table>
+<thead><tr><th>角色</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>sa（系統管理者）</td><td>網站設定、使用者、全部場次</td></tr>
+<tr><td>va（投票活動管理者）</td><td>建立與管理所負責場次</td></tr>
+<tr><td>ga／gm（群組管理者／成員）</td><td>管理所屬群組內場次（依成員權限）</td></tr>
+</tbody></table>
+
+<h1 id="場次設定">3. 場次設定</h1>
+<p class="lead">建立投票場次後，於「編輯」設定名稱、類型、分組、時間、顯示流程與樣板。場次層設定跨輪次共用。</p>
+<h2 id="場次-基本設定">基本設定</h2>
+<h3 id="投票名稱">投票名稱</h3>
+<p>可以使用Html，有該場次的投票就會出現投票名稱資訊。</p>
+<h3 id="投票名稱-英">投票名稱(英)</h3>
+<p>同投票名稱</p>
+<h3 id="主辦單位">主辦單位</h3>
+<p>現在沒有應用，單純紀錄</p>
+<h3 id="主辦單位-英">主辦單位(英)</h3>
+<p>同主辦單位</p>
+<h3 id="投票時間與投票狀態">投票時間與投票狀態</h3>
+<p>兩者連動，決定投票者能否登入投票：</p>
+<ol>
+<li>投票狀態等於等待，投票登入頁面訊息顯示: 目前投票尚未開始。</li>
+<li>投票狀態等於進行，且當下時間小於投票時間(起)，無法投票，投票登入頁面訊息顯示: 目前投票尚未開始。</li>
+<li>投票狀態等於進行，且當下時間大於等於投票時間(起)，且小於等於投票時間(迄)，可以投票，投票登入頁面訊息顯示: 開始投票，請輸入場次碼及線上投票密碼。</li>
+<li>投票狀態等於截止，或當下時間大於投票時間(迄)，無法投票，投票登入頁面訊息顯示: 目前投票已結束。</li>
+<li>投票狀態等於補登，且當下時間大於等於投票時間(起)，且小於等於投票時間(迄)，可以投票，投票登入頁面訊息顯示: 開始進行補登／紙本計票作業，請輸入場次碼及線上投票密碼。</li>
+</ol>
+<p>※ 投票時間(迄)就是計票的日期。</p>
+<h3 id="投票類型">投票類型</h3>
+<ul>
+<li>表決（無須驗證）：不需登入驗證即可投票。</li>
+<li>匿名（亂數密碼）：透過系統生成的亂數密碼登入投票。</li>
+</ul>
+<h3 id="是否分組">是否分組</h3>
+<ul>
+<li>分組</li>
+<ul>
+<li>至多分成4組（上限可由「網站設定 → 分組上限」調整），各組分組名稱於場次編輯時自訂。</li>
+<li>另有部署端組織 preset（<code>config/params.php</code> 的 <code>ct.division*Ary</code>），與場次自訂分組名稱並行，詳見 SETUP／CONFIGURATION。</li>
+<li>不同分組可以有分組自己的問題，也可以有不同分組間的共同問題。</li>
+<li>匿名投票的密碼根據分組生成。</li>
+<li>開票可以設定不同分組僅能查看該分組的投票結果。</li>
+</ul>
+</ul>
+<ul>
+<li>不分組</li>
+<ul>
+<li>分組名稱為預設。</li>
+</ul>
+</ul>
+<h3 id="保留名額">保留名額</h3>
+<ul>
+<li>女性保留名額: 最後開票結果，性別設定為女性候選人，要大於等於問題設定的女性保留人數。</li>
+</ul>
+<h3 id="投票結果顯示">投票結果顯示</h3>
+<ul>
+<li>僅分組可以設定。</li>
+<li>所有分組: 投票結果所有分組一起顯示。</li>
+<li>僅限同分組: 開票可以設定是否分組顯示結果。</li>
+</ul>
+<h3 id="是否共用投票密碼與共用密碼之投票">是否共用投票密碼與共用密碼之投票</h3>
+<ul>
+<li>若此投票有分組，分組數量及順序必須與共用密碼的投票相同。</li>
+<li>分組投票無法共用不分組投票的密碼。</li>
+</ul>
+<h3 id="群組">群組</h3>
+<p>讓特定群組的成員可以管理該場次的投票。</p>
+<h3 id="投票管理者">投票管理者</h3>
+<ul>
+<li>建立這場投票的人。</li>
+<li>投票活動管理者可以選擇其他具系統權限的管理者。</li>
+<li>系統管理者可以選擇所有具系統權限的管理者。</li>
+</ul>
+<h3 id="場次碼">場次碼</h3>
+<p>登入投票需要輸入的資料，未設定則不啟用。</p>
+<h3 id="短網址編號">短網址編號</h3>
+<ul>
+<li>透過 <code>https://{您的網域}/{短網址}</code>，可以直接指向該投票場次。</li>
+<li>系統管理者可以修改。</li>
+</ul>
+<h2 id="顯示及流程">顯示及流程</h2>
+<h3 id="投票狀態">投票狀態</h3>
+<ul>
+<li>同投票時間與投票狀態</li>
+<li>投票狀態會顯示在標題右上角(如下圖紅框處)</li>
+</ul>
+<figure><img src="images/img-005.png" alt="畫面示意"><figcaption></figcaption></figure>
+<h3 id="投票完成跳轉頁面">投票完成跳轉頁面</h3>
+<p>投票完成、投票結束尚未送出投票後導向的頁面</p>
+<h3 id="是否略過投票資訊頁面">是否略過投票資訊頁面</h3>
+<ul>
+<li>投票資訊頁指的是vote/vote-detail頁面。</li>
+<li>選擇是，vote/vote-detail路由會直接導向投票頁面(vote/start-vote)</li>
+<li>如果有上傳附件，附件會在投票資訊頁中顯示，所以如果要讓使用者看到附件，必須選否。</li>
+</ul>
+<h3 id="查看投票資訊是否驗證">查看投票資訊是否驗證</h3>
+<ul>
+<li>如果略過投票資訊頁面選擇是，則忽略此設定。</li>
+<li>投票資訊指的是vote/vote-detail路由。</li>
+<li>意思就是訪問vote/vote-detail頁面是否要先登打投票密碼。</li>
+</ul>
+<h3 id="是否略過圈選結果頁">是否略過圈選結果頁</h3>
+<p>以公版來說，再次進入投票頁面(vote/start-vote)，如果已經完成投票，會導向圈選結果頁(vote/check-ballot)，但若流程不需讓投票者回看圈選結果，可設為略過，送出後直接導向投票完成頁，所以會直接導向投票完成跳轉頁面。</p>
+<h3 id="是否於首頁顯示">是否於首頁顯示</h3>
+<ul>
+<li>此投票場次的連結是否於首頁(vote/index)顯示。</li>
+<li>如果網站設定的首頁導向網址有資料，則無視此設定，因為首頁都會導向首頁導向網址。</li>
+</ul>
+<h3 id="場次-候選名單配置方式">候選名單配置</h3>
+<ul>
+<li>依投票場次統一: 只會有一個候選名單配置，所有問題共用。</li>
+<li>依問題個別設定: 每個問題可有獨立的候選名單配置。</li>
+</ul>
+<h3 id="投票列表排序">投票列表排序</h3>
+<p>影響投票場次列表與首頁的排序，僅系統管理員可更改。</p>
+<h2 id="場次-預設投票規則">預設投票規則（帶入用）</h2>
+<p class="note">此處數字<strong>不直接</strong>判定有效／廢票；真正規則在「問題 → 問題投票規則」。此處僅供建立問題時快速帶入。</p>
+<p>不分組時組別名稱固定預設；分組時可自訂各組中英文名稱。</p>
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>最多可投票數</td><td>投票數上限（帶入問題用）</td></tr>
+<tr><td>最少應投票數</td><td>投票數下限（帶入問題用）</td></tr>
+<tr><td>當選人數</td><td>開票時得票前 N 高為當選</td></tr>
+<tr><td>遞補人數</td><td>扣除當選後，得票前 N 高為候補</td></tr>
+<tr><td>女性保留人數</td><td>若啟用「女性保留名額」，開票時優先保留性別為女性之當選名額</td></tr>
+<tr><td>清點人數</td><td>影響計票的選票數量，僅當前輪次有效</td></tr>
+</tbody></table>
+<h2 id="投票說明-選填">投票說明(選填)</h2>
+<p>顯示在投票資訊頁面各項資訊，各資訊有資料才會顯示，如果是否略過投票資訊頁面設定是，只有圈選須知跟候選名單備註有效果(因為只有這兩個會出現在投票頁面)，效果如下圖:</p>
+<figure><img src="images/img-006.png" alt="畫面示意"><figcaption></figcaption></figure>
+<h2 id="附件上傳">附件上傳</h2>
+<p>每個投票場次可以上傳5個附件，附件格式限制png, jpg, jpeg, gif, docx, doc, pdf, pptx, ppt, csv, xlsx, xls, txt, odt, ods, odp等副檔名的檔案。</p>
+<p>附件顯示的位置在投票資訊頁的最底部。</p>
+<figure><img src="images/img-009.png" alt="畫面示意"><figcaption></figcaption></figure>
+<h2 id="進階">進階</h2>
+<p>投票密碼登入樣板: 匿名投票密碼輸入頁面的樣板，可以選擇公版或會議版。</p>
+<p>投票樣板: 投票圈選頁面的樣板，可以選擇公版或會議版。</p>
+<p>主題色: 影響投票密碼輸入頁面、投票結束頁的背景顏色。</p>
+
+<h1 id="輪次">4. 輪次</h1>
+<p class="lead">多輪投票時用來區分各輪的問題、候選與選票。建立下一輪前，前一輪至少需有 1 張選票。</p>
+<p>輪次會顯示在標題右上角(如下圖紅框處)</p>
+<figure><img src="images/img-001.png" alt="輪次顯示位置"><figcaption>輪次顯示於標題右上角</figcaption></figure>
+<h2 id="輪次-建立">建立</h2>
+<p>點擊下圖紅框按鈕建立輪次，必須注意前一輪次至少要有1張選票才能建立新輪次。</p>
+<figure><img src="images/img-002.png" alt="建立輪次"><figcaption>建立輪次</figcaption></figure>
+<h2 id="輪次-修改">修改</h2>
+<p>點擊輪次名稱進入修改。</p>
+<figure><img src="images/img-003.png" alt="修改輪次"><figcaption>修改輪次</figcaption></figure>
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>名稱／英文名稱</td><td>可使用 HTML</td></tr>
+<tr><td>是否顯示輪次名稱</td><td>選「是」時，輪次名稱接在投票名稱之後</td></tr>
+<tr><td>啟用密碼數量</td><td>啟用／停用密碼時自動更新。陣列依組別順序，例如 <code>[60,53,28,45]</code></td></tr>
+</tbody></table>
+</ul>
+<h2 id="輪次-切換">切換</h2>
+<p>點擊下圖紅框切換輪次。</p>
+<figure><img src="images/img-004.png" alt="切換輪次"><figcaption>切換輪次</figcaption></figure>
+
+<h1 id="問題">5. 問題</h1>
+<p class="lead">問題用來區分不同類別的候選名單，各自擁有獨立的投票規則。分組場次可設組內問題或共同問題。</p>
+<ol>
+<li>問題是投票頁面區別不同類別候選名單的功能。</li>
+<li>各問題會顯示在投票頁面的最上方(如圖1)。</li>
+<li>一個投票場次可以有多個問題，各分組有屬於自己的問題(如圖2)。</li>
+<li>共同問題是所有分組都要圈選的，所有分組一起統計選票；共同問題隸屬的分組叫做共同投票。</li>
+<li>每個問題都有獨立的投票規則。</li>
+</ol>
+<figure><img src="images/img-010.png" alt="問題顯示於投票頁上方"><figcaption>圖1：問題顯示於投票頁上方</figcaption></figure>
+<figure><img src="images/img-011.png" alt="各分組問題"><figcaption>圖2：各分組可有專屬問題</figcaption></figure>
+<h2 id="問題-欄位說明">欄位說明</h2>
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>組別</td><td>僅「是否分組＝是」時出現。選特定分組則僅該組可見；選「共同投票」則所有分組可見並合併統計。</td></tr>
+<tr><td>標題／英文標題</td><td>問題顯示名稱，可使用 HTML。</td></tr>
+<tr><td>描述／英文描述</td><td>補充說明文字（見下圖）。</td></tr>
+<tr><td>自定義未圈選顯示名稱</td><td>下限為 0 且未圈選時，確認步驟的顯示文字（預設為標題）。</td></tr>
+<tr><td>自定義投票規則文字</td><td>覆蓋自動產生的規則說明文字。</td></tr>
+</tbody></table>
+<figure><img src="images/img-012.png" alt="問題描述位置"><figcaption>描述顯示位置</figcaption></figure>
+<figure><img src="images/img-013.png" alt="未圈選顯示名稱"><figcaption>自定義未圈選顯示名稱</figcaption></figure>
+<figure><img src="images/img-014.png" alt="自訂投票規則文字"><figcaption>自定義投票規則文字</figcaption></figure>
+<h2 id="問題-投票規則">問題投票規則（有效／廢票）</h2>
+<ul>
+<li>這裡的投票規則才是真正影響有效票或廢票的設定。從下拉式選單選擇組別，會自動帶入編輯的投票規則的設定數字。勾選自訂規則可以自由輸入數字。</li>
+</ul>
+<figure><img src="images/img-015.png" alt="問題投票規則"><figcaption>問題投票規則設定</figcaption></figure>
+<p>未設定自訂投票規則文字時，系統依上下限自動帶出說明文字：</p>
+<table>
+<thead><tr><th>條件</th><th>顯示文字</th></tr></thead>
+<tbody>
+<tr><td>無上下限（上限 ≧ 候選總數且下限 = 0）</td><td>本次投票圈選名額無限制。</td></tr>
+<tr><td>僅有上限</td><td>不得超過 {最多可投票數}{名稱的單位}。</td></tr>
+<tr><td>僅有下限</td><td>不得少於 {最少應投票數}{名稱的單位}。</td></tr>
+<tr><td>上下限皆有</td><td>不得少於 {最少應投票數}，亦不得多於 {最多可投票數}{名稱的單位}。</td></tr>
+</tbody></table>
+<h3 id="投票母數">投票母數</h3>
+<ul>
+    <li>代表該問題所屬分組的「應有投票人數」（例如該組全體有投票權的人數），與「啟用密碼數量」（實際可投票／已發放的票數）不同。</li>
+    <li>供紀錄用；可依實際需求填寫，不影響有效／廢票判定與開票。</li>
+</ul>
+
+<h2 id="匯入輪次問題">匯入輪次問題</h2>
+<ul>
+<li>匯入前N個輪次建立的問題。</li>
+<li>在頁面修改要匯入問題的投票規則。</li>
+<li>該問題的候選名單配置會一併匯入。</li>
+<li>點擊右上角的紅色叉叉按鈕刪除不需要匯入的問題。</li>
+</ul>
+<figure><img src="images/img-016.png" alt="匯入輪次問題"><figcaption>匯入輪次問題</figcaption></figure>
+
+<h1 id="候選">6. 候選</h1>
+<p class="lead">管理候選人資料，並設定投票頁上的名單呈現方式（欄位、排序、列數、顏色等）。</p>
+<h2 id="候選名單管理">候選名單管理</h2>
+<h3 id="手動新增">手動新增</h3>
+<p>單筆新增候選名單，上傳照片只能手動新增時操作。</p>
+<h3 id="檔案導入">檔案導入</h3>
+<p>透過CSV檔案上傳的方式，批次匯入候選名單，頁面上有4個頁籤。</p>
+<figure><img src="images/img-017.png" alt="畫面示意"><figcaption></figcaption></figure>
+<ol>
+<li>進入範例下載頁籤下載範例CSV檔案。</li>
+<li>編輯CSV檔案，投票組別(中文)、問題代碼、名稱必填，相關欄位的填寫請參考欄位說明頁籤，檔案必須是具有BOM的UTF8的CSV檔案。</li>
+<li>進入上傳CSV頁籤選擇檔案並點擊開始匯入。</li>
+</ol>
+<h3 id="輪次導入">輪次導入</h3>
+<p>匯入前一個輪次建立的候選名單，已達門檻的候選人也在此處設定。</p>
+<p>候選人組別: 要匯入的前一個輪次的組別。</p>
+<p>候選人問題: 要匯入的前一個輪次的問題，選擇後會列出該問題的候選名單。</p>
+<p>導入組別: 要匯入的當前輪次的組別。</p>
+<p>導入問題: 要匯入的當前輪次的問題。</p>
+<p>候選人: 候選人問題選擇後會出現。勾選指定候選人設定已達門檻，其餘直接導入。</p>
+<p>紅字括號是輪次1的得票排名，沒有排名表示前一輪已達門檻。</p>
+<figure><img src="images/img-018.png" alt="畫面示意"><figcaption></figcaption></figure>
+<h3 id="刪除候選名單">刪除候選名單</h3>
+<p>可以指定要刪除的分組、問題或生成方式。</p>
+<h3 id="候選名單欄位說明">候選名單欄位說明</h3>
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>分組／問題</td><td>候選人隸屬的分組與問題</td></tr>
+<tr><td>名字／名稱</td><td>顯示名稱</td></tr>
+<tr><td>性別</td><td>影響女性保留名額之開票條件</td></tr>
+<tr><td>自訂排序</td><td>選票匯入時的對應順序（orderNum）</td></tr>
+<tr><td>背景顏色</td><td>表格列背景色</td></tr>
+<tr><td>關聯組別</td><td>共同問題用，取得分組人數</td></tr>
+<tr><td>特殊榮譽</td><td>選用：標記是否符合特殊條件</td></tr>
+<tr><td>已達門檻</td><td>選「是」時，圈選改顯示「已達門檻」文字</td></tr>
+</tbody></table>
+<h2 id="候選-名單配置">候選名單配置</h2>
+<p>設定投票頁面候選名單呈現樣式，可以依照問題個別設定。</p>
+<h3 id="候選配置-基本設定">基本設定</h3>
+<p>編號顯示:</p>
+<ul>
+<li>顯示自動編號: 依照表格順序加入數字，從1開始。</li>
+<li>顯示自訂義編號: 顯示候選名單自訂排序的數字。</li>
+</ul>
+<p>寬度: 決定候選名單表格的寬度，如下圖，上寬下窄。</p>
+<figure><img src="images/img-019.png" alt="畫面示意"><figcaption></figcaption></figure>
+<p>投票時候選名單顯示列數: 候選名單要分成幾個表格呈現，下圖是設定為2的效果，上圖則是設定為1的效果。</p>
+<figure><img src="images/img-020.png" alt="畫面示意"><figcaption></figcaption></figure>
+<p>※ 如果候選名單要排序，必須設定為1。</p>
+<p>使用欄位表頭:</p>
+<ul>
+<li>候選名單表格的表頭是否要再加上一層表頭。</li>
+<li>選擇是，儲存後才會出現欄位表頭的設定區域。</li>
+<li>需要搭配欄位顯示、排序的設定才會顯示。</li>
+<li>下圖是呈現效果，在編號和姓名的上方多了一層表頭。</li>
+</ul>
+<figure><img src="images/img-021.png" alt="畫面示意"><figcaption></figcaption></figure>
+<p>名稱顯示文字: 影響候選人姓名這個欄位的表頭顯示的文字。</p>
+<p>名稱的單位: 影響投票頁面右上角及確認頁面已勾選的候選人數字的單位。英文如果為複數會自動加s。位置如下圖紅框所示:</p>
+<figure><img src="images/img-022.png" alt="畫面示意"><figcaption></figcaption></figure>
+<p>文字大小: 表格內文字的尺寸，一定要填單位，px、em、rem等等。</p>
+<p>表格高度: 表格儲存格的高度，一定要填單位，px、em、rem等等。</p>
+<p>表格標頭顏色:</p>
+<ul>
+<li>表頭的顏色，包含使用欄位表頭，請使用含井字號的16進制色碼。</li>
+<li>若投票時候選名單顯示列數大於1，可以用半形逗號區隔多個色碼達到下圖效果。</li>
+</ul>
+<figure><img src="images/img-023.png" alt="畫面示意"><figcaption></figcaption></figure>
+<p>是否使用排序: 只有投票時候選名單顯示列數設定為1才有效，搭配排序的欄位設定那些欄位要排序，目前只有姓名、自定義名稱可以排序。</p>
+<p>預設排序的欄位: 不選擇則按候選名單排序，只能選要排序的欄位。</p>
+<p>文字向左對齊欄位: 預設都是置中對齊，有選擇的欄位才會置左。</p>
+<h3 id="自定義欄位">自定義欄位</h3>
+<ul>
+<li>這邊設定的是自訂自欄位名稱的表格表頭名稱。</li>
+<li>正常欄位超過長度會換行，僅有自定義欄位名稱1的儲存格內容超過表格長度的部分會被替換成...，點擊輸入框後會還原，如下圖所示:</li>
+</ul>
+<figure><img src="images/img-024.png" alt="畫面示意"><figcaption></figcaption></figure>
+<figure><img src="images/img-025.png" alt="畫面示意"><figcaption></figcaption></figure>
+<h3 id="欄位表頭">欄位表頭</h3>
+<p>投票時候選名單顯示列數大於1時，單一欄位表頭名稱以半形逗號分隔，表示不同表格的顯示文字。ex: 候選名單顯示列數等於3，欄位表頭名稱為「表頭一, 表頭二, 表頭三」，投票頁面呈現如下:</p>
+<figure><img src="images/img-026.png" alt="畫面示意"><figcaption></figcaption></figure>
+<h3 id="候選配置-欄位顯示排序">欄位顯示、排序</h3>
+<ul>
+<li>設定表格內要顯示的欄位以及欄位的排序，包含欄位表頭也要設定才會顯示。</li>
+<li>圖3的設定會呈現圖4的效果。</li>
+<li>所有的表格表頭目前文字固定大小18px。</li>
+</ul>
+<figure><img src="images/img-027.png" alt="畫面示意"><figcaption></figcaption></figure>
+<p class="caption">(圖3)</p>
+<figure><img src="images/img-021.png" alt="畫面示意"><figcaption></figcaption></figure>
+<p class="caption">(圖4)</p>
+<h3 id="排序的欄位">排序的欄位</h3>
+<ul>
+<li>投票時候選名單顯示列數等於1才能排序，也才會顯示這個區域。</li>
+<li>必須拖曳到要排序的欄位底下，候選名單表格才會出現排序的按鈕。</li>
+</ul>
+<h2 id="候選人管理頁面">候選人管理頁面</h2>
+<p>如果候選名單配置設定為依問題個別設定，必須選擇切換頁數上面的下拉式選單，才會按照指定問題的配置呈現。</p>
+<figure><img src="images/img-028.png" alt="畫面示意"><figcaption></figcaption></figure>
+
+<h1 id="密碼">7. 密碼</h1>
+<p class="lead">僅<strong>匿名投票</strong>使用。產生、啟用密碼後方可讓投票者登入。共用密碼場次請見下方限制。</p>
+<ul>
+<li>僅有匿名投票可以操作，透過生成條件的密碼批次產生密碼。</li>
+<li><strong>共用密碼場次</strong>：可設定狀態、密碼匯出、生成密碼函、列表查詢；<strong>不可</strong>在本場次生成或刪除密碼（密碼池屬於被綁定的主場次）。批次變更狀態會影響所有綁定該密碼池的場次。</li>
+<li>共用密碼會在表格上方顯示共用哪個場次的密碼，如下圖所示。</li>
+</ul>
+<figure><img src="images/img-029.png" alt="畫面示意"><figcaption></figcaption></figure>
+<ul>
+<li>共用密碼的條件請參考是否共用投票密碼與共用密碼之投票。</li>
+</ul>
+<h2 id="密碼列表與遮罩">密碼列表與遮罩</h2>
+<ul>
+<li>列表「密碼」欄預設顯示 <code>密碼#編號</code>（遮罩），不含明文。</li>
+<li>按工具列 <strong>顯示明文</strong>，完成二次驗證後，列表於時效內（預設 15 分鐘）顯示明文；可按 <strong>立即鎖定</strong> 提前結束。</li>
+<li>明文亦可透過下方「密碼匯出」「生成密碼函」取得（同樣需二次驗證）。</li>
+</ul>
+<h2 id="本輪已投票">本輪已投票</h2>
+<ul>
+<li>列表欄位「<strong>本輪已投票</strong>」表示：<strong>目前場次、目前輪次</strong>是否已有選票（以選票資料為準），不是資料庫內 legacy 的 <code>passwords.voted</code> 欄位。</li>
+<li>可於列表篩選、設定狀態、密碼匯出、生成密碼函條件中指定「本輪已投票」是/否。</li>
+<li>多輪次投票時，切換輪次後「本輪已投票」會隨目前輪次改變。</li>
+</ul>
+<h2 id="生成密碼">生成密碼</h2>
+<h3 id="生成條件">生成條件</h3>
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>組別</td><td>密碼所屬組別（未分組則為預設）</td></tr>
+<tr><td>密碼組成</td><td>字元類型</td></tr>
+<tr><td>密碼長度</td><td>至少 6 碼</td></tr>
+<tr><td>密碼數量</td><td>批次產生數量</td></tr>
+<tr><td>格式</td><td>僅英數混合時有效。數字=i、小寫=s、大寫=S（例：<code>iissSS</code> → <code>66ggGG</code>）</td></tr>
+<tr><td>標記</td><td>為此批密碼加上 tag，方便篩選</td></tr>
+<tr><td>狀態</td><td>產生時的預設啟用狀態</td></tr>
+</tbody></table>
+<h2 id="設定狀態">設定狀態</h2>
+<p>根據設定條件（組別、標記、雙軌投票、<strong>本輪已投票</strong>）批次設定密碼的啟用狀態。僅變更 <code>status</code>，不會改變「本輪已投票」的選票紀錄。</p>
+<h2 id="刪除密碼">刪除密碼</h2>
+<ul>
+<li>避免誤刪密碼，網站設定的是否可以刪除密碼為是才能刪除密碼。</li>
+<li>根據組別或標記刪除指定或全部的密碼。</li>
+</ul>
+<h2 id="密碼匯出">密碼匯出</h2>
+<p>根據條件（含<strong>本輪已投票</strong>）匯出密碼 CSV。匯出內容含明文密碼，送出前須<strong>二次驗證</strong>（管理員密碼；若已啟用 TOTP 另需 6 碼），並寫入操作日誌（類型 166）。</p>
+<h2 id="生成密碼函">生成密碼函</h2>
+<p>透過樣板的 docx 檔案，搭配內容關鍵字批次生成密碼函；與 Word 套印類似。可篩選<strong>本輪已投票</strong>等條件。含明文密碼，送出前須<strong>二次驗證</strong>（同上）。</p>
+<h2 id="單筆切換密碼狀態">單筆切換密碼狀態</h2>
+<p>點擊下圖紅框處的連結，實現單筆切換密碼狀態。</p>
+<figure><img src="images/img-030.png" alt="畫面示意"><figcaption></figcaption></figure>
+
+<h1 id="選票">8. 選票</h1>
+<p class="lead">查詢、補登、匯入與匯出選票。涉及明文密碼的匯出須通過<a href="#二次驗證與雙因素驗證">二次驗證</a>。</p>
+<h2 id="建立選票">建立選票</h2>
+<p>為指定的密碼建立選票。</p>
+<h2 id="匯入選票">匯入選票</h2>
+<ul>
+<li>兩個場次必須共用密碼，且問題及候選名單數量必須相同，否則無法匯入。</li>
+<li>兩個場次的候選人自訂排序(orderNum)必須一致，選票圈選的候選人靠自訂排序(orderNum)對應。</li>
+<li>如果問題的順序不同，請手動選擇問題對應；反之直接點選「按順序自動載入」的按鈕。</li>
+</ul>
+<h2 id="刪除全部選票">刪除全部選票</h2>
+<p>刪除指定分組的所有選票。</p>
+<h2 id="選票統計匯出">選票統計匯出</h2>
+<p>按工具列 <strong>選票統計匯出</strong> 展開表單，選擇格式並完成<strong>二次驗證</strong>後執行。匿名投票時「投票者」欄含<strong>明文密碼</strong>（紙本封存用）。操作寫入日誌（類型 176）。</p>
+<h3 id="csv">CSV</h3>
+<ul>
+<li><strong>全部欄位 (csv)</strong>：含選票編號、投票者、組別、IP、投票/修改時間、各問題圈選結果等。</li>
+<li><strong>無 IP、修改者、修改時間 (csv)</strong>：精簡版，適合對外提供統計。</li>
+</ul>
+<h3 id="投票結果封存單">投票結果封存單</h3>
+<ul>
+<li>於同一表單選「<strong>投票結果封存單 (列印)</strong>」並選擇問題，二次驗證後於<strong>新分頁</strong>開啟。</li>
+<li>以表格列出該問題所有投票者與圈選候選人；匿名投票時投票者為明文密碼。</li>
+<li>提供列印用簽名欄位。不可再透過舊版書籤直接開啟 <code>/ballot/content</code>（須經匯出表單）。</li>
+</ul>
+<h2 id="顯示明文-選票">顯示明文（選票管理）</h2>
+<ul>
+<li>匿名投票時，選票列表「投票者」欄預設遮罩；工具列 <strong>顯示明文</strong> 完成二次驗證後，時效內顯示明文（與密碼管理相同機制）。</li>
+<li>建立選票（選票建立者）頁面亦提供相同按鈕。</li>
+<li>檢票 → 投票情形頁的「選票統計匯出」表單，流程與選票管理相同。</li>
+</ul>
+<h2 id="選票列印">選票列印</h2>
+<ul>
+<li>根據特定問題和候選名單配置產生與投票頁面相同的畫面。</li>
+<li>中英並列。</li>
+</ul>
+<p class="note">各問題的有效／廢票規則請見 <a href="#問題-投票規則">問題投票規則</a>。</p>
+<h2 id="選票管理頁面">選票管理頁面</h2>
+<ul>
+<li>點擊表格中的加號(+)，可以展開選票明細，會列出該選票各個問題的投票數和是否有效。</li>
+<li>點擊編輯可以修改選票圈選的候選名單，同時修改者也會寫入資料。</li>
+</ul>
+<figure><img src="images/img-031.png" alt="畫面示意"><figcaption></figcaption></figure>
+
+<h1 id="計票開票結果">9. 計票、開票與結果</h1>
+<p class="lead">投票進行中或結束後皆可計票與開票；開票不影響投票進行。結果頁可微調當選狀態並預覽公開畫面。</p>
+<h2 id="計票">計票</h2>
+<ul>
+<li>會列出各分組問題候選名單的得票數及排序。</li>
+<li>透過右上角的下拉式選單，可以調整排序，預設是「依得票高低排序」。</li>
+<li>若候選名單已達門檻，得票數和排序會顯示「-」，如下圖「已達門檻」列所示。</li>
+</ul>
+<figure><img src="images/img-032.png" alt="畫面示意"><figcaption></figcaption></figure>
+<h3 id="計票單匯出">計票單匯出</h3>
+<p>匯出各分組問題的有效票、廢票和選票數量。</p>
+<h3 id="計票單列印">計票單列印</h3>
+<ol>
+<li>點擊頁面右上角的列印模式，或按ctrl+alt+P進入列印模式。</li>
+<li>會跳出選擇簽名欄位，選擇後簽名欄位會出現在最下方的位置。</li>
+</ol>
+<p>TIPS: 如果覺得列印模式太寬，可以點兩下ESC，會得到瘦身的版本。</p>
+
+<h2 id="開票">開票</h2>
+<ul>
+<li>根據問題的投票規則，選出當選和候補的名單。</li>
+<li>開票任何時後都可以使用，不影響投票的進行。</li>
+<li>開票後仍然可以重新開票或刪除開票結果。</li>
+<li>若所有選票皆為廢票，將無法開票。</li>
+</ul>
+<h3 id="開票-欄位介紹">欄位說明</h3>
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>投票結果顯示</td><td>是否將開票結果顯示於結果列表</td></tr>
+<tr><td>登入驗證</td><td>選「是」則需登入才可查看</td></tr>
+<tr><td>投票結果排序</td><td>結果排序方式</td></tr>
+<tr><td>投票結果顯示投票狀態</td><td>僅勾選的狀態會出現在最終畫面</td></tr>
+</tbody></table>
+<h3 id="開票-欄位顯示排序">欄位顯示、排序</h3>
+<p>與候選名單配置的欄位顯示、排序相同效果。</p>
+
+<h2 id="結果">結果</h2>
+<h3 id="當選與否">當選與否</h3>
+<h4 id="單筆修改">單筆修改</h4>
+<p>點擊藍色的字，會出現選單，選擇後按藍色的勾勾儲存。</p>
+<figure><img src="images/img-036.png" alt="畫面示意"><figcaption></figcaption></figure>
+<h4 id="批次修改">批次修改</h4>
+<ol>
+<li>於表格的第一欄勾選要修改的資料。</li>
+<li>在批次操作選擇要改變的狀態。</li>
+</ol>
+<figure><img src="images/img-037.png" alt="畫面示意"><figcaption></figcaption></figure>
+<h4 id="預覽">預覽</h4>
+<p>可以模擬使用者看到的最終畫面，只會顯示投票結果顯示投票狀態有勾選的狀態。</p>
+
+<h1 id="重啟與列印">10. 重啟與列印</h1>
+<h2 id="重啟">重啟投票</h2>
+<p class="note">不可逆：將刪除選票、計票、開票及結果資料。</p>
+<p>重啟投票將會刪除選票、計票、開票及結果的資料。</p>
+
+<h2 id="列印模式-簽名">列印模式（簽名）</h2>
+<h3 id="使用範圍">使用範圍</h3>
+<p>在計票、選票封存單等地方都可按ctrl+alt+P進入列印模式，會出現下圖的視窗。</p>
+<figure><img src="images/img-038.png" alt="畫面示意"><figcaption></figcaption></figure>
+
+<h1 id="群組管理">11. 群組管理</h1>
+<p class="lead">將管理者組成群組，並授權管理特定投票場次。</p>
+<h2 id="群組-建立與資料">建立與基本資料</h2>
+<h3 id="建立群組">建立群組</h3>
+<p>新增一個群組</p>
+<h3 id="群組-基本資料">基本資料</h3>
+<p>可以更改群組名稱</p>
+<h2 id="群組-成員管理">成員管理</h2>
+<h4 id="新增成員">新增成員</h4>
+<ul>
+<li>添加新成員進群組，必須有在使用者管理的人才能。</li>
+<li>編輯投票與否: 是否有權編輯群組內的投票場次。</li>
+<li>群組管理與否: 是否有權更改基本資料和新增成員。</li>
+</ul>
+<h2 id="群組-所屬場次">群組所屬場次</h2>
+<p>在編輯的群組有設定的話，這些投票場次會出現在列表中。</p>
+
+<h1 id="網站管理">12. 網站與帳號管理</h1>
+<p class="lead">全站參數、登入狀態、操作日誌與使用者帳號（含 TOTP 入口）。</p>
+<h2 id="網站設定">網站設定</h2>
+<h3 id="網站-投票參數">投票</h3>
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>計票單行數</td><td>計票頁候選名單顯示行數，預設 3</td></tr>
+<tr><td>分組上限</td><td>場次可設定的最多分組數，預設 4</td></tr>
+<tr><td>是否可以刪除密碼</td><td>選「是」才允許執行刪除密碼</td></tr>
+</tbody></table>
+<h3 id="匿名登入防護">匿名登入防護</h3>
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>嘗試錯誤次數</td><td>密碼錯誤上限</td></tr>
+<tr><td>鎖定時間（秒）</td><td>超過次數後鎖定秒數</td></tr>
+<tr><td>等待時間（秒）</td><td>登入按鈕需等待後才可點擊</td></tr>
+</tbody></table>
+<figure><img src="images/img-041.png" alt="畫面示意"><figcaption></figcaption></figure>
+<h3 id="其他">其他</h3>
+<h4 id="首頁樣板">首頁樣板</h4>
+<p>網站首頁的樣式。</p>
+<h4 id="首頁標題">首頁標題</h4>
+<p>僅首頁樣板是「會議版」有效。</p>
+<h4 id="首頁導向網址">首頁導向網址</h4>
+<ul>
+<li>只要進入首頁，就自動轉址到設定的網址。</li>
+<li>使用情境: 所有投票者都要投同一個場次，可將首頁網域設為首頁導向網址的目標。</li>
+</ul>
+<h3 id="品牌設定">品牌設定</h3>
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>Logo 路徑</td><td>相對網站根目錄（如 <code>img/logo.png</code>）；留空則不顯示 Logo</td></tr>
+<tr><td>Favicon 路徑</td><td>預設 <code>favicon.ico</code></td></tr>
+<tr><td>版權文字</td><td>頁尾顯示；留空則為「應用名稱 © 年份」</td></tr>
+<tr><td>系統標題／系統標題(英)</td><td>投票流程頁標題；留空則用首頁標題或應用名稱</td></tr>
+</tbody></table>
+<h2 id="清除登入狀態">清除登入狀態</h2>
+<ul>
+<li>可以強制登出特定場次、組別、標記的密碼投票者。</li>
+<li>使用情境: 要補登之前，先清除所有的投票者登入狀態。</li>
+</ul>
+<h2 id="log">LOG</h2>
+<ul>
+<li>管理者或投票者操作的紀錄。</li>
+<li>匿名登入失敗可查類型 <code>501</code>（LOGIN_PASSWORD_FAIL）：紀錄含 <code>voteID</code>、錯誤原因，<strong>不含明文投票密碼</strong>（2026-07 起）。若需比對使用者輸入內容，請透過密碼管理匯出清單（有 audit log）。</li>
+<li>含明文密碼的敏感操作日誌：<code>166</code> 密碼 CSV 匯出、<code>176</code> 選票統計匯出/封存單、<code>167</code> 列表明文解鎖、<code>168</code> 列表明文鎖定、<code>422</code>/<code>423</code> TOTP 啟用/停用。</li>
+</ul>
+<h2 id="使用者管理">使用者管理</h2>
+<ul>
+<li>有在這邊建立的使用者，才可以登入管理者。</li>
+<li><strong>雙因素驗證（TOTP）</strong>：各管理者可自行於「雙因素驗證」綁定 Google Authenticator 等 App（須先由維運執行 DB migration）。詳見 <a href="#二次驗證與雙因素驗證">二次驗證與雙因素驗證</a>。</li>
+</ul>
+
+<h1 id="二次驗證與雙因素驗證">13. 二次驗證與雙因素驗證</h1>
+<p>系統對<strong>高敏感管理操作</strong>要求二次驗證（輸入<strong>目前登入的管理員密碼</strong>）。若帳號已啟用 TOTP，另須輸入驗證器 6 碼。由環境變數 <code>SENSITIVE_REAUTH</code> 控制（正式環境預設開啟；僅測試環境可關閉）。</p>
+<h2 id="涵蓋操作">涵蓋操作</h2>
+<table>
+<thead><tr><th>操作</th><th>路徑</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>密碼 CSV 匯出</td><td>密碼管理 → 密碼匯出</td><td>含明文密碼</td></tr>
+<tr><td>生成密碼函</td><td>密碼管理 → 生成密碼函</td><td>含明文密碼</td></tr>
+<tr><td>列表明文顯示</td><td>密碼管理 / 選票管理 / 選票建立者 → 顯示明文</td><td>解鎖後預設 15 分鐘（<code>SENSITIVE_PLAINTEXT_TTL</code>）</td></tr>
+<tr><td>選票統計 CSV</td><td>選票管理 / 檢票 → 選票統計匯出</td><td>匿名投票時投票者為明文密碼</td></tr>
+<tr><td>投票結果封存單</td><td>同上表單 → 封存單格式</td><td>新分頁列印；須選問題</td></tr>
+<tr><td>同步 RBAC 權限</td><td>使用者管理（sa）</td><td>—</td></tr>
+<tr><td>停用 TOTP</td><td>使用者管理 → 雙因素驗證</td><td>須密碼 + 驗證器代碼</td></tr>
+</tbody></table>
+<h2 id="totp-綁定">TOTP 綁定步驟</h2>
+<ol>
+<li>（維運）執行 <code>docs/migrations/20260713_users_totp.sql</code>。</li>
+<li>登入後台 → 使用者管理 → <strong>雙因素驗證</strong>。</li>
+<li>輸入管理員密碼 → 掃描 QR Code → 輸入 App 顯示的 6 碼完成啟用。</li>
+</ol>
+<p><strong>注意</strong>：TOTP 不參與後台登入（登入仍只需帳密）；僅在上述敏感操作時加強驗證。建議 sa、va 等高權限帳號綁定 TOTP。</p>
+<p>技術細節與開源檢查表見 <code>SECURITY.md</code>、<code>docs/資訊安全評估與改善計畫.md</code>。</p>
+
+<h1 id="投票設定案例">14. 投票設定案例</h1>
+<p>以下依常見需求整理成五種類型案例，方便對照系統欄位設定。實際場次名稱、分組名稱、畫面樣式可依單位自行調整。下方截圖僅供畫面示意。</p>
+<p>快速對照：</p>
+<table>
+<thead><tr><th>類型</th><th>是否分組</th><th>場次</th><th>多輪</th><th>候選名單配置</th><th>典型用途</th></tr></thead>
+<tbody>
+<tr><td><a href="#案例A-單場次多分組並行">A. 單場次多分組並行</a></td><td>是</td><td>1</td><td>否</td><td>依問題個別</td><td>各組同時選召集人／代表</td></tr>
+<tr><td><a href="#案例B-各組獨立場次">B. 各組獨立場次</a></td><td>否*</td><td>多</td><td>可</td><td>依問題個別</td><td>各組各自時程、可多類候選人</td></tr>
+<tr><td><a href="#案例C-名單同意審核">C. 名單同意／審核</a></td><td>否</td><td>1 或多</td><td>通常否</td><td>依場次統一</td><td>對既有名單逐一表決</td></tr>
+<tr><td><a href="#案例D-多問題多輪選舉">D. 多問題多輪選舉</a></td><td>否</td><td>1</td><td>是</td><td>依問題個別</td><td>多類別候選人、可產出通過名單</td></tr>
+<tr><td><a href="#案例E-參考投票至正式投票">E. 參考投票 → 正式投票</a></td><td>混合</td><td>多 + 1</td><td>是</td><td>混合</td><td>先分組篩選再大會決選（含投票母數）</td></tr>
+</tbody></table>
+<p>*類型 B 的「是否分組」為否，是因為每個場次只服務一個組別；組別差異以「多個場次」表達。</p>
+
+<h2 id="案例A-單場次多分組並行">A. 單場次多分組並行</h2>
+<p>一個場次內容納多個分組，投票者依所屬分組密碼只看到該組問題。適合各組同時選舉召集人、代表等。</p>
+<table>
+<thead><tr><th>項目</th><th>建議設定</th></tr></thead>
+<tbody>
+<tr><td>投票類型</td><td>匿名（亦可表決）</td></tr>
+<tr><td>是否分組</td><td>是</td></tr>
+<tr><td>場次數量</td><td>1</td></tr>
+<tr><td>是否多輪</td><td>否</td></tr>
+<tr><td>候選名單配置</td><td>依問題個別設定</td></tr>
+<tr><td>問題</td><td>每組各自問題；可再拆子題（例如國內／國外）</td></tr>
+<tr><td>投票畫面</td><td>多列顯示；依分組設定表格標頭主題色</td></tr>
+<tr><td>其他</td><td>自訂投票規則文字；各組主題色；可設首頁導向／短網址</td></tr>
+<tr><td>列印項目</td><td>計票單、封存單</td></tr>
+</tbody></table>
+<p>畫面示意：</p>
+<figure><img src="images/img-046.png" alt="問題設定示意"><figcaption>A · 問題設定</figcaption></figure>
+<figure><img src="images/img-047.png" alt="候選名單配置示意"><figcaption>A · 候選名單配置</figcaption></figure>
+<figure><img src="images/img-050.png" alt="投票畫面示意"><figcaption>A · 投票畫面</figcaption></figure>
+<figure><img src="images/img-053.png" alt="投票完成畫面示意"><figcaption>A · 投票完成畫面</figcaption></figure>
+
+<h2 id="案例B-各組獨立場次">B. 各組獨立場次</h2>
+<p>為每個組別建立獨立場次（場次內不分組），時程、候選、輪次互不干擾。可搭配分組專屬網址進入。</p>
+<table>
+<thead><tr><th>項目</th><th>建議設定</th></tr></thead>
+<tbody>
+<tr><td>投票類型</td><td>匿名</td></tr>
+<tr><td>是否分組</td><td>否（每場次對應一組）</td></tr>
+<tr><td>場次數量</td><td>與組數相同</td></tr>
+<tr><td>是否多輪</td><td>可</td></tr>
+<tr><td>候選名單配置</td><td>依問題個別設定</td></tr>
+<tr><td>問題</td><td>可同時有一般候選人、特別類等多個問題，版面可不同</td></tr>
+<tr><td>投票畫面</td><td>多列；依組別主題色</td></tr>
+<tr><td>其他</td><td>可不設首頁導向，改以分組專屬網址／短網址；特別類問題可自訂未圈選顯示名稱</td></tr>
+<tr><td>列印項目</td><td>計票單、封存單</td></tr>
+</tbody></table>
+<p>畫面示意：</p>
+<figure><img src="images/img-058.png" alt="問題設定示意"><figcaption>B · 問題設定</figcaption></figure>
+<figure><img src="images/img-059.png" alt="候選名單配置示意"><figcaption>B · 候選名單配置（一般類）</figcaption></figure>
+<figure><img src="images/img-066.png" alt="投票畫面示意"><figcaption>B · 投票畫面</figcaption></figure>
+<figure><img src="images/img-063.png" alt="計票展示示意"><figcaption>B · 計票展示</figcaption></figure>
+
+<h2 id="案例C-名單同意審核">C. 名單同意／審核</h2>
+<p>對既有名單進行同意或圈選審核。候選結構一致時，建議「依投票場次統一」配置。</p>
+<table>
+<thead><tr><th>項目</th><th>建議設定</th></tr></thead>
+<tbody>
+<tr><td>投票類型</td><td>匿名</td></tr>
+<tr><td>是否分組</td><td>否</td></tr>
+<tr><td>場次數量</td><td>1，或各組各一</td></tr>
+<tr><td>是否多輪</td><td>通常否</td></tr>
+<tr><td>候選名單配置</td><td>依投票場次統一</td></tr>
+<tr><td>投票畫面</td><td>單列、使用欄位表頭、排序、自訂欄位</td></tr>
+<tr><td>其他</td><td>會議版主題色；可設首頁導向</td></tr>
+<tr><td>列印項目</td><td>計票單、封存單</td></tr>
+</tbody></table>
+<p>畫面示意：</p>
+<figure><img src="images/img-073.png" alt="問題設定示意"><figcaption>C · 問題設定</figcaption></figure>
+<figure><img src="images/img-074.png" alt="候選名單配置示意"><figcaption>C · 候選名單配置</figcaption></figure>
+<figure><img src="images/img-080.png" alt="投票畫面示意"><figcaption>C · 投票畫面</figcaption></figure>
+<figure><img src="images/img-082.png" alt="投票完成畫面示意"><figcaption>C · 投票完成畫面</figcaption></figure>
+
+<h2 id="案例D-多問題多輪選舉">D. 多問題多輪選舉</h2>
+<p>單一場次、不分組，以多個問題區分類別，並以多輪推進。適合需產出通過名單的候選人選舉。</p>
+<table>
+<thead><tr><th>項目</th><th>建議設定</th></tr></thead>
+<tbody>
+<tr><td>投票類型</td><td>匿名</td></tr>
+<tr><td>是否分組</td><td>否</td></tr>
+<tr><td>場次數量</td><td>1</td></tr>
+<tr><td>是否多輪</td><td>是</td></tr>
+<tr><td>候選名單配置</td><td>依問題個別設定</td></tr>
+<tr><td>投票畫面</td><td>單列、欄位表頭、排序（可預設依候選名單順序）、自訂欄位</td></tr>
+<tr><td>其他</td><td>自訂未圈選顯示名稱；會議版主題色</td></tr>
+<tr><td>列印項目</td><td>計票單、封存單、通過名單</td></tr>
+</tbody></table>
+<p>畫面示意：</p>
+<figure><img src="images/img-088.png" alt="問題設定示意"><figcaption>D · 問題設定</figcaption></figure>
+<figure><img src="images/img-091.png" alt="候選名單配置示意"><figcaption>D · 候選名單配置</figcaption></figure>
+<figure><img src="images/img-097.png" alt="投票畫面示意"><figcaption>D · 投票畫面</figcaption></figure>
+<figure><img src="images/img-102.png" alt="投票完成畫面示意"><figcaption>D · 投票完成畫面</figcaption></figure>
+
+<h2 id="案例E-參考投票至正式投票">E. 參考投票 → 正式投票</h2>
+<p>兩階段流程：先以各組參考／初選場次篩選名單，再匯入單一正式場次進行決選。正式票若需「達全體人數比例」門檻，請設定投票母數，並可匯出結果計票單。</p>
+
+<h3 id="案例E1-參考初選">E-1. 參考／初選（各組場次）</h3>
+<table>
+<thead><tr><th>項目</th><th>建議設定</th></tr></thead>
+<tbody>
+<tr><td>投票類型</td><td>匿名</td></tr>
+<tr><td>是否分組</td><td>否</td></tr>
+<tr><td>場次數量</td><td>多（每組一場）</td></tr>
+<tr><td>是否多輪</td><td>可</td></tr>
+<tr><td>候選名單配置</td><td>依投票場次統一</td></tr>
+<tr><td>投票畫面</td><td>多列；主題色；可有自訂欄位</td></tr>
+<tr><td>其他</td><td>自訂未圈選顯示名稱；規則可依現場調整；通常不設首頁導向</td></tr>
+<tr><td>列印項目</td><td>計票單、封存單</td></tr>
+</tbody></table>
+<p>畫面示意：</p>
+<figure><img src="images/img-108.png" alt="參考投票問題設定示意"><figcaption>E · 問題設定</figcaption></figure>
+<figure><img src="images/img-111.png" alt="參考投票畫面示意"><figcaption>E · 投票畫面</figcaption></figure>
+
+<h3 id="案例E2-正式決選">E-2. 正式／決選（單一大會場次）</h3>
+<table>
+<thead><tr><th>項目</th><th>建議設定</th></tr></thead>
+<tbody>
+<tr><td>投票類型</td><td>匿名</td></tr>
+<tr><td>是否分組</td><td>是</td></tr>
+<tr><td>場次數量</td><td>1</td></tr>
+<tr><td>是否多輪</td><td>是</td></tr>
+<tr><td>候選名單配置</td><td>依問題個別設定</td></tr>
+<tr><td>問題</td><td>可有多類問題（一般／特別類），版面與欄位可不同</td></tr>
+<tr><td>投票母數</td><td>需要「達全體人數比例」門檻時設定</td></tr>
+<tr><td>其他</td><td>自參考結果匯入候選 CSV；自訂未圈選名稱與投票規則文字；會議版主題色</td></tr>
+<tr><td>列印項目</td><td>計票單、封存單、通過名單、結果計票單</td></tr>
+</tbody></table>
+<p>畫面示意：</p>
+<figure><img src="images/img-118.png" alt="正式投票問題設定示意"><figcaption>E · 問題設定</figcaption></figure>
+<figure><img src="images/img-120.png" alt="正式投票候選名單配置示意"><figcaption>E · 候選名單配置</figcaption></figure>
+<figure><img src="images/img-129.png" alt="正式投票畫面示意"><figcaption>E · 投票畫面</figcaption></figure>
+<figure><img src="images/img-135.png" alt="正式投票完成畫面示意"><figcaption>E · 投票完成畫面</figcaption></figure>
+
+</main>
+<footer><hr>
+<p class="meta">圖片位於 <code>docs/manual/images/</code> · 部署設定請參閱 <code>SETUP.md</code>、<code>CONFIGURATION.md</code></p>
+</footer>
+</body></html>

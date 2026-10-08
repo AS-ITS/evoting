@@ -1,0 +1,18 @@
+Options +FollowSymlinks
+IndexIgnore */*
+
+RewriteEngine on
+
+# 正式環境 Apache：阻擋測試入口（nginx 請在 server 設定 deny）
+<IfModule mod_authz_core.c>
+    <FilesMatch "^(index-test|router-test)\.php$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+# if a directory or a file exists, use the request directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# otherwise forward the request to index.php
+RewriteRule . index.php
