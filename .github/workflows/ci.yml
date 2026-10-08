@@ -109,7 +109,7 @@ jobs:
           coverage: none
 
       - name: Update Guzzle
-        run: composer update guzzlehttp/guzzle --with-dependencies --no-interaction
+        run: composer update guzzlehttp/guzzle codeception/codeception --with-all-dependencies --no-interaction
 
       - name: Upload updated Composer lock
         uses: actions/upload-artifact@v4
