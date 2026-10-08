@@ -1,5 +1,7 @@
 # Frontend 前端套件
 
+套件均以預先建置資產提供；本專案安裝、CI 與執行不使用 npm/yarn，因此不納入上游僅供建置的 devDependency lockfile。
+
 本專案 **MIT**。對話框使用 `kartik-v/yii2-dialog` 與 Bootstrap 5 Modal。
 
 | 目錄 | 版本 | 用途 |

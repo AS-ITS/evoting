@@ -168,7 +168,9 @@ composer.phar
 node_modules/
 npm-debug.log
 yarn-error.log
-# 不忽略 frontend/*/package-lock.json、yarn.lock（vendored 套件鎖定／SBOM）
+# 前端資產已預先建置；不追蹤僅供上游建置的 devDependency lockfile
+/frontend/*/package-lock.json
+/frontend/*/yarn.lock
 
 # ------------------------------------------
 # 其他

@@ -7,6 +7,10 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-08
+
+開源初始版。
+
 ### Changed
 
 * 安裝路徑改為 `git clone` + `composer install`（依 lock）；`patches/` 由 post-install 自動套用
@@ -16,7 +20,4 @@
 ### Removed
 
 * Yii basic 模板殘件：`post-create-project-cmd`、`generateCookieValidationKey`、指向 Yii 官方的 `support`／placeholder `homepage`
-
-## [1.0.0] - 2026-09-24
-
-開源初始版。
+* 移除未參與產品安裝或執行的 vendored 前端建置 lockfile；執行期資產維持預先建置版本
