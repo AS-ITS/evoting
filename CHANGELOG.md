@@ -20,3 +20,4 @@
 ### Removed
 
 * Yii basic 模板殘件：`post-create-project-cmd`、`generateCookieValidationKey`、指向 Yii 官方的 `support`／placeholder `homepage`
+* 移除未參與產品安裝或執行的 vendored 前端建置 lockfile；執行期資產維持預先建置版本
