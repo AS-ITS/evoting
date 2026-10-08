@@ -40,6 +40,7 @@ jobs:
       TEST_DB_USERNAME: voting_test
       TEST_DB_PASSWORD: test_password
       TEST_DB_CHARSET: utf8mb4
+      APP_PATH_UPLOADS: ${{ github.workspace }}/runtime/filepool
       COOKIE_VALIDATION_KEY: ci-test-cookie-validation-key-32chars-min
 
     steps:
@@ -66,7 +67,7 @@ jobs:
 
       - name: Prepare runtime directories
         run: |
-          mkdir -p runtime/sessions/test runtime/cache runtime/logs runtime/debug
+          mkdir -p runtime/sessions/test runtime/cache runtime/logs runtime/debug runtime/filepool
           chmod -R 775 runtime
 
       - name: Import test database schema

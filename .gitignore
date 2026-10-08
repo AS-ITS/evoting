@@ -30,7 +30,7 @@ config/*-Backup.php
 
 # /assets/*.php 是 AssetBundle 原始碼，必須進版控。
 # 雜湊目錄／symlink 是誤寫進專案根的發佈快取（@webroot 指到專案根時會發生），不要版控。
-/assets/[0-9a-f]*
+/assets/[0-9a-f]*/
 /assets/files/
 
 # Composer 依賴
