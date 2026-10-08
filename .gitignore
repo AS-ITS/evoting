@@ -209,10 +209,10 @@ config/test-Backup.php
 config/console-Backup.php
 
 # 開發用的測試腳本
-test.php
-debug.php
-debug_*.php
-temp.php
+/test.php
+/debug.php
+/debug_*.php
+/temp.php
 
 # 備份的程式碼檔案（任何位置）
 *-Backup.php

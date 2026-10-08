@@ -53,7 +53,10 @@ jobs:
           coverage: none
 
       - name: Generate ephemeral CI master key
-        run: echo "MASTER_KEY=$(php -r 'echo base64_encode(random_bytes(64));')" >> "$GITHUB_ENV"
+        run: |
+          MASTER_KEY="$(php -r 'echo base64_encode(random_bytes(64));')"
+          echo "::add-mask::$MASTER_KEY"
+          echo "MASTER_KEY=$MASTER_KEY" >> "$GITHUB_ENV"
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
@@ -92,3 +95,24 @@ jobs:
 
       - name: Composer audit
         run: composer audit
+
+  lock-refresh:
+    name: refresh vulnerable dependency lock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          coverage: none
+
+      - name: Update Guzzle
+        run: composer update guzzlehttp/guzzle --with-dependencies --no-interaction
+
+      - name: Upload updated Composer lock
+        uses: actions/upload-artifact@v4
+        with:
+          name: updated-composer-lock
+          path: composer.lock
