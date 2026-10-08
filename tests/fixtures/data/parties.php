@@ -1,0 +1,73 @@
+<?php
+
+return [
+    // 匿名分組
+    [
+        'voteID' => 'AnonPartyTest',
+        'party' => '0',
+        'name' => '數理科學組',
+        'nameE' => 'Division of Mathematics and Physical Sciences',
+        'numBallots' => '1',
+        'leastNumBallots' => '1',
+        'maxElect' => '1',
+        'numOfKeep' => '1',
+        'numFemaleKeep' => NULL,
+    ],
+    [
+        'voteID' => 'AnonPartyTest',
+        'party' => '1',
+        'name' => '工程科學組',
+        'nameE' => 'Division of Engineering Sciences',
+        'numBallots' => '1',
+        'leastNumBallots' => '1',
+        'maxElect' => '1',
+        'numOfKeep' => '1',
+        'numFemaleKeep' => NULL,
+    ],
+    [
+        'voteID' => 'AnonPartyTest',
+        'party' => '2',
+        'name' => '生命科學組',
+        'nameE' => 'Division of Life Sciences',
+        'numBallots' => '1',
+        'leastNumBallots' => '1',
+        'maxElect' => '1',
+        'numOfKeep' => '1',
+        'numFemaleKeep' => NULL,
+    ],
+    [
+        'voteID' => 'AnonPartyTest',
+        'party' => '3',
+        'name' => '人文及社會科學組',
+        'nameE' => 'Division of Humanities and Social Sciences',
+        'numBallots' => '1',
+        'leastNumBallots' => '1',
+        'maxElect' => '1',
+        'numOfKeep' => '1',
+        'numFemaleKeep' => NULL,
+    ],
+    // 匿名不分組
+    [
+        'voteID' => 'AnonNoPartyTest',
+        'party' => 'def',
+        'name' => '預設',
+        'nameE' => 'Default',
+        'numBallots' => '1',
+        'leastNumBallots' => '1',
+        'maxElect' => '1',
+        'numOfKeep' => '1',
+        'numFemaleKeep' => NULL,
+    ],
+    // 表決投票 (NoAuth)
+    [
+        'voteID' => 'NoAuthVoteTest',
+        'party' => 'def',
+        'name' => '預設',
+        'nameE' => 'Default',
+        'numBallots' => '3',
+        'leastNumBallots' => '1',
+        'maxElect' => '2',
+        'numOfKeep' => '1',
+        'numFemaleKeep' => NULL,
+    ],
+];

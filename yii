@@ -1,0 +1,30 @@
+<?php
+// modify PHP.ini Settings
+// ini_set('soap.wsdl_cache_enabled', '0');
+// ini_set('display_errors', '1');
+// ini_set('display_startup_errors', '1');
+// error_reporting(E_ALL & ~E_NOTICE);
+
+// comment out the following two lines when deployed to production
+// defined('YII_DEBUG') or define('YII_DEBUG', true);
+// defined('YII_ENV') or define('YII_ENV', 'dev');
+
+/**
+ * @var string $basePath 當前資料夾路徑
+ */
+$basePath = __DIR__;
+
+/**
+ * @var string $venderDir 引入套件之路徑
+ */
+$venderDir = $basePath . '/vendor';
+
+require $venderDir . '/autoload.php'; // 加載套件
+require $venderDir . '/yiisoft/yii2/Yii.php'; // 加載Yii
+
+// 載入環境變數
+require $basePath . '/config/env-loader.php';
+
+Yii::setAlias('@app', $basePath); // 定義共用項目
+
+(new yii\console\Application(require $basePath . '/config/console.php'))->run();

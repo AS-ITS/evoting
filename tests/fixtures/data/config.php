@@ -1,0 +1,55 @@
+<?php
+
+return [
+    // 舊測試 app id（相容）
+    'voting-test' => [
+        'id' => 'voting-test',
+        'indexUrl' => '',
+        'countColumnNum' => 3,
+        'partyLimit' => 4,
+        'canDeletePassword' => 1,
+        'anonPasswordErrorTimes' => 999,
+        'anonLoginLockPeriod' => 1,
+        'anonLoginWaiting' => 0,
+        'homeLayout' => 'meeting',
+        'homeTitle' => '',
+        'homeTitleE' => '',
+        'logoPath' => null,
+        'faviconPath' => 'favicon.ico',
+        'copyright' => null,
+    ],
+    // dest / 正式 web Yii::$app->id=APP_ID（無 -test）
+    'evoting' => [
+        'id' => 'evoting',
+        'indexUrl' => '',
+        'countColumnNum' => 3,
+        'partyLimit' => 4,
+        'canDeletePassword' => 1,
+        'anonPasswordErrorTimes' => 999,
+        'anonLoginLockPeriod' => 1,
+        'anonLoginWaiting' => 0,
+        'homeLayout' => 'meeting',
+        'homeTitle' => '',
+        'homeTitleE' => '',
+        'logoPath' => null,
+        'faviconPath' => 'favicon.ico',
+        'copyright' => null,
+    ],
+    // 本環境 APP_ID=evoting → web 測試 Yii::$app->id
+    'evoting-test' => [
+        'id' => 'evoting-test',
+        'indexUrl' => '',
+        'countColumnNum' => 3,
+        'partyLimit' => 4,
+        'canDeletePassword' => 1,
+        'anonPasswordErrorTimes' => 999,
+        'anonLoginLockPeriod' => 1,
+        'anonLoginWaiting' => 0,
+        'homeLayout' => 'meeting',
+        'homeTitle' => '',
+        'homeTitleE' => '',
+        'logoPath' => null,
+        'faviconPath' => 'favicon.ico',
+        'copyright' => null,
+    ],
+];

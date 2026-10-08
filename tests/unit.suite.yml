@@ -1,0 +1,14 @@
+# Codeception Test Suite Configuration
+#
+# Suite for unit or integration tests.
+
+actor: UnitTester
+modules:
+    enabled:
+        - Asserts
+        - \Helper\Unit
+        - Yii2:
+            cleanup: true
+            transaction: false  # 關閉自動 transaction，避免 transaction 隔離導致 fixture 資料無法讀取
+            part: [orm, email, fixtures]
+            entryScript: 'web/index.php'

@@ -1,0 +1,30 @@
+name: 錯誤回報
+description: 回報可重現的程式或文件錯誤
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        安全漏洞請依 SECURITY.md **私下**回報，不要用此模板。
+  - type: textarea
+    id: steps
+    attributes:
+      label: 重現步驟
+      placeholder: |
+        1. …
+        2. …
+        3. 實際結果／預期結果
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: 環境
+      placeholder: "PHP 8.2 / MariaDB 10.11 / APP_ENV=testing"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 相關日誌摘要
+      description: 請先自行 redact 密碼、金鑰、投票者資料。可從 runtime/logs/ 截取。

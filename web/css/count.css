@@ -1,0 +1,94 @@
+/* :not(input) {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+} */
+
+body {
+	margin: 0;
+	padding: 0;
+	font-family: '標楷體';
+}
+
+.border {
+	border-width: 2px !important;
+}
+
+#voteTitle, 
+.question-title {
+	font-size: 29px;
+	letter-spacing: 5px;
+	line-height: 1.1;
+}
+#progress {
+	font-size: 29px;
+	letter-spacing: 5px;
+}
+#ballotLimit {
+	font-size: 29px;
+	letter-spacing: 1px;
+	line-height: 1.2;
+}
+
+#rule {
+	font-size: 22px;
+	/* letter-spacing: 5px; */
+}
+
+#voteDate {
+	font-size: 20px;
+}
+
+#questionTitle {
+    letter-spacing: 10px;
+}
+
+button:focus,
+input:focus {
+	outline: none;
+}
+
+#rule table, 
+#rule th, 
+#rule tr, 
+#rule td {
+	color: #000 !important;
+	border: 2px solid #000 !important;
+	align-self: center;
+}
+
+#progress, table, th, tr, td {
+	color: #0000EE;
+    border: 2px solid #0000EE !important;
+	padding: 0 !important;
+}
+
+.progress-filed {
+	border-right-width: 2px !important;
+	border-right-color: #0000EE !important;
+	padding: 0;
+}
+
+#text_bg1,
+#text_bg2 {
+	font-family: 'sans-serif';
+	position: absolute;
+	top: 40%;
+	left: 22%;
+	z-index: -100;
+	min-width: 45%;
+	color: lightgrey;
+	font-size: 120px;
+	transform: translate(-50%, -50%) rotate(-54deg);
+}
+
+#text_bg1 {
+	left: 22%;
+}
+
+#text_bg2 {
+	left: 82%;
+}

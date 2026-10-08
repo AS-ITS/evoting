@@ -1,0 +1,46 @@
+body {
+	margin: 0;
+	padding: 0;
+	font-family: '標楷體';
+}
+
+.border {
+	border-width: 2px !important;
+}
+
+/* 投票名稱 */
+#title {
+    line-height: 1.2;
+}
+#voteTitle {
+	font-size: 24px;
+}
+#voteTitleE {
+	font-family: Times, serif;
+	font-size: 13px;
+}
+
+/* 排序方法 */
+#sort {
+	line-height: 1.2;
+}
+#sortText {
+    font-size: 21px;
+}
+#sortTextE {
+	font-family: Times, serif;
+    font-size: 13px;
+}
+
+/* 表格 */
+.text-ch {
+	font-size: 21px;
+}
+.text-en {
+	font-family: Times, serif;
+	font-size: 13px;
+	letter-spacing: 3px
+}
+.cell {
+	line-height: 1;
+}

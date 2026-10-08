@@ -1,0 +1,226 @@
+# ==========================================
+# Git Ignore 配置文件
+# ==========================================
+# 此文件定義了不應提交到版本控制系統的文件和目錄
+
+# ------------------------------------------
+# 環境配置文件（包含敏感資訊）
+# ------------------------------------------
+
+# 環境變數檔案（保留 .env.example）
+.env
+.env.*
+!.env.example
+
+# 備份的配置文件
+config/*.backup
+config/*-Backup.php
+
+# ------------------------------------------
+# Yii Framework
+# ------------------------------------------
+
+# Runtime 快取和日誌（目錄內實際是 .gitignore，不是 .gitkeep）
+/runtime/*
+!/runtime/.gitignore
+
+# Assets 編譯後的資源（Yii assetManager 發佈快取）
+/web/assets/*
+!/web/assets/.gitignore
+
+# /assets/*.php 是 AssetBundle 原始碼，必須進版控。
+# 雜湊目錄／symlink 是誤寫進專案根的發佈快取（@webroot 指到專案根時會發生），不要版控。
+/assets/[0-9a-f]*
+/assets/files/
+
+# Composer 依賴
+/vendor/
+
+# ------------------------------------------
+# IDE 和編輯器
+# ------------------------------------------
+
+# PhpStorm / IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VSCode / Cursor
+.vscode/
+.cursor/
+*.code-workspace
+
+# Claude Code 本機狀態（CLAUDE.md 專案指引要進版控）
+.claude/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# NetBeans
+nbproject/
+.nbproject/
+
+# Eclipse
+.project
+.buildpath
+.settings/
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ------------------------------------------
+# 作業系統
+# ------------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ------------------------------------------
+# 測試相關
+# ------------------------------------------
+
+# Codeception
+/tests/_output/*
+!/tests/_output/.gitignore
+/tests/_support/_generated/*
+!/tests/_support/_generated/.gitignore
+
+# PHPUnit / 靜態分析快取
+.phpunit.result.cache
+.phpunit.cache/
+.php-cs-fixer.cache
+
+# Coverage 報告
+/coverage/
+/build/
+
+# ------------------------------------------
+# 日誌文件
+# ------------------------------------------
+
+*.log
+logs/
+*.log.*
+
+# ------------------------------------------
+# 資料庫
+# ------------------------------------------
+
+# SQLite 資料庫
+*.sqlite
+*.sqlite3
+*.db
+
+# 資料庫備份
+*.sql.gz
+*.sql.zip
+/db/*.sql
+/db/*.dump
+
+# ------------------------------------------
+# 上傳文件和臨時文件
+# ------------------------------------------
+
+# 上傳目錄不在 repo 內（APP_PATH_UPLOADS，預設 /var/www/filepool）。
+# 下列為誤放進專案根時的安全網。
+/uploads/*
+!/uploads/.gitkeep
+/filepool/
+/filePool/
+
+# 臨時文件
+*.tmp
+*.temp
+*.cache
+
+# ------------------------------------------
+# Composer
+# ------------------------------------------
+
+
+composer.phar
+
+# ------------------------------------------
+# Node.js / NPM（若有使用前端工具）
+# ------------------------------------------
+
+node_modules/
+npm-debug.log
+yarn-error.log
+# 不忽略 frontend/*/package-lock.json、yarn.lock（vendored 套件鎖定／SBOM）
+
+# ------------------------------------------
+# 其他
+# ------------------------------------------
+
+# 備份文件
+*.bak
+*.backup
+*~
+
+# 壓縮文件（通常不需要版控）
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# 密鑰和憑證
+*.key
+master.key
+*.pem
+*.crt
+*.cert
+*.p12
+*.pfx
+
+# 機敏資料目錄（若有其他位置）
+/.dore/
+/secret/
+/private/
+
+# ------------------------------------------
+# 專案特定排除項目
+# ------------------------------------------
+
+# 舊版配置文件
+config/web-Backup.php
+config/test-Backup.php
+config/console-Backup.php
+
+# 開發用的測試腳本
+test.php
+debug.php
+debug_*.php
+temp.php
+
+# 備份的程式碼檔案（任何位置）
+*-Backup.php
+
+# 文檔草稿
+*.draft.md
+NOTES.md
+TODO.private.md
+
+# 本機／主機代理程式，不屬於應用程式碼
+/web/ZTA_GO_Linux_X64

@@ -1,0 +1,13 @@
+--- a/vendor/yiisoft/yii2/db/mysql/QueryBuilder.php
++++ b/vendor/yiisoft/yii2/db/mysql/QueryBuilder.php
+@@ -166,7 +166,9 @@
+             $tableName = $this->db->quoteTableName($tableName);
+             if ($value === null) {
+                 $key = reset($table->primaryKey);
+-                $value = $this->db->createCommand("SELECT MAX(`$key`) FROM $tableName")->queryScalar() + 1;
++                // Fix for PHP 8.x: Handle null from MAX() when table is empty
++                $maxValue = $this->db->createCommand("SELECT MAX(`$key`) FROM $tableName")->queryScalar();
++                $value = ($maxValue === null) ? 1 : (int)$maxValue + 1;
+             } else {
+                 $value = (int) $value;
+             }

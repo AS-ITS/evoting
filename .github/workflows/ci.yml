@@ -1,0 +1,94 @@
+# CI：unit + functional（acceptance 需常駐測試伺服器，見 tests/run-all.sh RUN_ACCEPTANCE=1）
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: voting_test
+          MYSQL_USER: voting_test
+          MYSQL_PASSWORD: test_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      APP_ENV: testing
+      YII_DEBUG: "false"
+      YII_ENV: test
+      TEST_DB_HOST: 127.0.0.1
+      TEST_DB_PORT: 3306
+      TEST_DB_NAME: voting_test
+      TEST_DB_USERNAME: voting_test
+      TEST_DB_PASSWORD: test_password
+      TEST_DB_CHARSET: utf8mb4
+      COOKIE_VALIDATION_KEY: ci-test-cookie-validation-key-32chars-min
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, ctype, curl, gd, mysql, openssl
+          coverage: none
+
+      - name: Generate ephemeral CI master key
+        run: echo "MASTER_KEY=$(php -r 'echo base64_encode(random_bytes(64));')" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Verify vendor patches
+        run: php scripts/apply-vendor-patches.php
+
+      - name: Prepare runtime directories
+        run: |
+          mkdir -p runtime/sessions/test runtime/cache runtime/logs runtime/debug
+          chmod -R 775 runtime
+
+      - name: Import test database schema
+        run: mysql -h 127.0.0.1 -u voting_test -ptest_password voting_test < docs/init_db.sql
+
+      - name: Run unit + functional tests
+        run: bash tests/run-all.sh
+
+  licenses:
+    name: composer licenses + audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: License inventory
+        run: composer licenses
+
+      - name: Composer audit
+        run: composer audit
