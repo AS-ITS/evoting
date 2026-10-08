@@ -44,7 +44,7 @@ jobs:
       COOKIE_VALIDATION_KEY: ci-test-cookie-validation-key-32chars-min
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -80,7 +80,7 @@ jobs:
     name: composer licenses + audit
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
