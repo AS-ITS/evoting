@@ -17,8 +17,8 @@ if ($files === []) {
 $failed = 0;
 foreach ($files as $patchFile) {
     $name = basename($patchFile);
-    $target = $root . '/vendor/yiisoft/yii2/db/mysql/QueryBuilder.php';
-    if (!is_file($target) && str_contains($name, 'QueryBuilder')) {
+    $target = patchTarget($root, $name);
+    if ($target !== null && !is_file($target)) {
         echo "apply-vendor-patches: skip $name (vendor not installed)\n";
         continue;
     }
@@ -33,16 +33,30 @@ foreach ($files as $patchFile) {
         continue;
     }
 
-    $fb = applyQueryBuilderFallback($root);
-    if ($fb === 'already') {
-        echo "apply-vendor-patches: already applied $name\n";
-        continue;
+    if (str_contains($name, 'QueryBuilder')) {
+        $fb = applyQueryBuilderFallback($root);
+        if ($fb === 'already') {
+            echo "apply-vendor-patches: already applied $name\n";
+            continue;
+        }
+        if ($fb === true) {
+            echo "apply-vendor-patches: OK $name (fallback)\n";
+            continue;
+        }
     }
-    if ($fb === true) {
-        echo "apply-vendor-patches: OK $name (fallback)\n";
-        continue;
+    if (str_contains($name, 'codeception-Gherkin')) {
+        $fb = applyCodeceptionGherkinFallback($root);
+        if ($fb === 'already') {
+            echo "apply-vendor-patches: already applied $name\n";
+            continue;
+        }
+        if ($fb === true) {
+            echo "apply-vendor-patches: OK $name (fallback)\n";
+            continue;
+        }
     }
 
+    $failed++;
     fwrite(STDERR, "apply-vendor-patches: WARN $name hunk not found (upstream may have fixed). See VENDOR_PATCHES.md\n");
 }
 
@@ -76,11 +90,29 @@ function applyWithPatchBinary(string $root, string $patchFile)
         return $code === 0 ? true : false;
     }
 
-    $src = @file_get_contents($root . '/vendor/yiisoft/yii2/db/mysql/QueryBuilder.php') ?: '';
-    if (str_contains($src, '$value = ($maxValue === null) ? 1 : (int)$maxValue + 1;')) {
+    $cmd = sprintf(
+        '%s -d %s -p1 -R --dry-run --silent < %s 2>/dev/null',
+        escapeshellarg($patch),
+        escapeshellarg($root),
+        escapeshellarg($patchFile)
+    );
+    exec($cmd, $reverseOut, $reverse);
+    if ($reverse === 0) {
         return 'already';
     }
+
     return false;
+}
+
+function patchTarget(string $root, string $name): ?string
+{
+    if (str_contains($name, 'QueryBuilder')) {
+        return $root . '/vendor/yiisoft/yii2/db/mysql/QueryBuilder.php';
+    }
+    if (str_contains($name, 'codeception-Gherkin')) {
+        return $root . '/vendor/codeception/codeception/src/Codeception/Test/Loader/Gherkin.php';
+    }
+    return null;
 }
 
 function findPatchBinary(): ?string
@@ -116,4 +148,39 @@ function applyQueryBuilderFallback(string $root)
         return false;
     }
     return file_put_contents($file, str_replace($old, $new, $src)) !== false;
+}
+
+/** @return true|false|'already' */
+function applyCodeceptionGherkinFallback(string $root)
+{
+    $file = $root . '/vendor/codeception/codeception/src/Codeception/Test/Loader/Gherkin.php';
+    if (!is_file($file)) {
+        return false;
+    }
+    $src = file_get_contents($file);
+    if (str_contains($src, 'GherkinKeywords::withDefaultKeywords()')) {
+        return 'already';
+    }
+
+    $changes = [
+        'use Behat\Gherkin\Keywords\ArrayKeywords as GherkinKeywords;'
+            => 'use Behat\Gherkin\Keywords\CachedArrayKeywords as GherkinKeywords;',
+        "use ReflectionClass;\n" => '',
+        <<<'OLD'
+        $gherkin = new ReflectionClass(\Behat\Gherkin\Gherkin::class);
+        $gherkinClassPath = dirname($gherkin->getFileName());
+        $i18n = require $gherkinClassPath . '/../../../i18n.php';
+        $keywords = new GherkinKeywords($i18n);
+OLD
+            => '        $keywords = GherkinKeywords::withDefaultKeywords();',
+    ];
+
+    foreach ($changes as $old => $new) {
+        if (!str_contains($src, $old)) {
+            return false;
+        }
+        $src = str_replace($old, $new, $src);
+    }
+
+    return file_put_contents($file, $src) !== false;
 }

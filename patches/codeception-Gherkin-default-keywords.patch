@@ -1,0 +1,13 @@
+--- a/vendor/codeception/codeception/src/Codeception/Test/Loader/Gherkin.php
++++ b/vendor/codeception/codeception/src/Codeception/Test/Loader/Gherkin.php
+@@ -8 +8 @@
+-use Behat\Gherkin\Keywords\ArrayKeywords as GherkinKeywords;
++use Behat\Gherkin\Keywords\CachedArrayKeywords as GherkinKeywords;
+@@ -22 +21,0 @@
+-use ReflectionClass;
+@@ -76,4 +75 @@
+-        $gherkin = new ReflectionClass(\Behat\Gherkin\Gherkin::class);
+-        $gherkinClassPath = dirname($gherkin->getFileName());
+-        $i18n = require $gherkinClassPath . '/../../../i18n.php';
+-        $keywords = new GherkinKeywords($i18n);
++        $keywords = GherkinKeywords::withDefaultKeywords();

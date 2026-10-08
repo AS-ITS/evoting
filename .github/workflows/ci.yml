@@ -95,24 +95,3 @@ jobs:
 
       - name: Composer audit
         run: composer audit
-
-  lock-refresh:
-    name: refresh vulnerable dependency lock
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-          coverage: none
-
-      - name: Update Guzzle
-        run: composer update guzzlehttp/guzzle codeception/codeception --with-all-dependencies --no-interaction
-
-      - name: Upload updated Composer lock
-        uses: actions/upload-artifact@v4
-        with:
-          name: updated-composer-lock
-          path: composer.lock
