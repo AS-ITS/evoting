@@ -78,7 +78,7 @@ ol.workflow li.optional{color:var(--muted)}
 <main>
 <h1 id="前言">1. 前言與注意事項</h1>
 <p class="lead">本手冊說明後台管理者如何建立與執行投票場次。建議依「作業流程總覽」章節順序設定；各功能細節見後續章節。</p>
-<p class="note">公開版本暫不附帶操作畫面截圖。原截圖來自特定選舉測試環境，已自公開 repository 移除。</p>
+<p class="note">截圖為介面示意，來自測試環境；部署後請以實際場次設定為準。</p>
 <h2 id="注意事項">注意事項</h2>
 <ol>
 <li><strong>網址與存取路徑</strong>（依 Web Server 與 <code>.env</code> 設定而定，詳見 SETUP.md、CONFIGURATION.md）：</li>
@@ -211,7 +211,7 @@ ol.workflow li.optional{color:var(--muted)}
 <li>同投票時間與投票狀態</li>
 <li>投票狀態會顯示在標題右上角(如下圖紅框處)</li>
 </ul>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-005.png" alt="畫面示意"><figcaption></figcaption></figure>
 <h3 id="投票完成跳轉頁面">投票完成跳轉頁面</h3>
 <p>投票完成、投票結束尚未送出投票後導向的頁面</p>
 <h3 id="是否略過投票資訊頁面">是否略過投票資訊頁面</h3>
@@ -255,11 +255,11 @@ ol.workflow li.optional{color:var(--muted)}
 </tbody></table>
 <h2 id="投票說明-選填">投票說明(選填)</h2>
 <p>顯示在投票資訊頁面各項資訊，各資訊有資料才會顯示，如果是否略過投票資訊頁面設定是，只有圈選須知跟候選名單備註有效果(因為只有這兩個會出現在投票頁面)，效果如下圖:</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-006.png" alt="畫面示意"><figcaption></figcaption></figure>
 <h2 id="附件上傳">附件上傳</h2>
 <p>每個投票場次可以上傳5個附件，附件格式限制png, jpg, jpeg, gif, docx, doc, pdf, pptx, ppt, csv, xlsx, xls, txt, odt, ods, odp等副檔名的檔案。</p>
 <p>附件顯示的位置在投票資訊頁的最底部。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-009.png" alt="畫面示意"><figcaption></figcaption></figure>
 <h2 id="進階">進階</h2>
 <p>投票密碼登入樣板: 匿名投票密碼輸入頁面的樣板，可以選擇公版或會議版。</p>
 <p>投票樣板: 投票圈選頁面的樣板，可以選擇公版或會議版。</p>
@@ -268,13 +268,13 @@ ol.workflow li.optional{color:var(--muted)}
 <h1 id="輪次">4. 輪次</h1>
 <p class="lead">多輪投票時用來區分各輪的問題、候選與選票。建立下一輪前，前一輪至少需有 1 張選票。</p>
 <p>輪次會顯示在標題右上角(如下圖紅框處)</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-001.png" alt="輪次顯示位置"><figcaption>輪次顯示於標題右上角</figcaption></figure>
 <h2 id="輪次-建立">建立</h2>
 <p>點擊下圖紅框按鈕建立輪次，必須注意前一輪次至少要有1張選票才能建立新輪次。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-002.png" alt="建立輪次"><figcaption>建立輪次</figcaption></figure>
 <h2 id="輪次-修改">修改</h2>
 <p>點擊輪次名稱進入修改。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-003.png" alt="修改輪次"><figcaption>修改輪次</figcaption></figure>
 <table>
 <thead><tr><th>欄位</th><th>說明</th></tr></thead>
 <tbody>
@@ -285,7 +285,7 @@ ol.workflow li.optional{color:var(--muted)}
 </ul>
 <h2 id="輪次-切換">切換</h2>
 <p>點擊下圖紅框切換輪次。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-004.png" alt="切換輪次"><figcaption>切換輪次</figcaption></figure>
 
 <h1 id="問題">5. 問題</h1>
 <p class="lead">問題用來區分不同類別的候選名單，各自擁有獨立的投票規則。分組場次可設組內問題或共同問題。</p>
@@ -296,8 +296,8 @@ ol.workflow li.optional{color:var(--muted)}
 <li>共同問題是所有分組都要圈選的，所有分組一起統計選票；共同問題隸屬的分組叫做共同投票。</li>
 <li>每個問題都有獨立的投票規則。</li>
 </ol>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-010.png" alt="問題顯示於投票頁上方"><figcaption>圖1：問題顯示於投票頁上方</figcaption></figure>
+<figure><img src="images/img-011.png" alt="各分組問題"><figcaption>圖2：各分組可有專屬問題</figcaption></figure>
 <h2 id="問題-欄位說明">欄位說明</h2>
 <table>
 <thead><tr><th>欄位</th><th>說明</th></tr></thead>
@@ -308,14 +308,14 @@ ol.workflow li.optional{color:var(--muted)}
 <tr><td>自定義未圈選顯示名稱</td><td>下限為 0 且未圈選時，確認步驟的顯示文字（預設為標題）。</td></tr>
 <tr><td>自定義投票規則文字</td><td>覆蓋自動產生的規則說明文字。</td></tr>
 </tbody></table>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-012.png" alt="問題描述位置"><figcaption>描述顯示位置</figcaption></figure>
+<figure><img src="images/img-013.png" alt="未圈選顯示名稱"><figcaption>自定義未圈選顯示名稱</figcaption></figure>
+<figure><img src="images/img-014.png" alt="自訂投票規則文字"><figcaption>自定義投票規則文字</figcaption></figure>
 <h2 id="問題-投票規則">問題投票規則（有效／廢票）</h2>
 <ul>
 <li>這裡的投票規則才是真正影響有效票或廢票的設定。從下拉式選單選擇組別，會自動帶入編輯的投票規則的設定數字。勾選自訂規則可以自由輸入數字。</li>
 </ul>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-015.png" alt="問題投票規則"><figcaption>問題投票規則設定</figcaption></figure>
 <p>未設定自訂投票規則文字時，系統依上下限自動帶出說明文字：</p>
 <table>
 <thead><tr><th>條件</th><th>顯示文字</th></tr></thead>
@@ -338,7 +338,7 @@ ol.workflow li.optional{color:var(--muted)}
 <li>該問題的候選名單配置會一併匯入。</li>
 <li>點擊右上角的紅色叉叉按鈕刪除不需要匯入的問題。</li>
 </ul>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-016.png" alt="匯入輪次問題"><figcaption>匯入輪次問題</figcaption></figure>
 
 <h1 id="候選">6. 候選</h1>
 <p class="lead">管理候選人資料，並設定投票頁上的名單呈現方式（欄位、排序、列數、顏色等）。</p>
@@ -347,7 +347,7 @@ ol.workflow li.optional{color:var(--muted)}
 <p>單筆新增候選名單，上傳照片只能手動新增時操作。</p>
 <h3 id="檔案導入">檔案導入</h3>
 <p>透過CSV檔案上傳的方式，批次匯入候選名單，頁面上有4個頁籤。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-017.png" alt="畫面示意"><figcaption></figcaption></figure>
 <ol>
 <li>進入範例下載頁籤下載範例CSV檔案。</li>
 <li>編輯CSV檔案，投票組別(中文)、問題代碼、名稱必填，相關欄位的填寫請參考欄位說明頁籤，檔案必須是具有BOM的UTF8的CSV檔案。</li>
@@ -361,7 +361,7 @@ ol.workflow li.optional{color:var(--muted)}
 <p>導入問題: 要匯入的當前輪次的問題。</p>
 <p>候選人: 候選人問題選擇後會出現。勾選指定候選人設定已達門檻，其餘直接導入。</p>
 <p>紅字括號是輪次1的得票排名，沒有排名表示前一輪已達門檻。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-018.png" alt="畫面示意"><figcaption></figcaption></figure>
 <h3 id="刪除候選名單">刪除候選名單</h3>
 <p>可以指定要刪除的分組、問題或生成方式。</p>
 <h3 id="候選名單欄位說明">候選名單欄位說明</h3>
@@ -386,9 +386,9 @@ ol.workflow li.optional{color:var(--muted)}
 <li>顯示自訂義編號: 顯示候選名單自訂排序的數字。</li>
 </ul>
 <p>寬度: 決定候選名單表格的寬度，如下圖，上寬下窄。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-019.png" alt="畫面示意"><figcaption></figcaption></figure>
 <p>投票時候選名單顯示列數: 候選名單要分成幾個表格呈現，下圖是設定為2的效果，上圖則是設定為1的效果。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-020.png" alt="畫面示意"><figcaption></figcaption></figure>
 <p>※ 如果候選名單要排序，必須設定為1。</p>
 <p>使用欄位表頭:</p>
 <ul>
@@ -397,10 +397,10 @@ ol.workflow li.optional{color:var(--muted)}
 <li>需要搭配欄位顯示、排序的設定才會顯示。</li>
 <li>下圖是呈現效果，在編號和姓名的上方多了一層表頭。</li>
 </ul>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-021.png" alt="畫面示意"><figcaption></figcaption></figure>
 <p>名稱顯示文字: 影響候選人姓名這個欄位的表頭顯示的文字。</p>
 <p>名稱的單位: 影響投票頁面右上角及確認頁面已勾選的候選人數字的單位。英文如果為複數會自動加s。位置如下圖紅框所示:</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-022.png" alt="畫面示意"><figcaption></figcaption></figure>
 <p>文字大小: 表格內文字的尺寸，一定要填單位，px、em、rem等等。</p>
 <p>表格高度: 表格儲存格的高度，一定要填單位，px、em、rem等等。</p>
 <p>表格標頭顏色:</p>
@@ -408,7 +408,7 @@ ol.workflow li.optional{color:var(--muted)}
 <li>表頭的顏色，包含使用欄位表頭，請使用含井字號的16進制色碼。</li>
 <li>若投票時候選名單顯示列數大於1，可以用半形逗號區隔多個色碼達到下圖效果。</li>
 </ul>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-023.png" alt="畫面示意"><figcaption></figcaption></figure>
 <p>是否使用排序: 只有投票時候選名單顯示列數設定為1才有效，搭配排序的欄位設定那些欄位要排序，目前只有姓名、自定義名稱可以排序。</p>
 <p>預設排序的欄位: 不選擇則按候選名單排序，只能選要排序的欄位。</p>
 <p>文字向左對齊欄位: 預設都是置中對齊，有選擇的欄位才會置左。</p>
@@ -417,20 +417,20 @@ ol.workflow li.optional{color:var(--muted)}
 <li>這邊設定的是自訂自欄位名稱的表格表頭名稱。</li>
 <li>正常欄位超過長度會換行，僅有自定義欄位名稱1的儲存格內容超過表格長度的部分會被替換成...，點擊輸入框後會還原，如下圖所示:</li>
 </ul>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-024.png" alt="畫面示意"><figcaption></figcaption></figure>
+<figure><img src="images/img-025.png" alt="畫面示意"><figcaption></figcaption></figure>
 <h3 id="欄位表頭">欄位表頭</h3>
 <p>投票時候選名單顯示列數大於1時，單一欄位表頭名稱以半形逗號分隔，表示不同表格的顯示文字。ex: 候選名單顯示列數等於3，欄位表頭名稱為「表頭一, 表頭二, 表頭三」，投票頁面呈現如下:</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-026.png" alt="畫面示意"><figcaption></figcaption></figure>
 <h3 id="候選配置-欄位顯示排序">欄位顯示、排序</h3>
 <ul>
 <li>設定表格內要顯示的欄位以及欄位的排序，包含欄位表頭也要設定才會顯示。</li>
 <li>圖3的設定會呈現圖4的效果。</li>
 <li>所有的表格表頭目前文字固定大小18px。</li>
 </ul>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-027.png" alt="畫面示意"><figcaption></figcaption></figure>
 <p class="caption">(圖3)</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-021.png" alt="畫面示意"><figcaption></figcaption></figure>
 <p class="caption">(圖4)</p>
 <h3 id="排序的欄位">排序的欄位</h3>
 <ul>
@@ -439,7 +439,7 @@ ol.workflow li.optional{color:var(--muted)}
 </ul>
 <h2 id="候選人管理頁面">候選人管理頁面</h2>
 <p>如果候選名單配置設定為依問題個別設定，必須選擇切換頁數上面的下拉式選單，才會按照指定問題的配置呈現。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-028.png" alt="畫面示意"><figcaption></figcaption></figure>
 
 <h1 id="密碼">7. 密碼</h1>
 <p class="lead">僅<strong>匿名投票</strong>使用。產生、啟用密碼後方可讓投票者登入。共用密碼場次請見下方限制。</p>
@@ -448,7 +448,7 @@ ol.workflow li.optional{color:var(--muted)}
 <li><strong>共用密碼場次</strong>：可設定狀態、密碼匯出、生成密碼函、列表查詢；<strong>不可</strong>在本場次生成或刪除密碼（密碼池屬於被綁定的主場次）。批次變更狀態會影響所有綁定該密碼池的場次。</li>
 <li>共用密碼會在表格上方顯示共用哪個場次的密碼，如下圖所示。</li>
 </ul>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-029.png" alt="畫面示意"><figcaption></figcaption></figure>
 <ul>
 <li>共用密碼的條件請參考是否共用投票密碼與共用密碼之投票。</li>
 </ul>
@@ -490,7 +490,7 @@ ol.workflow li.optional{color:var(--muted)}
 <p>透過樣板的 docx 檔案，搭配內容關鍵字批次生成密碼函；與 Word 套印類似。可篩選<strong>本輪已投票</strong>等條件。含明文密碼，送出前須<strong>二次驗證</strong>（同上）。</p>
 <h2 id="單筆切換密碼狀態">單筆切換密碼狀態</h2>
 <p>點擊下圖紅框處的連結，實現單筆切換密碼狀態。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-030.png" alt="畫面示意"><figcaption></figcaption></figure>
 
 <h1 id="選票">8. 選票</h1>
 <p class="lead">查詢、補登、匯入與匯出選票。涉及明文密碼的匯出須通過<a href="#二次驗證與雙因素驗證">二次驗證</a>。</p>
@@ -534,7 +534,7 @@ ol.workflow li.optional{color:var(--muted)}
 <li>點擊表格中的加號(+)，可以展開選票明細，會列出該選票各個問題的投票數和是否有效。</li>
 <li>點擊編輯可以修改選票圈選的候選名單，同時修改者也會寫入資料。</li>
 </ul>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-031.png" alt="畫面示意"><figcaption></figcaption></figure>
 
 <h1 id="計票開票結果">9. 計票、開票與結果</h1>
 <p class="lead">投票進行中或結束後皆可計票與開票；開票不影響投票進行。結果頁可微調當選狀態並預覽公開畫面。</p>
@@ -544,7 +544,7 @@ ol.workflow li.optional{color:var(--muted)}
 <li>透過右上角的下拉式選單，可以調整排序，預設是「依得票高低排序」。</li>
 <li>若候選名單已達門檻，得票數和排序會顯示「-」，如下圖「已達門檻」列所示。</li>
 </ul>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-032.png" alt="畫面示意"><figcaption></figcaption></figure>
 <h3 id="計票單匯出">計票單匯出</h3>
 <p>匯出各分組問題的有效票、廢票和選票數量。</p>
 <h3 id="計票單列印">計票單列印</h3>
@@ -577,13 +577,13 @@ ol.workflow li.optional{color:var(--muted)}
 <h3 id="當選與否">當選與否</h3>
 <h4 id="單筆修改">單筆修改</h4>
 <p>點擊藍色的字，會出現選單，選擇後按藍色的勾勾儲存。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-036.png" alt="畫面示意"><figcaption></figcaption></figure>
 <h4 id="批次修改">批次修改</h4>
 <ol>
 <li>於表格的第一欄勾選要修改的資料。</li>
 <li>在批次操作選擇要改變的狀態。</li>
 </ol>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-037.png" alt="畫面示意"><figcaption></figcaption></figure>
 <h4 id="預覽">預覽</h4>
 <p>可以模擬使用者看到的最終畫面，只會顯示投票結果顯示投票狀態有勾選的狀態。</p>
 
@@ -595,7 +595,7 @@ ol.workflow li.optional{color:var(--muted)}
 <h2 id="列印模式-簽名">列印模式（簽名）</h2>
 <h3 id="使用範圍">使用範圍</h3>
 <p>在計票、選票封存單等地方都可按ctrl+alt+P進入列印模式，會出現下圖的視窗。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-038.png" alt="畫面示意"><figcaption></figcaption></figure>
 
 <h1 id="群組管理">11. 群組管理</h1>
 <p class="lead">將管理者組成群組，並授權管理特定投票場次。</p>
@@ -633,7 +633,7 @@ ol.workflow li.optional{color:var(--muted)}
 <tr><td>鎖定時間（秒）</td><td>超過次數後鎖定秒數</td></tr>
 <tr><td>等待時間（秒）</td><td>登入按鈕需等待後才可點擊</td></tr>
 </tbody></table>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-041.png" alt="畫面示意"><figcaption></figcaption></figure>
 <h3 id="其他">其他</h3>
 <h4 id="首頁樣板">首頁樣板</h4>
 <p>網站首頁的樣式。</p>
@@ -723,10 +723,10 @@ ol.workflow li.optional{color:var(--muted)}
 <tr><td>列印項目</td><td>計票單、封存單</td></tr>
 </tbody></table>
 <p>畫面示意：</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-046.png" alt="問題設定示意"><figcaption>A · 問題設定</figcaption></figure>
+<figure><img src="images/img-047.png" alt="候選名單配置示意"><figcaption>A · 候選名單配置</figcaption></figure>
+<figure><img src="images/img-050.png" alt="投票畫面示意"><figcaption>A · 投票畫面</figcaption></figure>
+<figure><img src="images/img-053.png" alt="投票完成畫面示意"><figcaption>A · 投票完成畫面</figcaption></figure>
 
 <h2 id="案例B-各組獨立場次">B. 各組獨立場次</h2>
 <p>為每個組別建立獨立場次（場次內不分組），時程、候選、輪次互不干擾。可搭配分組專屬網址進入。</p>
@@ -744,10 +744,10 @@ ol.workflow li.optional{color:var(--muted)}
 <tr><td>列印項目</td><td>計票單、封存單</td></tr>
 </tbody></table>
 <p>畫面示意：</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-058.png" alt="問題設定示意"><figcaption>B · 問題設定</figcaption></figure>
+<figure><img src="images/img-059.png" alt="候選名單配置示意"><figcaption>B · 候選名單配置（一般類）</figcaption></figure>
+<figure><img src="images/img-066.png" alt="投票畫面示意"><figcaption>B · 投票畫面</figcaption></figure>
+<figure><img src="images/img-063.png" alt="計票展示示意"><figcaption>B · 計票展示</figcaption></figure>
 
 <h2 id="案例C-名單同意審核">C. 名單同意／審核</h2>
 <p>對既有名單進行同意或圈選審核。候選結構一致時，建議「依投票場次統一」配置。</p>
@@ -764,10 +764,10 @@ ol.workflow li.optional{color:var(--muted)}
 <tr><td>列印項目</td><td>計票單、封存單</td></tr>
 </tbody></table>
 <p>畫面示意：</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-073.png" alt="問題設定示意"><figcaption>C · 問題設定</figcaption></figure>
+<figure><img src="images/img-074.png" alt="候選名單配置示意"><figcaption>C · 候選名單配置</figcaption></figure>
+<figure><img src="images/img-080.png" alt="投票畫面示意"><figcaption>C · 投票畫面</figcaption></figure>
+<figure><img src="images/img-082.png" alt="投票完成畫面示意"><figcaption>C · 投票完成畫面</figcaption></figure>
 
 <h2 id="案例D-多問題多輪選舉">D. 多問題多輪選舉</h2>
 <p>單一場次、不分組，以多個問題區分類別，並以多輪推進。適合需產出通過名單的候選人選舉。</p>
@@ -784,10 +784,10 @@ ol.workflow li.optional{color:var(--muted)}
 <tr><td>列印項目</td><td>計票單、封存單、通過名單</td></tr>
 </tbody></table>
 <p>畫面示意：</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-088.png" alt="問題設定示意"><figcaption>D · 問題設定</figcaption></figure>
+<figure><img src="images/img-091.png" alt="候選名單配置示意"><figcaption>D · 候選名單配置</figcaption></figure>
+<figure><img src="images/img-097.png" alt="投票畫面示意"><figcaption>D · 投票畫面</figcaption></figure>
+<figure><img src="images/img-102.png" alt="投票完成畫面示意"><figcaption>D · 投票完成畫面</figcaption></figure>
 
 <h2 id="案例E-參考投票至正式投票">E. 參考投票 → 正式投票</h2>
 <p>兩階段流程：先以各組參考／初選場次篩選名單，再匯入單一正式場次進行決選。正式票若需「達全體人數比例」門檻，請設定投票母數，並可匯出結果計票單。</p>
@@ -806,8 +806,8 @@ ol.workflow li.optional{color:var(--muted)}
 <tr><td>列印項目</td><td>計票單、封存單</td></tr>
 </tbody></table>
 <p>畫面示意：</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-108.png" alt="參考投票問題設定示意"><figcaption>E · 問題設定</figcaption></figure>
+<figure><img src="images/img-111.png" alt="參考投票畫面示意"><figcaption>E · 投票畫面</figcaption></figure>
 
 <h3 id="案例E2-正式決選">E-2. 正式／決選（單一大會場次）</h3>
 <table>
@@ -824,10 +824,10 @@ ol.workflow li.optional{color:var(--muted)}
 <tr><td>列印項目</td><td>計票單、封存單、通過名單、結果計票單</td></tr>
 </tbody></table>
 <p>畫面示意：</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
-<p class="note">畫面示意已自公開版本移除。請依文字說明操作；後續將以通用測試資料重新截圖。</p>
+<figure><img src="images/img-118.png" alt="正式投票問題設定示意"><figcaption>E · 問題設定</figcaption></figure>
+<figure><img src="images/img-120.png" alt="正式投票候選名單配置示意"><figcaption>E · 候選名單配置</figcaption></figure>
+<figure><img src="images/img-129.png" alt="正式投票畫面示意"><figcaption>E · 投票畫面</figcaption></figure>
+<figure><img src="images/img-135.png" alt="正式投票完成畫面示意"><figcaption>E · 投票完成畫面</figcaption></figure>
 
 </main>
 <footer><hr>
