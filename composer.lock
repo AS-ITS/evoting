@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2633897b4c5e0248c9763d9514cdd15d",
+    "content-hash": "be04128b4eeb34c50717110f063b6ea3",
     "packages": [
         {
             "name": "as-its-dev3/yii2-dynamicform",

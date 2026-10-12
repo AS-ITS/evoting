@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides agent-specific guidance when working with this repository. Public architecture documentation is maintained in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Project Overview
 
@@ -140,7 +140,7 @@ Votes (投票場次)
 
 **Environment-based Configuration:**
 - Custom config loader in `/config/Config.php` + `ConfigLoader.php`
-- Supports environments: product, test, alpha, ws
+- Supports environments: production, testing, development
 - Encrypted sensitive fields using `ConfigManager` + `MasterKeyLoader` (master key derived sub-keys)
 - Main configs: `web.php` (application), `params.php` (parameters), `console.php` (CLI)
 

@@ -8,39 +8,41 @@
 
 Electronic voting platform (general-purpose; originally a reference implementation for academician elections).
 
-**Requirements:** PHP 8.0+ (8.2+ recommended), MariaDB 10.6+, Composer, Apache/Nginx.
+**Requirements:** PHP 8.2+, MariaDB 10.6+, Composer, Apache/Nginx. See [SETUP.md](SETUP.md) for required PHP extensions.
 
 **Quick start:**
 
-1. `git clone https://github.com/AS-ITS/evoting.git` (do **not** use `composer create-project`)
+1. Stable: `git clone --branch v1.0.0 --depth 1 https://github.com/AS-ITS/evoting.git`
+   Contributors: clone the default branch instead. Do **not** use `composer create-project`.
 2. `composer install` (uses `composer.lock`; applies [`patches/`](patches/) automatically). `frontend/` is in the repo — no npm
 3. Copy `.env.example` to `.env`; set database credentials and `APP_ENV`
 4. Import [`docs/init_db.sql`](docs/init_db.sql), then run `php yii admin/create` to create the admin user
 5. Fix directory permissions (`runtime/`, `web/assets/`, `chmod 755 yii`); point the web server Document Root to `web/`
 
 Full install, Web Server samples, and production checklist: **[SETUP.md](SETUP.md)** (Traditional Chinese).  
-Architecture notes: **[CLAUDE.md](CLAUDE.md)**. Security reporting: **[SECURITY.md](SECURITY.md)**.
+Architecture notes: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**. Security reporting: **[SECURITY.md](SECURITY.md)**.
 
-Vote types: open ballot (no auth) and anonymous (one-time passwords). **Maintenance: Tier 2** (see [GOVERNANCE.md](GOVERNANCE.md)). Licensed under **MIT** ([LICENSE](LICENSE)). Report vulnerabilities via [SECURITY.md](SECURITY.md).
+Vote types: open ballot (no auth) and anonymous (one-time passwords). Maintenance status: see [GOVERNANCE.md](GOVERNANCE.md). Licensed under **MIT** ([LICENSE](LICENSE)). Report vulnerabilities via [SECURITY.md](SECURITY.md).
 
 ---
 
 ## 繁體中文
 
-## 維護等級
+## 維護狀態
 
-**Tier 2：官方長期維護**（見 [GOVERNANCE.md](GOVERNANCE.md)）。歡迎外部貢獻；合併與安全修補由維護者負責。
+專案目前由中央研究院資訊服務處人員維護，不構成服務等級或永久維護承諾。詳見 [GOVERNANCE.md](GOVERNANCE.md)。
 
 ## 快速開始
 
-1. `git clone https://github.com/AS-ITS/evoting.git`（**不要**使用 `composer create-project`）
+1. 穩定版：`git clone --branch v1.0.0 --depth 1 https://github.com/AS-ITS/evoting.git`
+   參與開發者可改為 clone 預設分支。**不要**使用 `composer create-project`
 2. `composer install`（依 `composer.lock`；會自動套用 [`patches/`](patches/)）。`frontend/` 已在 repo，無需 npm
 3. 複製 `.env.example` 為 `.env`，設定資料庫與 `APP_ENV`
 4. 匯入 [`docs/init_db.sql`](docs/init_db.sql)，執行 `php yii admin/create` 建立管理員
 5. 設定目錄權限（`runtime/`、`web/assets/`、`chmod 755 yii`）後以 Web Server 指向 `web/`
 
 完整安裝、Web Server 設定與正式環境檢查表見 **[SETUP.md](SETUP.md)**。  
-系統架構與開發指引見 **[CLAUDE.md](CLAUDE.md)**。
+系統架構與開發指引見 **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**。
 
 ## 系統功能
 
@@ -108,7 +110,7 @@ php vendor/bin/codecept run unit --debug
 
 功能測試透過 Codeception Yii2 模組模擬 HTTP 請求，直接測試 Controller 行為，**不需要啟動測試伺服器**。Fixture 由各 Cest 類別的 `_fixtures()` 方法自動管理，每個測試方法執行前會自動載入。
 
-共 **190 個測試**，涵蓋 19 個 Controller/場景（詳見 [tests/TEST_PROGRESS.md](tests/TEST_PROGRESS.md)）：
+共 **190 個測試**，涵蓋 19 個 Controller/場景（詳見 [tests/TEST_STATUS.md](tests/TEST_STATUS.md)）：
 
 | Cest 檔案 | 測試範圍 |
 |---|---|
@@ -148,7 +150,7 @@ php vendor/bin/codecept run functional ElectControllerCest:testCreateVotePageDis
 php vendor/bin/codecept run functional --debug
 ```
 
-> **⚠️ 首次執行注意事項**：若測試資料庫是全新空的（或資料不完整），第一次執行可能因資料庫狀態不一致而有部分測試失敗。再次執行一遍即可全數通過（Fixture 已在第一次執行時載入至資料庫）。建議在首次執行前先預熱資料庫：
+> **首次執行前**：先以測試設定載入必要 fixture；測試失敗不應以重跑掩蓋，請保留輸出並排查根因。
 >
 > ```bash
 > echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac" --appconfig=config/console-test.php
@@ -242,7 +244,7 @@ php docs/generate_sbom.php frontend
 ## 開發文檔
 
 ### 系統架構
-- [CLAUDE.md](CLAUDE.md) - Claude Code 專案開發指南
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - 系統架構與開發指引
 - [SETUP.md](SETUP.md) - 環境設定指南
 
 ### 配置文檔
@@ -253,7 +255,7 @@ php docs/generate_sbom.php frontend
 ### 測試文檔
 - [tests/README.md](tests/README.md) - 測試文件索引
 - [tests/TEST_GUIDE.md](tests/TEST_GUIDE.md) - 測試撰寫指南
-- [tests/TEST_PROGRESS.md](tests/TEST_PROGRESS.md) - 測試進度追蹤
+- [tests/TEST_STATUS.md](tests/TEST_STATUS.md) - 最近驗證結果與已知限制
 
 ### 測試檔案位置
 ```
@@ -299,7 +301,7 @@ $user->save(false);  // beforeSave() 可能用舊 password_plain 覆蓋
 ### 部署安全注意事項
 
 1. **執行環境**：`web/index.php` 由環境變數 `YII_DEBUG` / `YII_ENV` 控制，未設定時預設為正式環境（`prod`、除錯關閉）。開發環境請在 `.env` 設定 `YII_DEBUG=true`、`YII_ENV=dev`。
-2. **測試入口**：`web/index-test.php`、`web/router-test.php` 僅供本機驗收測試使用，**正式部署時必須刪除或排除**。
+2. **測試入口**：`web/index-test.php`、`web/router-test.php` 僅在明確的 `APP_ENV=testing`／`test` 下啟用。正式部署仍建議由 Web Server 拒絕這兩個路徑，或在部署包排除。
 3. **初始管理員**：匯入 `docs/init_db.sql` 後執行 `php yii admin/create` 建立 `admin`（sa）帳號；密碼由安裝時互動設定，不寫入文件。
 4. **上傳目錄**：檔案上傳目錄（`APP_PATH_UPLOADS`，預設 `/var/www/filepool`）必須位於網站根目錄之外；若因故置於網站根目錄下，請停用該目錄的 PHP 執行：
 
@@ -328,13 +330,14 @@ location ~* ^/uploads/.*\.php$ {
 | [SECURITY.md](SECURITY.md) | 資安政策、TOTP、開源釋出前檢查 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Issue／PR 與測試流程 |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | 行為準則 |
-| [GOVERNANCE.md](GOVERNANCE.md) | 維護等級與決策 |
-| [CLAUDE.md](CLAUDE.md) | 開發者架構說明 |
+| [GOVERNANCE.md](GOVERNANCE.md) | 維護狀態與決策 |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 系統架構與開發指引 |
+| [docs/RELEASING.md](docs/RELEASING.md) | 公開版本發布指南 |
 | [docs/threat-model/README.md](docs/threat-model/README.md) | 威脅建模（STRIDE／匿名性） |
 | [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | 環境變數與配置詳解 |
 | [LICENSE](LICENSE) / [NOTICE](NOTICE) | MIT 授權與第三方聲明 |
 | [docs/授權合規評估檢核表.md](docs/授權合規評估檢核表.md) | 授權合規檢核表 |
-| [OPENSOURCE_MIGRATION.md](OPENSOURCE_MIGRATION.md) | 2026-01 院內→通用化遷移紀錄 |
+| [OPENSOURCE_MIGRATION.md](OPENSOURCE_MIGRATION.md) | 通用化遷移摘要 |
 
 **回報問題**：一般問題開 GitHub Issue（見模板）；提交前請先查 [SETUP.md](SETUP.md) 常見問題與 `runtime/logs/`，並附上 PHP、MariaDB、`APP_ENV`。**安全漏洞請勿在公開 Issue 揭露**，見 [SECURITY.md](SECURITY.md)。
 

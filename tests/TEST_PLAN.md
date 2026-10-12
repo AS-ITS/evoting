@@ -120,7 +120,7 @@ RUN_ACCEPTANCE=1 tests/run-all.sh
 |---|------|------|
 | P0-1 | **修復 Functional 整包失敗** | ✅ ~187 全綠 |
 | P0-2 | **修復 Acceptance 整包失敗** | ✅ ~120 全綠 |
-| P0-3 | **更新 TEST_PROGRESS / TEST_STATUS** | ✅ |
+| P0-3 | **更新 TEST_STATUS** | ✅ |
 | P0-4 | **建立 CI workflow** | ✅ unit + functional |
 
 ### 🔴 P1 — 核心投票正確性（Unit + Functional） ✅ 已完成
@@ -172,7 +172,7 @@ RUN_ACCEPTANCE=1 tests/run-all.sh
 - [x] Functional / Acceptance 整包全綠
 - [x] 撰寫 `tests/run-all.sh`
 - [x] 新增 `.github/workflows/tests.yml`
-- [x] 更新 `TEST_PROGRESS.md`
+- [x] 更新 `TEST_STATUS.md`
 
 ### Phase 1：P1 核心 Unit — **已完成 2026-07-06**
 
@@ -235,7 +235,7 @@ php vendor/bin/codecept run functional AuthControllerCest PermissionDenialCest V
 | 文件 | 用途 |
 |------|------|
 | [TEST_COVERAGE_ANALYSIS.md](TEST_COVERAGE_ANALYSIS.md) | BVA/EP 缺口明細 |
-| [TEST_PROGRESS.md](TEST_PROGRESS.md) | 歷史里程碑 |
+| [TEST_STATUS.md](TEST_STATUS.md) | 最近驗證結果 |
 | [TEST_STATUS.md](TEST_STATUS.md) | **現況摘要**（與本文件同步） |
 | [README.md](../README.md) | 測試執行命令 |
 

@@ -211,6 +211,6 @@ FLUSH PRIVILEGES;
 
 ## 相關文件
 
-- [CLAUDE.md](../CLAUDE.md) - 專案開發指南
+- [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) - 系統架構
 - [codeception.yml](../codeception.yml) - Codeception 配置
 - [unit.suite.yml](unit.suite.yml) - 單元測試套件配置
