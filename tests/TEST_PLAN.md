@@ -49,7 +49,7 @@ RUN_ACCEPTANCE=1 tests/run-all.sh
    ```
 3. Fixture 預載（含 Config, Users, Rbac）：
    ```bash
-   echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac" --appconfig=config/console-test.php
+   echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac,Group,GroupMember,Ballots,BallotsSelected,ResultsConfig" --appconfig=config/console-test.php
    ```
 4. `VotingFlowCest`（87 案例）、`MultiRoundVoteCest`、`VoteToResultCest` 已穩定；`AnonVoteEditCest` 仍因 PhpBrowser session 限制 skip
 

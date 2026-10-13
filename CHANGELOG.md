@@ -13,6 +13,12 @@
 * 公開文件改用通用發布、架構、環境權限與版本支援說明
 * Web 測試入口改為僅在明確測試環境啟用
 * 操作手冊截圖對人名、專長與 IP 等欄位去識別化
+* 安裝說明標明 `composer install --prefer-dist` 與 `composer check-platform-reqs`
+* 測試文件 fixture 清單對齊 `tests/run-all.sh`（含 Group／Ballots／ResultsConfig）
+
+### Fixed
+
+* Functional Cest 在 `cleanup: false` 下於 `_before` 強制 `haveFixtures`，避免後續 Cest 缺 Group／ResultsConfig／Ballots
 
 ### Removed
 

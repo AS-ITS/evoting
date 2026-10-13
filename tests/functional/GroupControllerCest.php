@@ -30,9 +30,11 @@ class GroupControllerCest
 
     /**
      * 每個測試前執行 - 模擬管理員登入
+     * cleanup: false 下只有第一個 Cest 會跑 _fixtures()，此處強制載入 Group
      */
     public function _before(FunctionalTester $I)
     {
+        $I->haveFixtures($this->_fixtures());
         $I->amLoggedInAsAdmin('sa');
     }
 

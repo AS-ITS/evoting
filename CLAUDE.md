@@ -27,7 +27,7 @@ php -S localhost:8080 -t web web/router-test.php
 # Step 2: Load fixtures (in a separate terminal)
 # IMPORTANT: Use --appconfig to target test database
 # IMPORTANT: Must include Config,Users,Rbac or acceptance test logins will return 403 Forbidden
-echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac" --appconfig=config/console-test.php
+echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac,Group,GroupMember,Ballots,BallotsSelected,ResultsConfig" --appconfig=config/console-test.php
 
 # Step 3: Run acceptance tests
 php vendor/bin/codecept run acceptance

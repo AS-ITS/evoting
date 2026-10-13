@@ -49,12 +49,23 @@ cd /var/www/html/voting
 ### 2. 安裝依賴
 
 ```bash
-composer install
+# 開發／一般安裝（含 require-dev；優先下載 dist 壓縮包）
+composer install --no-interaction --prefer-dist
 chmod 755 yii
+
+# 建議確認平台與擴展（須含 php-gd）
+composer check-platform-reqs
 ```
 
-正式環境改用 `composer install --no-dev --optimize-autoloader`。版本由 `composer.lock` 鎖定；結束後會自動套用 [`patches/`](patches/)（見 [VENDOR_PATCHES.md](VENDOR_PATCHES.md)）。目錄權限見 §5，不要依賴 Composer hook。
+正式環境改用：
 
+```bash
+composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+```
+
+版本由 `composer.lock` 鎖定；結束後會自動套用 [`patches/`](patches/)（見 [VENDOR_PATCHES.md](VENDOR_PATCHES.md)）。目錄權限見 §5，不要依賴 Composer hook。
+
+離線環境若無法連 Packagist／GitHub，請改用已核對的 `vendor` 離線包解壓後再執行同一組 `composer install`（勿改 lock）。
 ### 3. 配置環境（`.env`）
 
 ```bash
@@ -510,7 +521,7 @@ php -S localhost:8080 -t web web/router-test.php
 ```bash
 # 步驟 2：載入所有測試 Fixture（在另一個終端機執行）
 # 必須包含 Config、Users、Rbac，否則登入會因權限問題失敗
-echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac" --appconfig=config/console-test.php
+echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac,Group,GroupMember,Ballots,BallotsSelected,ResultsConfig" --appconfig=config/console-test.php
 
 # 步驟 3：執行驗收測試
 php vendor/bin/codecept run acceptance
@@ -545,7 +556,7 @@ echo "yes" | php yii fixture/unload "*" --appconfig=config/console-test.php
 php vendor/bin/codecept run unit
 
 # 3. 重新載入 Fixture（單元測試後需重新載入，供驗收測試使用）
-echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac" --appconfig=config/console-test.php
+echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac,Group,GroupMember,Ballots,BallotsSelected,ResultsConfig" --appconfig=config/console-test.php
 
 # 4. 執行驗收測試
 php vendor/bin/codecept run acceptance
@@ -772,7 +783,7 @@ APP_ENV=development  # 開發環境
 **A**: 確認載入 Fixture 時包含了 `Rbac`：
 
 ```bash
-echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac" --appconfig=config/console-test.php
+echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac,Group,GroupMember,Ballots,BallotsSelected,ResultsConfig" --appconfig=config/console-test.php
 ```
 
 如果先執行了單元測試，單元測試會清除 Config、Users、Rbac 資料表，需重新載入。
