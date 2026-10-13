@@ -14,7 +14,7 @@ Electronic voting platform (general-purpose; originally a reference implementati
 
 1. Stable: `git clone --branch v1.0.0 --depth 1 https://github.com/AS-ITS/evoting.git`
    Contributors: clone the default branch instead. Do **not** use `composer create-project`.
-2. `composer install` (uses `composer.lock`; applies [`patches/`](patches/) automatically). `frontend/` is in the repo — no npm
+2. `composer install --prefer-dist` (uses `composer.lock`; applies [`patches/`](patches/) automatically). Then `composer check-platform-reqs`. `frontend/` is in the repo — no npm
 3. Copy `.env.example` to `.env`; set database credentials and `APP_ENV`
 4. Import [`docs/init_db.sql`](docs/init_db.sql), then run `php yii admin/create` to create the admin user
 5. Fix directory permissions (`runtime/`, `web/assets/`, `chmod 755 yii`); point the web server Document Root to `web/`
@@ -36,7 +36,7 @@ Vote types: open ballot (no auth) and anonymous (one-time passwords). Maintenanc
 
 1. 穩定版：`git clone --branch v1.0.0 --depth 1 https://github.com/AS-ITS/evoting.git`
    參與開發者可改為 clone 預設分支。**不要**使用 `composer create-project`
-2. `composer install`（依 `composer.lock`；會自動套用 [`patches/`](patches/)）。`frontend/` 已在 repo，無需 npm
+2. `composer install --prefer-dist`（依 `composer.lock`；會自動套用 [`patches/`](patches/)）。再執行 `composer check-platform-reqs`。`frontend/` 已在 repo，無需 npm
 3. 複製 `.env.example` 為 `.env`，設定資料庫與 `APP_ENV`
 4. 匯入 [`docs/init_db.sql`](docs/init_db.sql)，執行 `php yii admin/create` 建立管理員
 5. 設定目錄權限（`runtime/`、`web/assets/`、`chmod 755 yii`）後以 Web Server 指向 `web/`
@@ -153,7 +153,7 @@ php vendor/bin/codecept run functional --debug
 > **首次執行前**：先以測試設定載入必要 fixture；測試失敗不應以重跑掩蓋，請保留輸出並排查根因。
 >
 > ```bash
-> echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac" --appconfig=config/console-test.php
+> echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac,Group,GroupMember,Ballots,BallotsSelected,ResultsConfig" --appconfig=config/console-test.php
 > php vendor/bin/codecept run functional
 > ```
 
@@ -168,7 +168,7 @@ php vendor/bin/codecept run functional --debug
 php -S localhost:8080 -t web web/router-test.php
 
 # 步驟 2：載入所有 Fixture（必須包含 Config、Users、Rbac）
-echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac" --appconfig=config/console-test.php
+echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac,Group,GroupMember,Ballots,BallotsSelected,ResultsConfig" --appconfig=config/console-test.php
 
 # 步驟 3：執行所有驗收測試
 php vendor/bin/codecept run acceptance

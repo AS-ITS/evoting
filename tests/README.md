@@ -99,14 +99,18 @@ tests/
 
 ### 執行所有測試
 
+建議直接：`bash tests/run-all.sh`（會依完整 fixture 清單 preload）。
+
 ```bash
 # 執行所有單元測試
 php vendor/bin/codecept run unit
 
-# 執行所有驗收測試（需先載入 fixtures）
-# ⚠️ 重要：使用 --appconfig 確保載入到測試資料庫
-# ⚠️ 必須包含 Config,Users,Rbac，否則登入會回傳 403 Forbidden
-echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac" --appconfig=config/console-test.php
+# Functional / Acceptance 前請先載入 fixtures（必須 --appconfig，指向 voting_test）
+# 完整清單與 run-all.sh 一致（含 Group,GroupMember,Ballots,BallotsSelected,ResultsConfig）
+# ⚠️ 缺 Config,Users,Rbac → 登入 403；缺 Group/ResultsConfig → 部分 functional 404／Warning
+# 註：functional.suite.yml 為 cleanup: false，後續 Cest 須靠 _before haveFixtures 或 CLI preload
+echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac,Group,GroupMember,Ballots,BallotsSelected,ResultsConfig" --appconfig=config/console-test.php
+php vendor/bin/codecept run functional
 php vendor/bin/codecept run acceptance
 ```
 

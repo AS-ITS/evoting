@@ -10,7 +10,7 @@
 
 ```bash
 # 載入指定的 fixtures 到測試資料庫
-php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig" --appconfig=config/console-test.php
+php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac,Group,GroupMember,Ballots,BallotsSelected,ResultsConfig" --appconfig=config/console-test.php
 
 # 載入所有 fixtures
 php yii fixture/load "*" --appconfig=config/console-test.php
@@ -46,9 +46,9 @@ php yii fixture/generate "Votes,Parties" --count=10 --appconfig=config/console-t
 
 ## 常用 Fixture 組合
 
-### Acceptance 測試用
+### Unit / Functional / Acceptance 預載（與 `tests/run-all.sh` 相同）
 ```bash
-php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig" --appconfig=config/console-test.php
+php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac,Group,GroupMember,Ballots,BallotsSelected,ResultsConfig" --appconfig=config/console-test.php
 ```
 
 ### 清理選票資料
