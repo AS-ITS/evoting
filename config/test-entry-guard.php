@@ -4,8 +4,10 @@
  */
 require __DIR__ . '/env-loader.php';
 
-$env = strtolower(getenv('APP_ENV') ?: '');
-if (in_array($env, ['production', 'prod', 'product'], true)) {
+$isAllowed = require __DIR__ . '/test-entry-policy.php';
+$env = getenv('APP_ENV');
+
+if (!$isAllowed($env === false ? null : $env)) {
     http_response_code(404);
     header('Content-Type: text/plain; charset=UTF-8');
     echo 'Not Found';

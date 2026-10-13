@@ -18,7 +18,7 @@
 
 ## 系統需求
 
-- PHP 8.0 或以上（建議 PHP 8.2+）
+- PHP 8.2 或以上
 - MariaDB 10.6 或以上（建議 MariaDB 10.11）
 - Composer
 - Web Server (Apache/Nginx)
@@ -26,12 +26,11 @@
 
 ### PHP 擴展需求
 
-- php-mysql
-- php-mbstring
-- php-json
-- php-openssl
-- php-curl
-- php-gd
+- ctype、curl、dom、fileinfo、filter、gd、iconv、json、libxml
+- mbstring、openssl、PDO、pdo_mysql
+- SimpleXML、xml、xmlreader、xmlwriter、zip、zlib
+
+安裝後執行 `composer check-platform-reqs`，必須全部通過。
 
 ---
 
@@ -40,11 +39,12 @@
 ### 1. 複製專案
 
 ```bash
-git clone https://github.com/AS-ITS/evoting.git /var/www/html/voting
+git clone --branch v1.0.0 --depth 1 \
+  https://github.com/AS-ITS/evoting.git /var/www/html/voting
 cd /var/www/html/voting
 ```
 
-**不要**使用 `composer create-project`（本專案是可更新的應用，不是 Yii 模板）。`vendor/` 不上版控；`frontend/` 已在 repo，無需 npm。
+以上安裝最新穩定標籤；參與開發者可 clone 預設分支。**不要**使用 `composer create-project`（本專案是可更新的應用，不是 Yii 模板）。`vendor/` 不上版控；`frontend/` 已在 repo，無需 npm。
 
 ### 2. 安裝依賴
 
@@ -59,8 +59,16 @@ chmod 755 yii
 
 ```bash
 cp .env.example .env
+
+# PHP_USER 必須是 PHP-FPM worker 身份，例如 www-data、apache 或 nginx
+PHP_USER=www-data
+PHP_GROUP="$(id -gn "${PHP_USER}")"
+chown "$(id -un):${PHP_GROUP}" .env
 chmod 640 .env
+sudo -u "${PHP_USER}" test -r .env
 ```
+
+若無權 `chown`，請由系統管理員設定群組或 ACL；不要為了排除讀取錯誤將 `.env` 長期設成 world-readable (`644`)。
 
 至少填寫下列項目（產生指令、加密密碼與正式／開發差異見 [.env 必填項目](#env-必填項目)）：
 
@@ -191,7 +199,7 @@ chmod 775 /var/www/html/voting/runtime/URI
 ### 首次部署檢查清單
 
 - [ ] `git clone` 後 `composer install`（正式用 `--no-dev`；會套用 `patches/`）
-- [ ] 複製 `.env.example` 為 `.env`（`chmod 640`），填寫 §[.env 必填項目](#env-必填項目)（含 `COOKIE_VALIDATION_KEY`、主金鑰、`DB_*`、`APP_BASE_PATH`；正式環境加 `ALLOWED_HOSTS`）
+- [ ] 複製 `.env.example` 為 `.env`，確認 PHP-FPM 群組可讀後設為 `640`，填寫 §[.env 必填項目](#env-必填項目)（含 `COOKIE_VALIDATION_KEY`、主金鑰、`DB_*`、`APP_BASE_PATH`；正式環境加 `ALLOWED_HOSTS`）
 - [ ] 匯入 `docs/init_db.sql`（新裝）或增量 migration（升級）
 - [ ] 執行 `php yii admin/create` 建立管理員
 - [ ] 建立 uploads／runtime 等目錄並設定權限（見 §5）
@@ -790,7 +798,7 @@ php vendor/bin/codecept run unit
 
 若在設定過程中遇到問題，請參考：
 
-1. 專案的 [CLAUDE.md](CLAUDE.md) 檔案 - 完整的專案文件
+1. 專案的 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - 系統架構與開發指引
 2. 資安政策：[SECURITY.md](SECURITY.md)（二次驗證、開源 prep 腳本）
 3. 正式部署檢查表：本文件 §正式環境部署檢查表
 4. 檢查 `runtime/logs/` 目錄下的錯誤日誌

@@ -517,7 +517,7 @@ class VotesFixture extends ActiveFixture
 **解決方案**：
 1. 使用 Yii2 模組內部測試（推薦）
 2. 使用 WebDriver 進行完整 E2E 測試
-3. 參考 [TESTING_ISSUES.md](TESTING_ISSUES.md)
+3. 參考 [TEST_STATUS.md](TEST_STATUS.md) 與 `runtime/logs/`
 
 ### 問題 6: 關聯查詢返回 null
 
@@ -555,8 +555,7 @@ public function _fixtures()
 - [Codeception Documentation](https://codeception.com/docs/01-Introduction)
 - [Yii2 Testing Guide](https://www.yiiframework.com/doc/guide/2.0/en/test-overview)
 - [PHPUnit Documentation](https://phpunit.de/documentation.html)
-- [TEST_PROGRESS.md](TEST_PROGRESS.md) - 測試進度追蹤
-- [TESTING_ISSUES.md](TESTING_ISSUES.md) - 測試問題與處理方式
+- [TEST_STATUS.md](TEST_STATUS.md) - 最近驗證結果與已知限制
 
 ---
 

@@ -8,14 +8,14 @@
 
 | 文件 | 說明 | 適用對象 |
 |------|------|---------|
-| [TEST_PROGRESS.md](TEST_PROGRESS.md) | 📊 測試進度追蹤與統計 | 專案管理者、開發者 |
-| [TEST_GUIDE.md](TEST_GUIDE.md) | 📖 測試撰寫指南與最佳實踐 | 測試撰寫者、新成員 |
-| [FIXTURE_COMMANDS.md](FIXTURE_COMMANDS.md) | 🔧 Fixture 指令參考 | 測試撰寫者 |
+| [TEST_STATUS.md](TEST_STATUS.md) | 最近驗證結果與已知限制 | 專案管理者、開發者 |
+| [TEST_GUIDE.md](TEST_GUIDE.md) | 測試撰寫指南與最佳實踐 | 測試撰寫者、新成員 |
+| [FIXTURE_COMMANDS.md](FIXTURE_COMMANDS.md) | Fixture 指令參考 | 測試撰寫者 |
 
 ### 快速連結
 
 - **我要撰寫新測試** → [TEST_GUIDE.md](TEST_GUIDE.md)
-- **我要查看測試進度** → [TEST_PROGRESS.md](TEST_PROGRESS.md)
+- **我要查看測試狀態** → [TEST_STATUS.md](TEST_STATUS.md)
 - **我要了解 Fixture 指令** → [FIXTURE_COMMANDS.md](FIXTURE_COMMANDS.md)
 
 ## 📂 目錄結構
@@ -23,7 +23,7 @@
 ```
 tests/
 ├── README.md                      # 本文件
-├── TEST_PROGRESS.md               # 測試進度報告
+├── TEST_STATUS.md                 # 最近驗證結果
 ├── TEST_GUIDE.md                  # 測試撰寫指南
 ├── FIXTURE_COMMANDS.md            # Fixture 指令參考
 │
@@ -136,8 +136,8 @@ php vendor/bin/codecept run unit --coverage --coverage-html
 ## 📖 測試撰寫流程
 
 1. **閱讀測試指南** → [TEST_GUIDE.md](TEST_GUIDE.md)
-2. **檢查測試進度** → [TEST_PROGRESS.md](TEST_PROGRESS.md)
-3. **選擇測試項目**（未完成的功能）
+2. **檢查測試狀態** → [TEST_STATUS.md](TEST_STATUS.md)
+3. **選擇測試項目**
 4. **撰寫測試程式**（遵循指南規範）
 5. **執行測試驗證**
 6. **更新測試文件**
@@ -220,19 +220,19 @@ php vendor/bin/codecept run -v              # 詳細輸出
 - [Codeception Documentation](https://codeception.com/docs/01-Introduction)
 - [Yii2 Testing Guide](https://www.yiiframework.com/doc/guide/2.0/en/test-overview)
 - [PHPUnit Documentation](https://phpunit.de/documentation.html)
-- [專案開發文件 (CLAUDE.md)](../CLAUDE.md)
+- [系統架構 (docs/ARCHITECTURE.md)](../docs/ARCHITECTURE.md)
 
 ## 🤝 貢獻指南
 
 1. 撰寫新測試前，先閱讀 [TEST_GUIDE.md](TEST_GUIDE.md)
 2. 確保測試符合命名規範與最佳實踐
-3. 測試通過後更新 [TEST_PROGRESS.md](TEST_PROGRESS.md)
+3. 測試通過後更新 [TEST_STATUS.md](TEST_STATUS.md) 的已知限制（若有）
 4. 提交前執行完整測試套件
 
 ## 📞 需要協助？
 
 - **測試撰寫問題** → 參考 [TEST_GUIDE.md](TEST_GUIDE.md) 的「常見問題排解」章節
-- **測試進度查詢** → 參考 [TEST_PROGRESS.md](TEST_PROGRESS.md)
+- **測試狀態查詢** → 參考 [TEST_STATUS.md](TEST_STATUS.md)
 - **Fixture 指令** → 參考 [FIXTURE_COMMANDS.md](FIXTURE_COMMANDS.md)
 
 ---

@@ -50,7 +50,6 @@ trait EnvPathConfigTrait
         'localhost',
         '127.0.0.1',
         'vhost.test',
-        'fisher8966-PC',
         // 可在此添加您的開發域名
     ];
 

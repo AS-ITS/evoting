@@ -7,6 +7,17 @@
 
 ## [Unreleased]
 
+### Changed
+
+* 將最低 PHP 版本與 lock file 統一為 PHP 8.2，並明列必要 extensions
+* 公開文件改用通用發布、架構、環境權限與版本支援說明
+* Web 測試入口改為僅在明確測試環境啟用
+* 操作手冊截圖對人名、專長與 IP 等欄位去識別化
+
+### Removed
+
+* 移除組織內部發布作業手冊、主機識別、未使用品牌圖檔與過時測試紀錄
+
 ## [1.0.0] - 2026-10-08
 
 開源初始版。
@@ -21,3 +32,6 @@
 
 * Yii basic 模板殘件：`post-create-project-cmd`、`generateCookieValidationKey`、指向 Yii 官方的 `support`／placeholder `homepage`
 * 移除未參與產品安裝或執行的 vendored 前端建置 lockfile；執行期資產維持預先建置版本
+
+[Unreleased]: https://github.com/AS-ITS/evoting/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/AS-ITS/evoting/releases/tag/v1.0.0

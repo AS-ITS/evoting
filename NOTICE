@@ -16,3 +16,7 @@ and `docs/sbom-*.json`):
 
 Webix is **not** used or distributed with this source tree. Dialogs use
 kartik-v/yii2-dialog (BSD) and Bootstrap 5 Modal.
+
+Names, logos, and trademarks of Academia Sinica or other organizations are
+not granted for reuse by the MIT License. References in project history or
+maintainer attribution are descriptive only and do not imply endorsement.

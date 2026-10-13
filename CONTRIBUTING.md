@@ -39,7 +39,7 @@ php vendor/bin/codecept run unit
 4. PR 請說明變更目的、測試方式，並關聯 Issue（例如 `Fixes #123`）；使用者可見變更請更新 [CHANGELOG.md](CHANGELOG.md)
 5. 對話框使用既有 `kartik-v/yii2-dialog`／Bootstrap 5 Modal，**不要**再引入 Webix
 
-架構見 [CLAUDE.md](CLAUDE.md)；編碼請沿用現有 PHP／Yii2 風格。
+架構見 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)；編碼請沿用現有 PHP／Yii2 風格。
 
 ## 程式碼審查
 
