@@ -169,9 +169,46 @@ table_count() {
   mysql_cmd -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${DB_NAME}' AND table_type='BASE TABLE';" 2>/dev/null || echo "0"
 }
 
+find_composer() {
+  if command -v composer >/dev/null 2>&1; then
+    command -v composer
+    return
+  fi
+  for cand in /usr/local/bin/composer /usr/bin/composer; do
+    if [[ -x "$cand" ]]; then
+      echo "$cand"
+      return
+    fi
+  done
+  return 1
+}
+
+ensure_extensions_php() {
+  if [[ -f vendor/yiisoft/extensions.php ]] \
+    && grep -q 'yiisoft/yii2-bootstrap5' vendor/yiisoft/extensions.php; then
+    return 0
+  fi
+  log "extensions.php 不完整，嘗試修復 yiisoft/yii2-composer 註冊…"
+  "$COMPOSER_BIN" config allow-plugins.yiisoft/yii2-composer true
+  # 重裝核心套件以觸發 Plugin::activate 與 extension 寫入
+  "$COMPOSER_BIN" reinstall yiisoft/yii2-composer yiisoft/yii2 yiisoft/yii2-bootstrap5 \
+    --no-interaction 2>/dev/null \
+    || "$COMPOSER_BIN" update yiisoft/yii2-composer --with-dependencies --no-interaction --prefer-dist
+  if [[ ! -f vendor/yiisoft/extensions.php ]]; then
+    mkdir -p vendor/yiisoft
+    printf '<?php\n\nreturn [];\n' > vendor/yiisoft/extensions.php
+    "$COMPOSER_BIN" reinstall yiisoft/yii2-bootstrap5 --no-interaction || true
+  fi
+  [[ -f vendor/yiisoft/extensions.php ]] \
+    || die "仍缺少 vendor/yiisoft/extensions.php。請手動: composer config allow-plugins.yiisoft/yii2-composer true && rm -rf vendor && composer install"
+  grep -q 'yiisoft/yii2-bootstrap5' vendor/yiisoft/extensions.php \
+    || die "extensions.php 無 yii2-bootstrap5。請手動: composer reinstall yiisoft/yii2-bootstrap5 --no-interaction"
+}
+
 # ---------- 前置檢查 ----------
 command -v php >/dev/null || die "需要 php"
-command -v composer >/dev/null || die "需要 composer"
+COMPOSER_BIN="$(find_composer)" || die "需要 composer（請安裝或將 /usr/local/bin 加入 PATH）"
+export PATH="$(dirname "$COMPOSER_BIN"):$PATH"
 [[ -f composer.json && -f composer.lock ]] || die "請在專案根目錄執行（找不到 composer.json／lock）"
 [[ -f docs/init_db.sql ]] || die "缺少 docs/init_db.sql"
 
@@ -237,20 +274,19 @@ fi
 
 # ---------- Composer ----------
 if [[ "$SKIP_COMPOSER" -eq 0 ]]; then
-  log "composer install"
+  log "composer install ($COMPOSER_BIN)"
   if [[ -L vendor ]]; then
     die "vendor 是 symlink（共用舊 vendor）。請 rm vendor 後重跑，勿使用舊框架共用目錄"
   fi
+  "$COMPOSER_BIN" config allow-plugins.yiisoft/yii2-composer true
   if [[ "$NO_DEV" -eq 1 ]]; then
-    composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+    "$COMPOSER_BIN" install --no-interaction --prefer-dist --no-dev --optimize-autoloader
   else
-    composer install --no-interaction --prefer-dist
+    "$COMPOSER_BIN" install --no-interaction --prefer-dist
   fi
 fi
 
-[[ -f vendor/yiisoft/extensions.php ]] || die "缺少 vendor/yiisoft/extensions.php（composer 插件未跑完）"
-grep -q 'yiisoft/yii2-bootstrap5' vendor/yiisoft/extensions.php \
-  || die "extensions.php 無 yii2-bootstrap5；請檢查 composer 是否允許 yiisoft/yii2-composer 插件"
+ensure_extensions_php
 
 # ---------- 目錄 ----------
 log "建立可寫目錄"
