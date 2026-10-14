@@ -183,32 +183,40 @@ find_composer() {
   return 1
 }
 
+extensions_php_ok() {
+  [[ -f vendor/yiisoft/extensions.php ]] \
+    && grep -q 'yiisoft/yii2-bootstrap5' vendor/yiisoft/extensions.php
+}
+
 ensure_extensions_php() {
-  if [[ -f vendor/yiisoft/extensions.php ]] \
-    && grep -q 'yiisoft/yii2-bootstrap5' vendor/yiisoft/extensions.php; then
+  if extensions_php_ok; then
     return 0
   fi
   log "extensions.php 不完整，嘗試修復 yiisoft/yii2-composer 註冊…"
   "$COMPOSER_BIN" config allow-plugins.yiisoft/yii2-composer true
-  # 重裝核心套件以觸發 Plugin::activate 與 extension 寫入
+  # 重裝以觸發 Installer::addPackage（插件若晚於套件解壓啟動會留下空 extensions.php）
   "$COMPOSER_BIN" reinstall yiisoft/yii2-composer yiisoft/yii2 yiisoft/yii2-bootstrap5 \
-    --no-interaction 2>/dev/null \
-    || "$COMPOSER_BIN" update yiisoft/yii2-composer --with-dependencies --no-interaction --prefer-dist
-  if [[ ! -f vendor/yiisoft/extensions.php ]]; then
-    mkdir -p vendor/yiisoft
-    printf '<?php\n\nreturn [];\n' > vendor/yiisoft/extensions.php
-    "$COMPOSER_BIN" reinstall yiisoft/yii2-bootstrap5 --no-interaction || true
+    --no-interaction \
+    || "$COMPOSER_BIN" update yiisoft/yii2-composer --with-dependencies --no-interaction --prefer-dist \
+    || true
+  if extensions_php_ok; then
+    return 0
   fi
-  [[ -f vendor/yiisoft/extensions.php ]] \
-    || die "仍缺少 vendor/yiisoft/extensions.php。請手動: composer config allow-plugins.yiisoft/yii2-composer true && rm -rf vendor && composer install"
-  grep -q 'yiisoft/yii2-bootstrap5' vendor/yiisoft/extensions.php \
-    || die "extensions.php 無 yii2-bootstrap5。請手動: composer reinstall yiisoft/yii2-bootstrap5 --no-interaction"
+  log "改從 installed.json 重建 extensions.php…"
+  [[ -f scripts/rebuild-yii-extensions.php ]]     || die "缺少 scripts/rebuild-yii-extensions.php（請一併更新此檔）。或: export COMPOSER_ALLOW_SUPERUSER=1 && composer reinstall yiisoft/yii2-bootstrap5 --no-interaction"
+  php scripts/rebuild-yii-extensions.php     || die "extensions.php 仍缺 yii2-bootstrap5。請手動: export COMPOSER_ALLOW_SUPERUSER=1 && composer reinstall yiisoft/yii2-bootstrap5 --no-interaction"
+  extensions_php_ok \
+    || die "extensions.php 仍缺 yii2-bootstrap5。請手動: php scripts/rebuild-yii-extensions.php"
 }
 
 # ---------- 前置檢查 ----------
 command -v php >/dev/null || die "需要 php"
 COMPOSER_BIN="$(find_composer)" || die "需要 composer（請安裝或將 /usr/local/bin 加入 PATH）"
 export PATH="$(dirname "$COMPOSER_BIN"):$PATH"
+# root 下非互動 composer 會禁用插件 → extensions.php 空檔；必須允許
+if [[ "$(id -u)" -eq 0 ]]; then
+  export COMPOSER_ALLOW_SUPERUSER=1
+fi
 [[ -f composer.json && -f composer.lock ]] || die "請在專案根目錄執行（找不到 composer.json／lock）"
 [[ -f docs/init_db.sql ]] || die "缺少 docs/init_db.sql"
 
