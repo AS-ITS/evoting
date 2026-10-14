@@ -16,6 +16,11 @@
 * 安裝說明標明 `composer install --prefer-dist` 與 `composer check-platform-reqs`
 * 測試文件 fixture 清單對齊 `tests/run-all.sh`（含 Group／Ballots／ResultsConfig）
 
+### Added
+
+* 新裝精靈 `scripts/install.sh`（composer、可寫目錄、`.env`、可選建庫／`init_db.sql`／admin）
+* `scripts/ensure-writable-dirs.sh`；composer post-install 自動建立 `runtime/sessions` 等目錄
+
 ### Fixed
 
 * Functional Cest 在 `cleanup: false` 下於 `_before` 強制 `haveFixtures`，避免後續 Cest 缺 Group／ResultsConfig／Ballots

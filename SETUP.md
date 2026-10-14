@@ -46,6 +46,25 @@ cd /var/www/html/voting
 
 以上安裝最新穩定標籤；參與開發者可 clone 預設分支。**不要**使用 `composer create-project`（本專案是可更新的應用，不是 Yii 模板）。`vendor/` 不上版控；`frontend/` 已在 repo，無需 npm。
 
+### 快速安裝（建議新裝）
+
+前置：Linux 已裝好 PHP 8.2+（含 gd、pdo_mysql 等）、Composer、Nginx/Apache、MariaDB/MySQL，且 Document Root **稍後**指向 `…/web`。
+
+```bash
+git clone --branch v1.0.0 --depth 1 \
+  https://github.com/AS-ITS/evoting.git /var/www/html/voting
+cd /var/www/html/voting
+sudo bash scripts/install.sh
+```
+
+腳本會互動詢問 DB／網域／admin 密碼等，並自動：`composer install`、建立 `runtime/sessions` 等可寫目錄、寫入 `.env`、（可選）建庫、匯入 [`docs/init_db.sql`](docs/init_db.sql)、建立 `admin`、執行 `config/validate`。
+
+- **僅新裝**。既有業務資料庫**不要**再跑 `--init-db`；升級見下方「從舊版升級」。
+- 非互動範例：`bash scripts/install.sh --non-interactive --with-db --init-db --create-admin`（需先 export `DB_PASSWORD`、`ADMIN_PASSWORD`、`ALLOWED_HOSTS` 等）。
+- 細節與旗標：`bash scripts/install.sh --help`
+
+若只想手動安裝，繼續下列 §2–§5。
+
 ### 2. 安裝依賴
 
 ```bash
@@ -55,6 +74,10 @@ chmod 755 yii
 
 # 建議確認平台與擴展（須含 php-gd）
 composer check-platform-reqs
+
+# 確認 Yii 擴充註冊（缺則會出現 yii/bootstrap5 訊息來源錯誤）
+test -f vendor/yiisoft/extensions.php
+grep yii2-bootstrap5 vendor/yiisoft/extensions.php
 ```
 
 正式環境改用：
@@ -63,11 +86,13 @@ composer check-platform-reqs
 composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
 ```
 
-版本由 `composer.lock` 鎖定；結束後會自動套用 [`patches/`](patches/)（見 [VENDOR_PATCHES.md](VENDOR_PATCHES.md)）。目錄權限見 §5，不要依賴 Composer hook。
+版本由 `composer.lock` 鎖定；結束後會自動套用 [`patches/`](patches/)（見 [VENDOR_PATCHES.md](VENDOR_PATCHES.md)），並執行 [`scripts/ensure-writable-dirs.sh`](scripts/ensure-writable-dirs.sh) 建立 `runtime/sessions` 等目錄。**不要**使用指向舊專案的 `vendor` symlink。
 
 離線環境若無法連 Packagist／GitHub，請改用已核對的 `vendor` 離線包解壓後再執行同一組 `composer install`（勿改 lock）。
-### 3. 配置環境（`.env`）
 
+> **順序**：`composer install` 之後、開啟網站之前，請完成 §5 目錄權限（或使用上方 `install.sh`）。缺少 `runtime/sessions` 會出現 Session save path 錯誤。
+
+### 3. 配置環境（`.env`）
 ```bash
 cp .env.example .env
 
@@ -148,7 +173,8 @@ export PHP_USER=www-data         # Ubuntu php-fpm 常見
 > ```
 
 ```bash
-# 建立必要目錄
+# 建立必要目錄（含 session；clone 後 runtime/sessions 預設不存在）
+bash scripts/ensure-writable-dirs.sh
 mkdir -p /var/www/uploads/voting
 mkdir -p /var/www/db/voting
 
@@ -161,7 +187,7 @@ chmod -R 775 /var/www/html/voting/web/assets
 chown -R ${PHP_USER}:${PHP_USER} /var/www/html/voting/web/assets
 chown -R ${PHP_USER}:${PHP_USER} /var/www/uploads/voting
 
-# 設定 runtime 目錄（整體可寫）
+# 設定 runtime 目錄（整體可寫，含 sessions）
 chmod -R 775 /var/www/html/voting/runtime
 chown -R ${PHP_USER}:${PHP_USER} /var/www/html/voting/runtime
 ```

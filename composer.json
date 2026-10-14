@@ -87,10 +87,12 @@
     },
     "scripts": {
         "post-install-cmd": [
-            "@php scripts/apply-vendor-patches.php"
+            "@php scripts/apply-vendor-patches.php",
+            "bash scripts/ensure-writable-dirs.sh"
         ],
         "post-update-cmd": [
-            "@php scripts/apply-vendor-patches.php"
+            "@php scripts/apply-vendor-patches.php",
+            "bash scripts/ensure-writable-dirs.sh"
         ]
     },
     "repositories": [
