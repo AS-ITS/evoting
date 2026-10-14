@@ -200,16 +200,19 @@ class ConfigManager
 
         // 金鑰派生的 secret 和 iv 已經是 binary 格式，無需解碼
 
-        // 檢查是否為加密格式（Base64 編碼）
+        // 僅對「像密文」的值嘗試解密（與 ConfigValidator::looksLikeEncryptedValue 對齊）
+        // 避免純英數明文密碼被誤判為 Base64 而炸掉 console 啟動
         if (!preg_match('/^[A-Za-z0-9+\/]+=*$/', $encryptedValue)) {
-            // 不是 Base64 格式，可能是明文（開發環境）
+            return $encryptedValue;
+        }
+        $decoded = base64_decode($encryptedValue, true);
+        if ($decoded === false || strlen($decoded) < 16) {
             return $encryptedValue;
         }
 
         try {
-            // 使用封裝的解密方法，避免靜態分析追蹤
             $decrypted = @KeyContextProvider::decryptData(
-                base64_decode($encryptedValue),
+                $decoded,
                 $secret,
                 $iv
             );

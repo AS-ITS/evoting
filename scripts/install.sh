@@ -384,6 +384,14 @@ if [[ "$INIT_DB" -eq 1 ]]; then
   log "init_db.sql 完成"
 fi
 
+# ---------- 正式環境：加密 DB_PASSWORD（須在主金鑰就緒後、yii 命令前）----------
+if [[ "$APP_ENV" == "production" ]]; then
+  log "正式環境：以目前主金鑰加密 DB_PASSWORD 寫回 .env"
+  export VOTING_MASTER_KEY="${VOTING_MASTER_KEY:-$MASTER_KEY}"
+  # encrypt 指令會問是否寫入 .env；非互動自動 yes
+  printf 'yes\n' | php yii encrypt/db-password "$DB_PASSWORD"     || die "加密 DB_PASSWORD 失敗（請確認 VOTING_MASTER_KEY／$MASTER_KEY_FILE 與明文密碼）"
+fi
+
 # ---------- admin ----------
 if [[ "$CREATE_ADMIN" -eq 1 ]]; then
   log "建立 admin"
