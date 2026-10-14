@@ -317,6 +317,7 @@ fi
 
 COOKIE_VALIDATION_KEY="${COOKIE_VALIDATION_KEY:-$(php -r 'echo bin2hex(random_bytes(32));')}"
 MASTER_KEY="${MASTER_KEY:-$(php -r 'echo base64_encode(random_bytes(64));')}"
+MASTER_KEY_FILE="${MASTER_KEY_FILE:-/etc/voting/master.key}"
 
 set_env_key APP_ENV "$APP_ENV"
 set_env_key APP_BASE_PATH "$APP_BASE_PATH"
@@ -328,17 +329,34 @@ set_env_key DB_USERNAME "$DB_USERNAME"
 set_env_key DB_PASSWORD "$DB_PASSWORD"
 set_env_key ALLOWED_HOSTS "$ALLOWED_HOSTS"
 set_env_key COOKIE_VALIDATION_KEY "$COOKIE_VALIDATION_KEY"
-set_env_key MASTER_KEY "$MASTER_KEY"
+
+if [[ "$APP_ENV" == "production" ]]; then
+  if [[ ! -f "$MASTER_KEY_FILE" ]]; then
+    [[ "$(id -u)" -eq 0 ]] || die "正式環境需 root 寫入 $MASTER_KEY_FILE，或先 export VOTING_MASTER_KEY=…"
+    mkdir -p "$(dirname "$MASTER_KEY_FILE")"
+    printf '%s\n' "$MASTER_KEY" > "$MASTER_KEY_FILE"
+    chmod 600 "$MASTER_KEY_FILE"
+    chown "${PHP_USER}:${PHP_USER}" "$MASTER_KEY_FILE" 2>/dev/null || true
+    log "已寫入主金鑰: $MASTER_KEY_FILE（0600, owner=$PHP_USER）"
+  else
+    log "沿用既有主金鑰檔: $MASTER_KEY_FILE"
+    MASTER_KEY="$(tr -d '\r\n' < "$MASTER_KEY_FILE")"
+  fi
+  if grep -qE '^[# ]*MASTER_KEY=' .env 2>/dev/null; then
+    sed -i -E 's/^[# ]*MASTER_KEY=.*/# MASTER_KEY=  # production: use key file or VOTING_MASTER_KEY/' .env
+  fi
+  export VOTING_MASTER_KEY="$MASTER_KEY"
+else
+  set_env_key MASTER_KEY "$MASTER_KEY"
+  log "已寫入開發用 MASTER_KEY 至 .env"
+fi
 
 chmod 640 .env || true
 if [[ "$(id -u)" -eq 0 ]]; then
-  # 部署者擁有、PHP 群組可讀
   PHP_GROUP="$(id -gn "$PHP_USER" 2>/dev/null || echo "$PHP_USER")"
   chown "$(id -un 2>/dev/null || echo root):${PHP_GROUP}" .env 2>/dev/null \
     || chown "${PHP_USER}:${PHP_GROUP}" .env 2>/dev/null || true
 fi
-
-log "已寫入開發用 MASTER_KEY 至 .env；正式環境請改為 VOTING_MASTER_KEY 或 /etc/voting/master.key（見 docs/MASTER_KEY_SETUP.md）"
 
 # ---------- 資料庫 ----------
 if [[ "$WITH_DB" -eq 1 ]]; then
@@ -382,7 +400,7 @@ cat <<EOF
 下一步：
   1. 確認 Web Server Document Root 指向: ${APP_BASE_PATH}/web
   2. 瀏覽器開啟網站並以 admin 登入
-  3. 正式環境請將 MASTER_KEY 改為 VOTING_MASTER_KEY 或金鑰檔（勿長期只靠 .env）
+  3. 正式環境主金鑰已寫入 /etc/voting/master.key（或 VOTING_MASTER_KEY）；確認 PHP-FPM 可讀
 
 升級／更新既有系統：勿再執行本腳本的 --init-db；見 SETUP.md「從舊版升級」。
 EOF
