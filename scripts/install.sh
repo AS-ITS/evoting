@@ -384,12 +384,14 @@ if [[ "$INIT_DB" -eq 1 ]]; then
   log "init_db.sql 完成"
 fi
 
-# ---------- 正式環境：加密 DB_PASSWORD（須在主金鑰就緒後、yii 命令前）----------
+# ---------- 正式環境：加密 DB_PASSWORD（不經 php yii，避免 console 啟動雞生蛋）----------
 if [[ "$APP_ENV" == "production" ]]; then
   log "正式環境：以目前主金鑰加密 DB_PASSWORD 寫回 .env"
   export VOTING_MASTER_KEY="${VOTING_MASTER_KEY:-$MASTER_KEY}"
-  # encrypt 指令會問是否寫入 .env；非互動自動 yes
-  printf 'yes\n' | php yii encrypt/db-password "$DB_PASSWORD"     || die "加密 DB_PASSWORD 失敗（請確認 VOTING_MASTER_KEY／$MASTER_KEY_FILE 與明文密碼）"
+  [[ -f scripts/encrypt-config-value.php ]]     || die "缺少 scripts/encrypt-config-value.php"
+  ENC_DB_PASSWORD="$(php scripts/encrypt-config-value.php "$DB_PASSWORD")"     || die "加密 DB_PASSWORD 失敗（請確認 VOTING_MASTER_KEY／$MASTER_KEY_FILE）"
+  [[ -n "$ENC_DB_PASSWORD" ]] || die "加密結果為空"
+  set_env_key DB_PASSWORD "$ENC_DB_PASSWORD"
 fi
 
 # ---------- admin ----------

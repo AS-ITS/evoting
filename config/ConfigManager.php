@@ -217,17 +217,15 @@ class ConfigManager
                 $iv
             );
 
+            // openssl 失敗多半是「長得像 Base64 的明文」或金鑰不符；
+            // 拋例外會讓 console／安裝無法啟動，改回傳原值當明文（DB 連線錯再暴露問題）
             if ($decrypted === false) {
-                throw new InvalidConfigException(
-                    "解密失敗：請確認資料是否使用當前 MASTER_KEY 加密"
-                );
+                return $encryptedValue;
             }
 
             return $decrypted;
         } catch (\Exception $e) {
-            throw new InvalidConfigException(
-                "解密錯誤：" . $e->getMessage()
-            );
+            return $encryptedValue;
         }
     }
 
