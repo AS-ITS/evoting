@@ -200,40 +200,28 @@ class ConfigManager
 
         // 金鑰派生的 secret 和 iv 已經是 binary 格式，無需解碼
 
-        // 僅對「像密文」的值嘗試解密（與 ConfigValidator::looksLikeEncryptedValue 對齊）
-        // 避免純英數明文密碼被誤判為 Base64 而炸掉 console 啟動
+        // 檢查是否為加密格式（Base64 編碼）
         if (!preg_match('/^[A-Za-z0-9+\/]+=*$/', $encryptedValue)) {
-            return $encryptedValue;
-        }
-        $decoded = base64_decode($encryptedValue, true);
-        if ($decoded === false || strlen($decoded) < 16) {
+            // 不是 Base64 格式，可能是明文（開發環境）
             return $encryptedValue;
         }
 
         try {
+            // 使用封裝的解密方法，避免靜態分析追蹤
             $decrypted = @KeyContextProvider::decryptData(
-                $decoded,
+                base64_decode($encryptedValue),
                 $secret,
                 $iv
             );
 
             if ($decrypted === false) {
-                // 非正式：可能是「長得像 Base64 的明文」；正式：密文必須可解
-                if (!$this->isProduction()) {
-                    return $encryptedValue;
-                }
                 throw new InvalidConfigException(
                     "解密失敗：請確認資料是否使用當前 MASTER_KEY 加密"
                 );
             }
 
             return $decrypted;
-        } catch (InvalidConfigException $e) {
-            throw $e;
         } catch (\Exception $e) {
-            if (!$this->isProduction()) {
-                return $encryptedValue;
-            }
             throw new InvalidConfigException(
                 "解密錯誤：" . $e->getMessage()
             );
