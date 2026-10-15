@@ -104,6 +104,85 @@ prompt_secret() {
   printf -v "$var" '%s' "$val"
 }
 
+
+prompt_admin_password() {
+  # 迴圈直到符合 admin/create 規則：≥8、含字母與數字
+  local var="$1"
+  local val confirm
+  if [[ "$NON_INTERACTIVE" -eq 1 ]]; then
+    val="${!var-}"
+    if [[ -z "$val" ]]; then
+      die "CREATE_ADMIN 需要 ADMIN_PASSWORD"
+    fi
+    if [[ ${#val} -lt 8 || ! "$val" =~ [A-Za-z] || ! "$val" =~ [0-9] ]]; then
+      die "ADMIN_PASSWORD 須≥8字元且含英文字母與數字"
+    fi
+    printf -v "$var" '%s' "$val"
+    return
+  fi
+  while true; do
+    read -r -s -p "admin 密碼（≥8，含英文字母與數字）: " val || true
+    echo
+    if [[ -z "$val" ]]; then
+      echo "密碼不可空白，請重新輸入。"
+      continue
+    fi
+    if [[ ${#val} -lt 8 ]]; then
+      echo "密碼至少 8 字元，請重新輸入。"
+      continue
+    fi
+    if [[ ! "$val" =~ [A-Za-z] || ! "$val" =~ [0-9] ]]; then
+      echo "密碼須同時包含英文字母與數字，請重新輸入。"
+      continue
+    fi
+    read -r -s -p "再輸入一次確認: " confirm || true
+    echo
+    if [[ "$val" != "$confirm" ]]; then
+      echo "兩次輸入不一致，請重新輸入。"
+      continue
+    fi
+    printf -v "$var" '%s' "$val"
+    return
+  done
+}
+
+prompt_allowed_hosts() {
+  local var="$1"
+  local val insecure bad
+  if [[ "$NON_INTERACTIVE" -eq 1 ]]; then
+    val="${!var-}"
+    printf -v "$var" '%s' "$val"
+    return
+  fi
+  while true; do
+    if [[ "$APP_ENV" == "production" ]]; then
+      read -r -p "ALLOWED_HOSTS（正式環境必填實際 FQDN，逗號分隔；不可 localhost）: " val || true
+    else
+      read -r -p "ALLOWED_HOSTS [${ALLOWED_HOSTS:-localhost}]: " val || true
+      val="${val:-${ALLOWED_HOSTS:-localhost}}"
+    fi
+    val="$(echo "$val" | tr -d '[:space:]')"
+    if [[ -z "$val" ]]; then
+      echo "ALLOWED_HOSTS 不可空白。"
+      continue
+    fi
+    if [[ "$APP_ENV" == "production" ]]; then
+      bad=0
+      IFS=',' read -ra _hosts <<< "$val"
+      for h in "${_hosts[@]}"; do
+        case "${h,,}" in
+          \*|localhost|127.0.0.1|0.0.0.0) echo "不可使用不安全 host: $h"; bad=1 ;;
+        esac
+      done
+      if [[ "$bad" -eq 1 ]]; then
+        continue
+      fi
+    fi
+    printf -v "$var" '%s' "$val"
+    return
+  done
+}
+
 ask_yes() {
   local var="$1" msg="$2" def="${3:-Y}"
   local val
@@ -357,7 +436,7 @@ if [[ "$NON_INTERACTIVE" -eq 0 ]]; then
   log "請輸入安裝參數（直接 Enter 使用預設值）"
   prompt APP_ENV "APP_ENV" "$APP_ENV"
   prompt APP_BASE_PATH "APP_BASE_PATH" "$APP_BASE_PATH"
-  prompt ALLOWED_HOSTS "ALLOWED_HOSTS（正式環境必填 FQDN，逗號分隔）" "${ALLOWED_HOSTS:-localhost}"
+  prompt_allowed_hosts ALLOWED_HOSTS
   prompt DB_HOST "DB_HOST" "$DB_HOST"
   prompt DB_PORT "DB_PORT" "$DB_PORT"
   prompt DB_NAME "DB_NAME" "$DB_NAME"
@@ -368,8 +447,15 @@ if [[ "$NON_INTERACTIVE" -eq 0 ]]; then
 fi
 
 [[ -n "$DB_PASSWORD" ]] || die "DB_PASSWORD 必填"
-if [[ "$APP_ENV" == "production" && -z "$ALLOWED_HOSTS" ]]; then
-  die "production 必須設定 ALLOWED_HOSTS"
+if [[ "$APP_ENV" == "production" ]]; then
+  [[ -n "$ALLOWED_HOSTS" ]] || die "production 必須設定 ALLOWED_HOSTS"
+  IFS=',' read -ra _ah <<< "$ALLOWED_HOSTS"
+  for h in "${_ah[@]}"; do
+    h="$(echo "$h" | tr -d '[:space:]')"
+    case "${h,,}" in
+      \*|localhost|127.0.0.1|0.0.0.0) die "production ALLOWED_HOSTS 不可含不安全 host: $h" ;;
+    esac
+  done
 fi
 
 preflight_checks
@@ -418,7 +504,7 @@ if [[ "$NON_INTERACTIVE" -eq 0 ]]; then
   ask_yes local_ans "是否建立 admin 帳號？" "$DEF_CREATE_ADMIN"
   CREATE_ADMIN="$local_ans"
   if [[ "$CREATE_ADMIN" -eq 1 ]]; then
-    prompt_secret ADMIN_PASSWORD "admin 密碼（≥8，含字母與數字）"
+    prompt_admin_password ADMIN_PASSWORD
   fi
 
   if [[ "$APP_ENV" == "production" ]]; then
@@ -438,8 +524,13 @@ else
   fi
 fi
 
-if [[ "$CREATE_ADMIN" -eq 1 && -z "$ADMIN_PASSWORD" ]]; then
-  die "CREATE_ADMIN 需要 ADMIN_PASSWORD"
+if [[ "$CREATE_ADMIN" -eq 1 ]]; then
+  if [[ -z "$ADMIN_PASSWORD" ]]; then
+    die "CREATE_ADMIN 需要 ADMIN_PASSWORD"
+  fi
+  if [[ ${#ADMIN_PASSWORD} -lt 8 || ! "$ADMIN_PASSWORD" =~ [A-Za-z] || ! "$ADMIN_PASSWORD" =~ [0-9] ]]; then
+    die "ADMIN_PASSWORD 須≥8字元且含英文字母與數字"
+  fi
 fi
 
 # ---------- Composer ----------
@@ -588,7 +679,16 @@ fi
 
 # ---------- 驗證 ----------
 log "php yii config/validate"
-php yii config/validate || die "config/validate 失敗"
+# 確保 CLI 能讀到正式主金鑰（與 PHP-FPM 的 key file 路徑一致）
+export VOTING_MASTER_KEY="${VOTING_MASTER_KEY:-${MASTER_KEY-}}"
+if [[ -z "${VOTING_MASTER_KEY-}" && -f "${MASTER_KEY_FILE:-/etc/voting/master.key}" ]]; then
+  export VOTING_MASTER_KEY="$(tr -d '\r\n' < "$MASTER_KEY_FILE")"
+fi
+set +e
+php yii config/validate
+_validate_rc=$?
+set -e
+[[ "$_validate_rc" -eq 0 ]] || die "config/validate 失敗 (exit=${_validate_rc})"
 
 log "安裝完成"
 cat <<EOF

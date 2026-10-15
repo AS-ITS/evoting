@@ -1,6 +1,7 @@
 <?php
 namespace app\config;
 
+use app\components\MasterKeyLoader;
 use Yii;
 use yii\base\InvalidConfigException;
 
@@ -260,22 +261,21 @@ class ConfigValidator
     {
         $errors = [];
 
-        // 檢查 MASTER_KEY
-        $masterKey = getenv('MASTER_KEY');
-        if (!$masterKey) {
-            $errors[] = '環境變數 MASTER_KEY 未設定（用於解密 .env 中的敏感資料）' . "\n" .
-                        '請使用以下命令生成：php -r "echo base64_encode(random_bytes(64)) . PHP_EOL;"';
-        } else {
-            // 驗證 MASTER_KEY 格式
-            $decoded = base64_decode($masterKey, true);
-            if ($decoded === false) {
-                $errors[] = 'MASTER_KEY 不是有效的 Base64 編碼';
-            } elseif (strlen($decoded) < 32) {
-                $errors[] = sprintf(
-                    'MASTER_KEY 解碼後長度不足（當前：%d bytes，建議：至少 32 bytes）',
-                    strlen($decoded)
-                );
+        // 主金鑰來源（優先序與 MasterKeyLoader 一致）：
+        // VOTING_MASTER_KEY → 金鑰檔 →（非正式）.env MASTER_KEY
+        try {
+            $loader = MasterKeyLoader::getInstance();
+            $masterKey = $loader->loadKey();
+            if (!$loader->validateKey($masterKey)) {
+                $errors[] = '主金鑰格式無效（需 Base64，解碼後建議 ≥32 bytes）' . "\n" .
+                    '來源: ' . ($loader->getKeySource() ?: 'unknown');
             }
+        } catch (InvalidConfigException $e) {
+            $errors[] = '主金鑰未設定或無法載入（用於解密 .env 敏感資料）' . "\n" .
+                '請設定 VOTING_MASTER_KEY、金鑰檔（Linux: /etc/voting/master.key）' .
+                '，或非正式環境的 .env MASTER_KEY。' . "\n" .
+                '產生：php -r "echo base64_encode(random_bytes(64)) . PHP_EOL;"' . "\n" .
+                '細節：' . $e->getMessage();
         }
 
         // 檢查 OpenSSL 擴充是否可用
