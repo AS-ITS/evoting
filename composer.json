@@ -35,7 +35,7 @@
         "yiisoft/yii2-symfonymailer": "~3.0.0",
         "yiisoft/yii2-jui": "~2.0.0",
         "yiisoft/yii2-composer": "~2.0.4",
-        "bower-asset/jquery": "3.6.*@stable | 3.5.*@stable | 3.4.*@stable | 3.3.*@stable | 3.2.*@stable | 3.1.*@stable | 2.2.*@stable | 2.1.*@stable | 1.11.*@stable | 1.12.*@stable",
+        "bower-asset/jquery": "^3.7.1",
         "bower-asset/jquery-ui": "~1.12.1",
         "bower-asset/inputmask": "^5.0.8",
         "bower-asset/punycode": "^2.2",
