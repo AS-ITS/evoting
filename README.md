@@ -14,7 +14,7 @@ Electronic voting platform (general-purpose; originally a reference implementati
 
 1. Stable: `git clone --branch v1.0.0 --depth 1 https://github.com/AS-ITS/evoting.git`
    Contributors: clone the default branch instead. Do **not** use `composer create-project`.
-2. **Recommended (fresh install):** `sudo bash scripts/install.sh` (composer, writable dirs, `.env`, optional DB + `init_db.sql`, admin). For upgrades see [SETUP.md](SETUP.md) — do **not** re-run `init_db.sql`.
+2. **Recommended (fresh install):** one-liner in [SETUP.md](SETUP.md) (`git clone … && cd … && sudo bash scripts/install.sh`). For upgrades — do **not** re-run `init_db.sql`.
 3. Or manually: `composer install --prefer-dist`, then `bash scripts/ensure-writable-dirs.sh`, copy `.env.example` → `.env`, import [`docs/init_db.sql`](docs/init_db.sql), `php yii admin/create`, point Document Root to `web/`
 
 Full install, Web Server samples, and production checklist: **[SETUP.md](SETUP.md)** (Traditional Chinese).  
@@ -34,7 +34,7 @@ Vote types: open ballot (no auth) and anonymous (one-time passwords). Maintenanc
 
 1. 穩定版：`git clone --branch v1.0.0 --depth 1 https://github.com/AS-ITS/evoting.git`
    參與開發者可改為 clone 預設分支。**不要**使用 `composer create-project`
-2. **建議新裝**：`sudo bash scripts/install.sh`（依賴、可寫目錄、`.env`、可選建庫／`init_db.sql`／admin）。**升級勿再跑 init_db**，見 [SETUP.md](SETUP.md)
+2. **建議新裝**：見 [SETUP.md](SETUP.md) 一行指令（`git clone … && cd … && sudo bash scripts/install.sh`）。**升級勿再跑 init_db**
 3. 或手動：`composer install --prefer-dist` → `bash scripts/ensure-writable-dirs.sh` → 設定 `.env` → 匯入 [`docs/init_db.sql`](docs/init_db.sql) → `php yii admin/create` → Document Root 指向 `web/`
 
 完整安裝、Web Server 設定與正式環境檢查表見 **[SETUP.md](SETUP.md)**。  
