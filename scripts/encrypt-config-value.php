@@ -26,7 +26,7 @@ if ($argc < 2) {
 $plain = (string) $argv[1];
 
 try {
-    $masterKey = (new MasterKeyLoader())->loadKey();
+    $masterKey = MasterKeyLoader::getInstance()->loadKey();
     $kd = new KeyDerivation($masterKey);
     $secret = $kd->deriveConfigKey();
     $iv = $kd->deriveConfigIv();
