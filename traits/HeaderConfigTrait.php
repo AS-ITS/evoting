@@ -20,9 +20,13 @@ trait HeaderConfigTrait
         $this->getAttrDetByAuto();
 
         // 根據 RFC2616 規範，HTTP 頭部是不區分大小寫的
-        $headers = array_change_key_case(getallheaders(), CASE_LOWER);
-        foreach ($headers as $name => $value)
-        {
+        // 須呼叫全域 \getallheaders()（CLI 由 ralouphie/getallheaders polyfill 提供）
+        $raw = \function_exists('getallheaders') ? \getallheaders() : [];
+        if (!\is_array($raw)) {
+            $raw = [];
+        }
+        $headers = \array_change_key_case($raw, CASE_LOWER);
+        foreach ($headers as $name => $value) {
             $this->_headers[$name] = $value;
         }
     }
