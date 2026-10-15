@@ -45,7 +45,7 @@ usage() {
   --no-dev            composer install --no-dev --optimize-autoloader
   --skip-composer     略過 composer install
   --check-only        只做環境檢查後結束
-  --reencrypt-db-password  強制重加密 .env DB_PASSWORD（沿用 master.key 時預設保留既有密文）
+  --reencrypt-db-password  （已廢棄／等同預設）安裝時一律用輸入的明文重加密；若要保留舊密文請 export KEEP_ENCRYPTED_DB_PASSWORD=1
   -h, --help          說明
 EOF
 }
@@ -578,7 +578,14 @@ elif [[ -n "$EXISTING_COOKIE" ]]; then
 else
   COOKIE_VALIDATION_KEY="$(php -r 'echo bin2hex(random_bytes(32));')"
 fi
-MASTER_KEY="${MASTER_KEY:-$(php -r 'echo base64_encode(random_bytes(64));')}"
+# 金鑰來源優先：既有 VOTING_MASTER_KEY → 稍後 key file → 否則新產生
+if [[ -n "${VOTING_MASTER_KEY-}" ]]; then
+  MASTER_KEY="$VOTING_MASTER_KEY"
+elif [[ -z "${MASTER_KEY-}" && -f "$MASTER_KEY_FILE" ]]; then
+  MASTER_KEY="$(tr -d '\r\n' < "$MASTER_KEY_FILE")"
+else
+  MASTER_KEY="${MASTER_KEY:-$(php -r 'echo base64_encode(random_bytes(64));')}"
+fi
 
 set_env_key APP_ENV "$APP_ENV"
 set_env_key APP_BASE_PATH "$APP_BASE_PATH"
@@ -590,39 +597,53 @@ set_env_key DB_USERNAME "$DB_USERNAME"
 set_env_key ALLOWED_HOSTS "$ALLOWED_HOSTS"
 set_env_key COOKIE_VALIDATION_KEY "$COOKIE_VALIDATION_KEY"
 
-# 主金鑰：只要 key file 存在，執行期一定優先用它（高於 .env MASTER_KEY）
-# → 不可再寫一組開發用 MASTER_KEY，否則與 DB 密文錯位
-USE_KEY_FILE=0
+# 主金鑰決策（與 MasterKeyLoader 優先序對齊）：
+#   VOTING_MASTER_KEY（環境）> key file > .env MASTER_KEY（僅無前兩者時）
+# 只要會走 key file / VOTING_MASTER_KEY，就不要寫衝突的 .env MASTER_KEY，
+# 且 DB_PASSWORD 一律用「安裝時輸入的明文」以目前主金鑰加密寫回。
+USE_EXTERNAL_KEY=0
+if [[ -n "${VOTING_MASTER_KEY-}" ]]; then
+  USE_EXTERNAL_KEY=1
+  MASTER_KEY="$VOTING_MASTER_KEY"
+  log "使用環境變數 VOTING_MASTER_KEY 作為主金鑰"
+fi
+
 if [[ -f "$MASTER_KEY_FILE" ]]; then
-  USE_KEY_FILE=1
-  MASTER_KEY="$(tr -d '\r\n' < "$MASTER_KEY_FILE")"
-  if [[ "$APP_ENV" != "production" ]]; then
-    warn "偵測到既有 $MASTER_KEY_FILE：即使 APP_ENV=$APP_ENV 也會沿用此檔（略過 .env MASTER_KEY）"
-  else
-    log "沿用既有主金鑰檔: $MASTER_KEY_FILE"
+  FILE_KEY="$(tr -d '\r\n' < "$MASTER_KEY_FILE")"
+  if [[ "$USE_EXTERNAL_KEY" -eq 1 && "$MASTER_KEY" != "$FILE_KEY" ]]; then
+    warn "$MASTER_KEY_FILE 與 VOTING_MASTER_KEY 內容不同；執行期以 VOTING_MASTER_KEY 為準（較高優先序）"
+  elif [[ "$USE_EXTERNAL_KEY" -eq 0 ]]; then
+    USE_EXTERNAL_KEY=1
+    MASTER_KEY="$FILE_KEY"
+    if [[ "$APP_ENV" != "production" ]]; then
+      warn "偵測到既有 $MASTER_KEY_FILE：即使 APP_ENV=$APP_ENV 也會沿用此檔（略過 .env MASTER_KEY）"
+    else
+      log "沿用既有主金鑰檔: $MASTER_KEY_FILE"
+    fi
   fi
 elif [[ "$APP_ENV" == "production" ]]; then
-  [[ "$(id -u)" -eq 0 ]] || die "正式環境需 root 寫入 $MASTER_KEY_FILE（會自動 mkdir），或先 export VOTING_MASTER_KEY=…"
+  # 無檔：寫入目前 MASTER_KEY（可能來自 VOTING_MASTER_KEY 或新產生）
+  [[ "$(id -u)" -eq 0 ]] || die "正式環境需 root 寫入 $MASTER_KEY_FILE（會自動 mkdir -p），或僅 export VOTING_MASTER_KEY（須確保 PHP-FPM 也看得到）"
   mkdir -p "$(dirname "$MASTER_KEY_FILE")"
   printf '%s\n' "$MASTER_KEY" > "$MASTER_KEY_FILE"
   chmod 600 "$MASTER_KEY_FILE"
   chown "${PHP_USER}:${PHP_USER}" "$MASTER_KEY_FILE" 2>/dev/null || true
-  USE_KEY_FILE=1
-  log "已寫入主金鑰: $MASTER_KEY_FILE（0600, owner=$PHP_USER；目錄不存在會自動建立）"
+  USE_EXTERNAL_KEY=1
+  log "已寫入主金鑰: $MASTER_KEY_FILE（0600, owner=$PHP_USER；/etc/voting 不存在會自動建立）"
 fi
 
-if [[ "$USE_KEY_FILE" -eq 1 ]]; then
-  export VOTING_MASTER_KEY="$MASTER_KEY"
+export VOTING_MASTER_KEY="$MASTER_KEY"
+
+if [[ "$USE_EXTERNAL_KEY" -eq 1 ]]; then
   if grep -qE '^[# ]*MASTER_KEY=' .env 2>/dev/null; then
-    sed -i -E 's/^[# ]*MASTER_KEY=.*/# MASTER_KEY=  # use key file or VOTING_MASTER_KEY/' .env
+    sed -i -E 's/^[# ]*MASTER_KEY=.*/# MASTER_KEY=  # use VOTING_MASTER_KEY or key file/' .env
   fi
-  # 與執行期同一把鑰匙 → DB_PASSWORD 必須用該鑰匙加密（或沿用同鑰匙密文）
-  if [[ "$REENCRYPT_DB_PASSWORD" -eq 0 && "$MASTER_KEY_EXISTED" -eq 1 ]] \
+  if [[ "$REENCRYPT_DB_PASSWORD" -eq 0 ]] && [[ "${KEEP_ENCRYPTED_DB_PASSWORD-0}" == "1" ]] \
     && looks_encrypted_env_value "$EXISTING_DB_PASSWORD"; then
-    log "沿用 .env 既有加密 DB_PASSWORD（master.key 已存在；重加密請 --reencrypt-db-password）"
+    log "KEEP_ENCRYPTED_DB_PASSWORD=1：沿用 .env 既有加密 DB_PASSWORD"
     set_env_key DB_PASSWORD "$EXISTING_DB_PASSWORD"
   else
-    log "以目前主金鑰加密 DB_PASSWORD 寫入 .env"
+    log "以目前主金鑰加密安裝時輸入的 DB_PASSWORD 寫入 .env"
     [[ -f scripts/encrypt-config-value.php ]] || die "缺少 scripts/encrypt-config-value.php"
     ENC_DB_PASSWORD="$(php scripts/encrypt-config-value.php "$DB_PASSWORD")" \
       || die "加密 DB_PASSWORD 失敗（請確認 VOTING_MASTER_KEY／$MASTER_KEY_FILE）"
@@ -635,9 +656,10 @@ else
     MASTER_KEY="$EXISTING_MASTER"
     log "沿用 .env 既有 MASTER_KEY"
   fi
+  export VOTING_MASTER_KEY="$MASTER_KEY"
   set_env_key MASTER_KEY "$MASTER_KEY"
   set_env_key DB_PASSWORD "$DB_PASSWORD"
-  log "已寫入開發用 MASTER_KEY 與明文 DB_PASSWORD 至 .env（無 $MASTER_KEY_FILE）"
+  log "已寫入開發用 MASTER_KEY 與明文 DB_PASSWORD 至 .env（無外部主金鑰）"
 fi
 
 chmod 640 .env || true
