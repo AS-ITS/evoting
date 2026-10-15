@@ -32,7 +32,7 @@
         "lib-pcre": "*",
         "yiisoft/yii2": "^2.0",
         "yiisoft/yii2-bootstrap5": "^2.0",
-        "yiisoft/yii2-symfonymailer": "~3.0.0",
+        "yiisoft/yii2-symfonymailer": "~4.0.0",
         "yiisoft/yii2-jui": "~2.0.0",
         "yiisoft/yii2-composer": "~2.0.4",
         "bower-asset/jquery": "3.6.*@stable | 3.5.*@stable | 3.4.*@stable | 3.3.*@stable | 3.2.*@stable | 3.1.*@stable | 2.2.*@stable | 2.1.*@stable | 1.11.*@stable | 1.12.*@stable",
