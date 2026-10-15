@@ -326,7 +326,7 @@ set_env_key DB_HOST "$DB_HOST"
 set_env_key DB_PORT "$DB_PORT"
 set_env_key DB_NAME "$DB_NAME"
 set_env_key DB_USERNAME "$DB_USERNAME"
-set_env_key DB_PASSWORD "$DB_PASSWORD"
+# DB_PASSWORD：正式寫密文（見下方主金鑰區塊）；開發寫明文
 set_env_key ALLOWED_HOSTS "$ALLOWED_HOSTS"
 set_env_key COOKIE_VALIDATION_KEY "$COOKIE_VALIDATION_KEY"
 
@@ -349,6 +349,18 @@ if [[ "$APP_ENV" == "production" ]]; then
 else
   set_env_key MASTER_KEY "$MASTER_KEY"
   log "已寫入開發用 MASTER_KEY 至 .env"
+fi
+
+# DB_PASSWORD：正式必須密文；明文只留在 shell 變數給 mysql CLI
+if [[ "$APP_ENV" == "production" ]]; then
+  log "正式環境：加密 DB_PASSWORD 後寫入 .env（.env 不留明文）"
+  export VOTING_MASTER_KEY="${VOTING_MASTER_KEY:-$MASTER_KEY}"
+  [[ -f scripts/encrypt-config-value.php ]]     || die "缺少 scripts/encrypt-config-value.php"
+  ENC_DB_PASSWORD="$(php scripts/encrypt-config-value.php "$DB_PASSWORD")"     || die "加密 DB_PASSWORD 失敗（請確認 VOTING_MASTER_KEY／$MASTER_KEY_FILE）"
+  [[ -n "$ENC_DB_PASSWORD" ]] || die "加密結果為空"
+  set_env_key DB_PASSWORD "$ENC_DB_PASSWORD"
+else
+  set_env_key DB_PASSWORD "$DB_PASSWORD"
 fi
 
 chmod 640 .env || true
@@ -384,15 +396,6 @@ if [[ "$INIT_DB" -eq 1 ]]; then
   log "init_db.sql 完成"
 fi
 
-# ---------- 正式環境：加密 DB_PASSWORD（不經 php yii，避免 console 啟動雞生蛋）----------
-if [[ "$APP_ENV" == "production" ]]; then
-  log "正式環境：以目前主金鑰加密 DB_PASSWORD 寫回 .env"
-  export VOTING_MASTER_KEY="${VOTING_MASTER_KEY:-$MASTER_KEY}"
-  [[ -f scripts/encrypt-config-value.php ]]     || die "缺少 scripts/encrypt-config-value.php"
-  ENC_DB_PASSWORD="$(php scripts/encrypt-config-value.php "$DB_PASSWORD")"     || die "加密 DB_PASSWORD 失敗（請確認 VOTING_MASTER_KEY／$MASTER_KEY_FILE）"
-  [[ -n "$ENC_DB_PASSWORD" ]] || die "加密結果為空"
-  set_env_key DB_PASSWORD "$ENC_DB_PASSWORD"
-fi
 
 # ---------- admin ----------
 if [[ "$CREATE_ADMIN" -eq 1 ]]; then

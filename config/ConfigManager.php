@@ -217,15 +217,26 @@ class ConfigManager
                 $iv
             );
 
-            // openssl 失敗多半是「長得像 Base64 的明文」或金鑰不符；
-            // 拋例外會讓 console／安裝無法啟動，改回傳原值當明文（DB 連線錯再暴露問題）
             if ($decrypted === false) {
-                return $encryptedValue;
+                // 非正式：可能是「長得像 Base64 的明文」；正式：密文必須可解
+                if (!$this->isProduction()) {
+                    return $encryptedValue;
+                }
+                throw new InvalidConfigException(
+                    "解密失敗：請確認資料是否使用當前 MASTER_KEY 加密"
+                );
             }
 
             return $decrypted;
+        } catch (InvalidConfigException $e) {
+            throw $e;
         } catch (\Exception $e) {
-            return $encryptedValue;
+            if (!$this->isProduction()) {
+                return $encryptedValue;
+            }
+            throw new InvalidConfigException(
+                "解密錯誤：" . $e->getMessage()
+            );
         }
     }
 
