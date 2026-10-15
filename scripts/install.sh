@@ -21,6 +21,8 @@ CREATE_ADMIN=0
 FORCE_INIT_DB=0
 SKIP_COMPOSER=0
 NO_DEV=0
+CHECK_ONLY=0
+REENCRYPT_DB_PASSWORD=0
 
 usage() {
   cat <<'EOF'
@@ -42,6 +44,8 @@ usage() {
   --create-admin      執行 php yii admin/create
   --no-dev            composer install --no-dev --optimize-autoloader
   --skip-composer     略過 composer install
+  --check-only        只做環境檢查後結束
+  --reencrypt-db-password  強制重加密 .env DB_PASSWORD（沿用 master.key 時預設保留既有密文）
   -h, --help          說明
 EOF
 }
@@ -55,6 +59,8 @@ while [[ $# -gt 0 ]]; do
     --create-admin) CREATE_ADMIN=1 ;;
     --no-dev) NO_DEV=1 ;;
     --skip-composer) SKIP_COMPOSER=1 ;;
+    --check-only) CHECK_ONLY=1 ;;
+    --reencrypt-db-password) REENCRYPT_DB_PASSWORD=1 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "未知選項: $1" >&2; usage; exit 2 ;;
   esac
@@ -62,10 +68,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 log() { echo "==> $*"; }
+warn() { echo "WARN: $*" >&2; }
 die() { echo "FAIL: $*" >&2; exit 1; }
 
 prompt() {
-  # prompt VAR "說明" "預設"
   local var="$1" msg="$2" def="${3-}"
   local val
   if [[ "$NON_INTERACTIVE" -eq 1 ]]; then
@@ -99,7 +105,6 @@ prompt_secret() {
 }
 
 ask_yes() {
-  # ask_yes VAR "說明" default_Y_or_N
   local var="$1" msg="$2" def="${3:-Y}"
   local val
   if [[ "$NON_INTERACTIVE" -eq 1 ]]; then
@@ -118,7 +123,6 @@ set_env_key() {
   local tmp
   tmp="$(mktemp)"
   if grep -qE "^[# ]*${key}=" "$file" 2>/dev/null; then
-    # 取消註解並設定；保留其他行
     awk -v k="$key" -v v="$value" '
       BEGIN { done=0 }
       {
@@ -137,6 +141,23 @@ set_env_key() {
   mv "$tmp" "$file"
 }
 
+get_env_key() {
+  local key="$1" file="${2:-.env}"
+  [[ -f "$file" ]] || return 0
+  local line
+  line="$(grep -E "^[[:space:]]*${key}=" "$file" 2>/dev/null | tail -1 || true)"
+  [[ -n "$line" ]] || return 0
+  printf '%s' "${line#*=}"
+}
+
+version_ge() {
+  printf '%s\n%s\n' "$2" "$1" | sort -V | head -1 | grep -qx "$2"
+}
+
+php_version_id() {
+  php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION.".".PHP_RELEASE_VERSION;'
+}
+
 detect_php_user() {
   local u
   u="$(ps aux 2>/dev/null | grep -E 'php-fpm: pool' | grep -v grep | awk '{print $1}' | head -1 || true)"
@@ -152,7 +173,6 @@ detect_php_user() {
 }
 
 mysql_cmd() {
-  # 使用應用帳號
   mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" -p"$DB_PASSWORD" "$@"
 }
 
@@ -160,13 +180,25 @@ mysql_root_cmd() {
   if [[ -n "${DB_ROOT_PASSWORD-}" ]]; then
     mysql -h "$DB_HOST" -P "$DB_PORT" -u root -p"$DB_ROOT_PASSWORD" "$@"
   else
-    # 常見：本機 unix_socket
     mysql -u root "$@"
   fi
 }
 
 table_count() {
   mysql_cmd -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${DB_NAME}' AND table_type='BASE TABLE';" 2>/dev/null || echo "0"
+}
+
+db_schema_exists() {
+  mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" -p"$DB_PASSWORD" -N -e \
+    "SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='${DB_NAME}';" 2>/dev/null \
+    | tr -d '[:space:]' || echo "0"
+}
+
+looks_encrypted_env_value() {
+  local v="$1"
+  [[ ${#v} -ge 24 ]] || return 1
+  [[ "$v" =~ ^[A-Za-z0-9+/=]+$ ]] || return 1
+  return 0
 }
 
 find_composer() {
@@ -194,7 +226,6 @@ ensure_extensions_php() {
   fi
   log "extensions.php 不完整，嘗試修復 yiisoft/yii2-composer 註冊…"
   "$COMPOSER_BIN" config allow-plugins.yiisoft/yii2-composer true
-  # 重裝以觸發 Installer::addPackage（插件若晚於套件解壓啟動會留下空 extensions.php）
   "$COMPOSER_BIN" reinstall yiisoft/yii2-composer yiisoft/yii2 yiisoft/yii2-bootstrap5 \
     --no-interaction \
     || "$COMPOSER_BIN" update yiisoft/yii2-composer --with-dependencies --no-interaction --prefer-dist \
@@ -203,17 +234,99 @@ ensure_extensions_php() {
     return 0
   fi
   log "改從 installed.json 重建 extensions.php…"
-  [[ -f scripts/rebuild-yii-extensions.php ]]     || die "缺少 scripts/rebuild-yii-extensions.php（請一併更新此檔）。或: export COMPOSER_ALLOW_SUPERUSER=1 && composer reinstall yiisoft/yii2-bootstrap5 --no-interaction"
-  php scripts/rebuild-yii-extensions.php     || die "extensions.php 仍缺 yii2-bootstrap5。請手動: export COMPOSER_ALLOW_SUPERUSER=1 && composer reinstall yiisoft/yii2-bootstrap5 --no-interaction"
+  [[ -f scripts/rebuild-yii-extensions.php ]] \
+    || die "缺少 scripts/rebuild-yii-extensions.php（請一併更新此檔）。或: export COMPOSER_ALLOW_SUPERUSER=1 && composer reinstall yiisoft/yii2-bootstrap5 --no-interaction"
+  php scripts/rebuild-yii-extensions.php \
+    || die "extensions.php 仍缺 yii2-bootstrap5。請手動: export COMPOSER_ALLOW_SUPERUSER=1 && composer reinstall yiisoft/yii2-bootstrap5 --no-interaction"
   extensions_php_ok \
     || die "extensions.php 仍缺 yii2-bootstrap5。請手動: php scripts/rebuild-yii-extensions.php"
 }
 
-# ---------- 前置檢查 ----------
-command -v php >/dev/null || die "需要 php"
+preflight_checks() {
+  log "環境檢查…"
+  local php_ver missing=() ext ver_raw ver web_ok=0
+
+  command -v php >/dev/null || die "需要 php（建議 PHP 8.2+）"
+  php_ver="$(php_version_id)"
+  if ! version_ge "$php_ver" "8.2.0"; then
+    die "PHP ${php_ver} < 8.2.0（composer.json 要求 >=8.2，無法繼續）"
+  fi
+  log "PHP ${php_ver} OK"
+
+  for ext in pdo_mysql openssl mbstring gd curl json; do
+    php -m 2>/dev/null | grep -qi "^${ext}$" || missing+=("$ext")
+  done
+  if [[ ${#missing[@]} -gt 0 ]]; then
+    die "缺少 PHP 擴展: ${missing[*]}（見 SETUP.md）"
+  fi
+  log "必要 PHP 擴展 OK"
+
+  missing=()
+  for ext in ctype dom fileinfo iconv simplexml xml zip zlib; do
+    php -m 2>/dev/null | grep -qi "^${ext}$" || missing+=("$ext")
+  done
+  if [[ ${#missing[@]} -gt 0 ]]; then
+    warn "建議 PHP 擴展未偵測到: ${missing[*]}（通常不阻擋安裝）"
+  fi
+
+  if command -v mysql >/dev/null 2>&1; then
+    ver_raw="$(mysql --version 2>/dev/null || true)"
+    log "mysql client: ${ver_raw:-unknown}"
+    ver=""
+    if [[ -n "${DB_PASSWORD-}" ]]; then
+      ver="$(mysql -h "${DB_HOST:-127.0.0.1}" -P "${DB_PORT:-3306}" -u "${DB_USERNAME:-voting}" -p"${DB_PASSWORD}" -N -e 'SELECT VERSION();' 2>/dev/null || true)"
+    fi
+    if [[ -z "$ver" && "$(id -u)" -eq 0 ]]; then
+      ver="$(mysql -N -e 'SELECT VERSION();' 2>/dev/null || true)"
+    fi
+    if [[ -n "$ver" ]]; then
+      log "DB server VERSION=${ver}"
+      if echo "$ver" | grep -qi mariadb; then
+        local mver
+        mver="$(echo "$ver" | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1)"
+        if [[ -n "$mver" ]] && ! version_ge "$mver" "10.6.0"; then
+          warn "MariaDB ${mver} < 建議 10.6（不阻擋安裝，請自行評估）"
+        fi
+      else
+        local sver
+        sver="$(echo "$ver" | grep -oE '^[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1)"
+        if [[ -n "$sver" ]] && ! version_ge "$sver" "8.0.0"; then
+          warn "MySQL ${sver} < 建議 8.0（不阻擋安裝，請自行評估）"
+        fi
+      fi
+    else
+      warn "無法取得 DB server 版本（稍後建庫／連線時再驗證）"
+    fi
+  else
+    warn "找不到 mysql 客戶端；若要建庫／init_db 會失敗"
+  fi
+
+  if command -v nginx >/dev/null 2>&1 || systemctl is-active --quiet nginx 2>/dev/null; then
+    web_ok=1
+    log "偵測到 nginx: $(nginx -v 2>&1 || true)"
+  fi
+  if command -v httpd >/dev/null 2>&1 || command -v apache2 >/dev/null 2>&1 \
+    || systemctl is-active --quiet httpd 2>/dev/null || systemctl is-active --quiet apache2 2>/dev/null; then
+    web_ok=1
+    log "偵測到 Apache: $(httpd -v 2>&1 | head -1 || apache2 -v 2>&1 | head -1 || true)"
+  fi
+  if [[ "$web_ok" -eq 0 ]]; then
+    warn "未偵測到 nginx／Apache（不阻擋安裝；請稍後設定 Document Root → web/）"
+  fi
+
+  if ! systemctl is-active --quiet php-fpm 2>/dev/null \
+    && ! systemctl is-active --quiet php82-php-fpm 2>/dev/null \
+    && ! systemctl is-active --quiet php8.2-fpm 2>/dev/null \
+    && ! pgrep -f 'php-fpm: pool' >/dev/null 2>&1; then
+    warn "未偵測到 PHP-FPM 執行中（不阻擋安裝；請確認 PHP_USER）"
+  else
+    log "PHP-FPM 似乎在執行中"
+  fi
+}
+
+# ---------- 前置 ----------
 COMPOSER_BIN="$(find_composer)" || die "需要 composer（請安裝或將 /usr/local/bin 加入 PATH）"
 export PATH="$(dirname "$COMPOSER_BIN"):$PATH"
-# root 下非互動 composer 會禁用插件 → extensions.php 空檔；必須允許
 if [[ "$(id -u)" -eq 0 ]]; then
   export COMPOSER_ALLOW_SUPERUSER=1
 fi
@@ -236,6 +349,9 @@ APP_PATH_UPLOADS="${APP_PATH_UPLOADS:-/var/www/uploads/voting}"
 PHP_USER="${PHP_USER:-$(detect_php_user)}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD-}"
 DB_ROOT_PASSWORD="${DB_ROOT_PASSWORD-}"
+MASTER_KEY_FILE="${MASTER_KEY_FILE:-/etc/voting/master.key}"
+MASTER_KEY_EXISTED=0
+[[ -f "$MASTER_KEY_FILE" ]] && MASTER_KEY_EXISTED=1
 
 if [[ "$NON_INTERACTIVE" -eq 0 ]]; then
   log "請輸入安裝參數（直接 Enter 使用預設值）"
@@ -249,18 +365,57 @@ if [[ "$NON_INTERACTIVE" -eq 0 ]]; then
   prompt_secret DB_PASSWORD "DB_PASSWORD（應用程式連線密碼）"
   prompt APP_PATH_UPLOADS "APP_PATH_UPLOADS" "$APP_PATH_UPLOADS"
   prompt PHP_USER "PHP_USER（PHP-FPM 執行身分）" "$PHP_USER"
+fi
 
+[[ -n "$DB_PASSWORD" ]] || die "DB_PASSWORD 必填"
+if [[ "$APP_ENV" == "production" && -z "$ALLOWED_HOSTS" ]]; then
+  die "production 必須設定 ALLOWED_HOSTS"
+fi
+
+preflight_checks
+if [[ "$CHECK_ONLY" -eq 1 ]]; then
+  log "check-only：環境檢查結束"
+  exit 0
+fi
+
+DB_PRESENT=0
+DB_TABLES=0
+if command -v mysql >/dev/null 2>&1; then
+  if [[ "$(db_schema_exists)" == "1" ]]; then
+    DB_PRESENT=1
+    DB_TABLES="$(table_count | tr -d '[:space:]' || echo 0)"
+    log "偵測到資料庫 ${DB_NAME} 已存在（表數量=${DB_TABLES}）"
+  else
+    log "資料庫 ${DB_NAME} 尚不存在（或目前帳號無法讀 information_schema）"
+  fi
+fi
+
+DEF_WITH_DB=Y
+DEF_INIT_DB=Y
+DEF_CREATE_ADMIN=Y
+if [[ "$DB_PRESENT" -eq 1 ]]; then
+  DEF_WITH_DB=N
+  if [[ "${DB_TABLES:-0}" -gt 0 ]]; then
+    DEF_INIT_DB=N
+    log "已有業務表：預設跳過建庫與 init_db（升級請見 SETUP.md）"
+  else
+    DEF_INIT_DB=Y
+    log "空庫：預設跳過建庫、可匯入 init_db"
+  fi
+fi
+
+if [[ "$NON_INTERACTIVE" -eq 0 ]]; then
   local_ans=0
-  ask_yes local_ans "是否建立資料庫與使用者（需 root／高權限）？" "Y"
+  ask_yes local_ans "是否建立資料庫與使用者（需 root／高權限）？" "$DEF_WITH_DB"
   WITH_DB="$local_ans"
   if [[ "$WITH_DB" -eq 1 ]]; then
     prompt_secret DB_ROOT_PASSWORD "MySQL/MariaDB root 密碼（本機 socket 可留空）"
   fi
 
-  ask_yes local_ans "是否匯入 docs/init_db.sql（僅空庫）？" "Y"
+  ask_yes local_ans "是否匯入 docs/init_db.sql（僅空庫）？" "$DEF_INIT_DB"
   INIT_DB="$local_ans"
 
-  ask_yes local_ans "是否建立 admin 帳號？" "Y"
+  ask_yes local_ans "是否建立 admin 帳號？" "$DEF_CREATE_ADMIN"
   CREATE_ADMIN="$local_ans"
   if [[ "$CREATE_ADMIN" -eq 1 ]]; then
     prompt_secret ADMIN_PASSWORD "admin 密碼（≥8，含字母與數字）"
@@ -270,12 +425,19 @@ if [[ "$NON_INTERACTIVE" -eq 0 ]]; then
     ask_yes local_ans "正式環境使用 composer --no-dev？" "Y"
     NO_DEV="$local_ans"
   fi
+else
+  if [[ "$DB_PRESENT" -eq 1 ]]; then
+    if [[ "$WITH_DB" -eq 1 ]]; then
+      log "非互動：資料庫已存在，略過 --with-db"
+      WITH_DB=0
+    fi
+    if [[ "$INIT_DB" -eq 1 && "${DB_TABLES:-0}" -gt 0 && "$FORCE_INIT_DB" -eq 0 ]]; then
+      log "非互動：資料庫已有表，略過 --init-db（強制請 --force-init-db）"
+      INIT_DB=0
+    fi
+  fi
 fi
 
-[[ -n "$DB_PASSWORD" ]] || die "DB_PASSWORD 必填"
-if [[ "$APP_ENV" == "production" && -z "$ALLOWED_HOSTS" ]]; then
-  die "production 必須設定 ALLOWED_HOSTS"
-fi
 if [[ "$CREATE_ADMIN" -eq 1 && -z "$ADMIN_PASSWORD" ]]; then
   die "CREATE_ADMIN 需要 ADMIN_PASSWORD"
 fi
@@ -315,9 +477,17 @@ if [[ ! -f .env ]]; then
   cp .env.example .env
 fi
 
-COOKIE_VALIDATION_KEY="${COOKIE_VALIDATION_KEY:-$(php -r 'echo bin2hex(random_bytes(32));')}"
+EXISTING_COOKIE="$(get_env_key COOKIE_VALIDATION_KEY)"
+EXISTING_DB_PASSWORD="$(get_env_key DB_PASSWORD)"
+if [[ -n "${COOKIE_VALIDATION_KEY-}" ]]; then
+  :
+elif [[ -n "$EXISTING_COOKIE" ]]; then
+  COOKIE_VALIDATION_KEY="$EXISTING_COOKIE"
+  log "沿用 .env 既有 COOKIE_VALIDATION_KEY"
+else
+  COOKIE_VALIDATION_KEY="$(php -r 'echo bin2hex(random_bytes(32));')"
+fi
 MASTER_KEY="${MASTER_KEY:-$(php -r 'echo base64_encode(random_bytes(64));')}"
-MASTER_KEY_FILE="${MASTER_KEY_FILE:-/etc/voting/master.key}"
 
 set_env_key APP_ENV "$APP_ENV"
 set_env_key APP_BASE_PATH "$APP_BASE_PATH"
@@ -326,7 +496,6 @@ set_env_key DB_HOST "$DB_HOST"
 set_env_key DB_PORT "$DB_PORT"
 set_env_key DB_NAME "$DB_NAME"
 set_env_key DB_USERNAME "$DB_USERNAME"
-# DB_PASSWORD：正式寫密文（見下方主金鑰區塊）；開發寫明文
 set_env_key ALLOWED_HOSTS "$ALLOWED_HOSTS"
 set_env_key COOKIE_VALIDATION_KEY "$COOKIE_VALIDATION_KEY"
 
@@ -347,18 +516,29 @@ if [[ "$APP_ENV" == "production" ]]; then
   fi
   export VOTING_MASTER_KEY="$MASTER_KEY"
 else
+  EXISTING_MASTER="$(get_env_key MASTER_KEY)"
+  if [[ -n "$EXISTING_MASTER" ]]; then
+    MASTER_KEY="$EXISTING_MASTER"
+    log "沿用 .env 既有 MASTER_KEY"
+  fi
   set_env_key MASTER_KEY "$MASTER_KEY"
   log "已寫入開發用 MASTER_KEY 至 .env"
 fi
 
-# DB_PASSWORD：正式必須密文；明文只留在 shell 變數給 mysql CLI
 if [[ "$APP_ENV" == "production" ]]; then
-  log "正式環境：加密 DB_PASSWORD 後寫入 .env（.env 不留明文）"
   export VOTING_MASTER_KEY="${VOTING_MASTER_KEY:-$MASTER_KEY}"
-  [[ -f scripts/encrypt-config-value.php ]]     || die "缺少 scripts/encrypt-config-value.php"
-  ENC_DB_PASSWORD="$(php scripts/encrypt-config-value.php "$DB_PASSWORD")"     || die "加密 DB_PASSWORD 失敗（請確認 VOTING_MASTER_KEY／$MASTER_KEY_FILE）"
-  [[ -n "$ENC_DB_PASSWORD" ]] || die "加密結果為空"
-  set_env_key DB_PASSWORD "$ENC_DB_PASSWORD"
+  if [[ "$REENCRYPT_DB_PASSWORD" -eq 0 && "$MASTER_KEY_EXISTED" -eq 1 ]] \
+    && looks_encrypted_env_value "$EXISTING_DB_PASSWORD"; then
+    log "沿用 .env 既有加密 DB_PASSWORD（master.key 已存在；重加密請 --reencrypt-db-password）"
+    set_env_key DB_PASSWORD "$EXISTING_DB_PASSWORD"
+  else
+    log "正式環境：加密 DB_PASSWORD 後寫入 .env（.env 不留明文）"
+    [[ -f scripts/encrypt-config-value.php ]] || die "缺少 scripts/encrypt-config-value.php"
+    ENC_DB_PASSWORD="$(php scripts/encrypt-config-value.php "$DB_PASSWORD")" \
+      || die "加密 DB_PASSWORD 失敗（請確認 VOTING_MASTER_KEY／$MASTER_KEY_FILE）"
+    [[ -n "$ENC_DB_PASSWORD" ]] || die "加密結果為空"
+    set_env_key DB_PASSWORD "$ENC_DB_PASSWORD"
+  fi
 else
   set_env_key DB_PASSWORD "$DB_PASSWORD"
 fi
@@ -375,10 +555,9 @@ if [[ "$WITH_DB" -eq 1 ]]; then
   log "建立資料庫與使用者"
   command -v mysql >/dev/null || die "需要 mysql 客戶端"
   mysql_root_cmd -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-  # 使用者：以 localhost 為主（可再擴充）
+  # 既有使用者不 ALTER 密碼，避免覆蓋 DBA 設定
   mysql_root_cmd -e "CREATE USER IF NOT EXISTS '${DB_USERNAME}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';" \
     || mysql_root_cmd -e "CREATE USER '${DB_USERNAME}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';" || true
-  mysql_root_cmd -e "ALTER USER '${DB_USERNAME}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';" 2>/dev/null || true
   mysql_root_cmd -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USERNAME}'@'localhost'; FLUSH PRIVILEGES;"
 fi
 
@@ -387,20 +566,24 @@ if [[ "$INIT_DB" -eq 1 ]]; then
   command -v mysql >/dev/null || die "需要 mysql 客戶端"
   cnt="$(table_count | tr -d '[:space:]')"
   if [[ "${cnt:-0}" -gt 0 && "$FORCE_INIT_DB" -eq 0 ]]; then
-    die "資料庫 ${DB_NAME} 已有 ${cnt} 張表。拒絕匯入 init_db.sql（避免清空資料）。升級請見 SETUP.md；若確定新裝可加 --force-init-db"
+    warn "資料庫 ${DB_NAME} 已有 ${cnt} 張表，跳過 init_db.sql（升級見 SETUP.md；強制請 --force-init-db）"
+  else
+    if [[ "$FORCE_INIT_DB" -eq 1 && "${cnt:-0}" -gt 0 ]]; then
+      warn "--force-init-db：將對既有庫匯入 init_db.sql"
+    fi
+    mysql_cmd "$DB_NAME" < docs/init_db.sql
+    log "init_db.sql 完成"
   fi
-  if [[ "$FORCE_INIT_DB" -eq 1 && "${cnt:-0}" -gt 0 ]]; then
-    log "警告: --force-init-db，將對既有庫匯入 init_db.sql"
-  fi
-  mysql_cmd "$DB_NAME" < docs/init_db.sql
-  log "init_db.sql 完成"
 fi
-
 
 # ---------- admin ----------
 if [[ "$CREATE_ADMIN" -eq 1 ]]; then
   log "建立 admin"
-  php yii admin/create --password="$ADMIN_PASSWORD"
+  if php yii admin/create --password="$ADMIN_PASSWORD"; then
+    :
+  else
+    warn "admin/create 失敗或帳號已存在 — 略過（若為新裝請檢查密碼規則／資料庫）"
+  fi
 fi
 
 # ---------- 驗證 ----------

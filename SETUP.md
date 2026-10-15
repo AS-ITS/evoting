@@ -57,9 +57,11 @@ cd /var/www/html/voting
 sudo bash scripts/install.sh
 ```
 
-腳本會互動詢問 DB／網域／admin 密碼等，並自動：`composer install`、建立 `runtime/sessions` 等可寫目錄、寫入 `.env`、（可選）建庫、匯入 [`docs/init_db.sql`](docs/init_db.sql)、建立 `admin`、執行 `config/validate`。
+腳本會先做環境檢查（PHP／擴展硬擋；MariaDB／nginx／Apache **版本僅警示**），再互動詢問 DB／網域／admin 密碼等，並自動：`composer install`、建立可寫目錄、寫入 `.env`、（可選）建庫、匯入 [`docs/init_db.sql`](docs/init_db.sql)、建立 `admin`、執行 `config/validate`。
 
 - **僅新裝**。既有業務資料庫**不要**再跑 `--init-db`；升級見下方「從舊版升級」。
+- **沿用**：資料庫／表已存在則預設跳過建庫與 init；`/etc/voting/master.key`、既有 `.env` cookie／密文、已存在的 `admin` 會沿用（不覆蓋）。
+- 只檢查環境：`bash scripts/install.sh --check-only`（仍需能提供 `DB_PASSWORD` 等以便選填連線探測）。
 - 非互動範例：`bash scripts/install.sh --non-interactive --with-db --init-db --create-admin`（需先 export `DB_PASSWORD`、`ADMIN_PASSWORD`、`ALLOWED_HOSTS` 等）。
 - 細節與旗標：`bash scripts/install.sh --help`
 
