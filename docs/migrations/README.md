@@ -12,6 +12,7 @@
 | 3 | `20260713_users_totp.sql` | `users` 新增 TOTP 欄位（選用 MFA） |
 | 4 | `20260806_config_branding.sql` | `config` logo／favicon／copyright |
 | 5 | `20260924_drop_unused.sql` | 移除 `siteTitle*`、`voters`、`votePerms`、`urlRedirection`、`migration` |
+| 6 | `20261021_password_reset.sql` | `users.email`／`auth_epoch`、`password_reset`（管理員忘記密碼） |
 
 ## Schema 變更後的程式步驟
 

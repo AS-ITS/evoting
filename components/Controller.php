@@ -14,6 +14,47 @@ class Controller extends \yii\web\Controller
     /**
      * 初始化共享 Session 資料
      */
+    public function beforeAction($action)
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+        if ($this->adminSessionEpochStale()) {
+            Yii::$app->user->logout(true);
+            Yii::$app->session->setFlash('error', Yii::t('app', '密碼已變更，請重新登入'));
+            Yii::$app->response->redirect(['/auth/login'])->send();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 密碼重設後 auth_epoch 遞增，舊 session 不再有效。
+     */
+    private function adminSessionEpochStale(): bool
+    {
+        $component = Yii::$app->user;
+        if ($component->isGuest || !$component->identity || !method_exists($component->identity, 'getAuthData')) {
+            return false;
+        }
+        $cn = $component->identity->getAuthData('cn');
+        if (!$cn) {
+            return false;
+        }
+        $sessionEpoch = (int) ($component->identity->getAuthData('auth_epoch') ?? 0);
+        try {
+            $row = \app\models\Users::find()->select(['auth_epoch'])->where(['cn' => $cn])->asArray()->one();
+        } catch (\Throwable $e) {
+            return false;
+        }
+        if ($row === null || !array_key_exists('auth_epoch', $row)) {
+            return false;
+        }
+
+        return (int) $row['auth_epoch'] !== $sessionEpoch;
+    }
+
     public function init()
     {
         parent::init();

@@ -148,6 +148,10 @@ apply_sql_if_needed \
   "users TOTP" "users" "totp_secret" \
   "$MIG_DIR/20260713_users_totp.sql"
 
+apply_sql_if_needed \
+  "password reset" "users" "email" \
+  "$MIG_DIR/20261021_password_reset.sql"
+
 # ---------- 4. .env 新變數提醒 ----------
 log "--- [4] 環境變數檢查 ---"
 for var in APP_ENV SENSITIVE_REAUTH SENSITIVE_PLAINTEXT_TTL ALLOWED_HOSTS; do

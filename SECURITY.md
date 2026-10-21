@@ -96,6 +96,13 @@
 
 啟用 TOTP 後，上述敏感操作除密碼外還需驗證器代碼。相關程式：`components/SensitiveReauth.php`、`components/TotpService.php`。
 
+### 管理員忘記密碼
+
+- 路徑：`/auth/forgot-password`。帳號須先在使用者管理填寫信箱。
+- 回應不透露帳號是否存在。Token 只存 SHA-256，30 分鐘、單次；同帳號／IP 15 分鐘最多 5 次。
+- 重設成功會遞增 `users.auth_epoch`，舊的後台 session 失效。**不關閉 TOTP**。
+- 非正式環境郵件寫入 `runtime/mail/`，不經 SMTP。正式環境才外寄。
+
 
 ## 開源 / 移轉釋出前檢查
 

@@ -39,7 +39,7 @@ class AuthController extends \app\components\Controller
                 'rules' => [
                     [
                         'actions' => [
-                            'index', 'login', 'error', 'logout'
+                            'index', 'login', 'error', 'logout', 'forgot-password', 'reset-password',
                         ],
                         'allow' => true,
                         'roles' => ['?', '@'],// 未登入、已登入
@@ -140,6 +140,7 @@ class AuthController extends \app\components\Controller
                     'cn' => $user->cn,
                     'name' => $user->name,
                     'roles' => $user->roles ?? '',
+                    'auth_epoch' => $user->hasAttribute('auth_epoch') ? (int) $user->auth_epoch : 0,
                 ];
                 // setAuthData 會 syncAttr → setIdentity，寫入 session 供後續 findIdentity
                 $identity->setAuthData($payload);
@@ -274,11 +275,7 @@ class AuthController extends \app\components\Controller
                 return $this->render('change-password', ['model' => $model]);
             }
 
-            // 更新密碼
-            // 重要：必須設定 password_plain，因為 beforeSave() 會檢查這個欄位
-            $user->password_plain = $model->new_password;
-
-            if ($user->save()) {
+            if ($user->replacePassword($model->new_password)) {
                 // 記錄操作日誌
                 \app\models\Logs::add(\app\models\Logs::LOGIN_CHANGE_PASSWORD, Json::encode([
                     'username' => $user->cn,
@@ -296,5 +293,148 @@ class AuthController extends \app\components\Controller
         }
 
         return $this->render('change-password', ['model' => $model]);
+    }
+
+    /**
+     * 申請重設密碼。不論帳號是否存在，回應相同。
+     */
+    public function actionForgotPassword()
+    {
+        if (!Yii::$app->user->isGuest) {
+            return $this->redirect(['/site/index']);
+        }
+
+        $model = new \yii\base\DynamicModel(['username']);
+        $model->addRule('username', 'required');
+        $model->addRule('username', 'string', ['max' => 20]);
+        $model->setAttributeLabels(['username' => Yii::t('app', '帳號')]);
+
+        if (Yii::$app->request->isPost && $model->load(Yii::$app->request->post()) && $model->validate()) {
+            $this->sendPasswordResetIfPossible($model->username);
+            Yii::$app->session->setFlash(
+                'success',
+                Yii::t('app', '若此帳號已設定信箱，重設連結已寄出，請檢查郵件（含垃圾郵件）。')
+            );
+            return $this->redirect(['login']);
+        }
+
+        return $this->render('forgot-password', ['model' => $model]);
+    }
+
+    /**
+     * 以信件連結設定新密碼。不變更 TOTP。
+     */
+    public function actionResetPassword($token = null)
+    {
+        if (!Yii::$app->user->isGuest) {
+            return $this->redirect(['/site/index']);
+        }
+
+        $token = (string) $token;
+        $reset = \app\models\PasswordReset::findValid($token);
+        $model = new \yii\base\DynamicModel(['new_password', 'confirm_password']);
+        $model->addRule(['new_password', 'confirm_password'], 'required');
+        $model->addRule('new_password', 'string', ['min' => 8, 'max' => 255]);
+        $model->addRule('confirm_password', 'compare', ['compareAttribute' => 'new_password']);
+        $model->setAttributeLabels([
+            'new_password' => Yii::t('app', '新密碼'),
+            'confirm_password' => Yii::t('app', '確認新密碼'),
+        ]);
+
+        if ($reset && Yii::$app->request->isPost && $model->load(Yii::$app->request->post()) && $model->validate()) {
+            $user = \app\models\Users::findOne(['cn' => $reset->cn]);
+            $error = $user ? $this->passwordResetError($user, $model->new_password) : Yii::t('app', '重設連結無效或已過期');
+            if ($error !== null) {
+                Yii::$app->session->setFlash('error', $error);
+            } elseif ($user->replacePassword($model->new_password)) {
+                $reset->markUsed();
+                \app\models\Logs::add(\app\models\Logs::LOGIN_PASSWORD_RESET, Json::encode([
+                    'username' => $user->cn,
+                    'ip' => Yii::$app->request->userIP,
+                ], 336));
+                Yii::$app->session->setFlash('success', Yii::t('app', '密碼已重設，請使用新密碼登入。'));
+                return $this->redirect(['login']);
+            } else {
+                Yii::$app->session->setFlash('error', Yii::t('app', '密碼修改失敗，請稍後再試'));
+            }
+        }
+
+        return $this->render('reset-password', [
+            'model' => $model,
+            'valid' => $reset !== null,
+        ]);
+    }
+
+    private function sendPasswordResetIfPossible(string $username): void
+    {
+        $clientIp = Yii::$app->request->userIP ?? 'unknown';
+        $attemptHash = KeyContextProvider::computeHash($username . '|' . $clientIp);
+        $cacheKey = 'pwd_reset_' . $attemptHash;
+        $cache = Yii::$app->cache;
+        $window = 15 * 60;
+        $attempts = (int) $cache->get($cacheKey);
+        if ($attempts >= 5) {
+            return;
+        }
+        $cache->set($cacheKey, $attempts + 1, $window);
+
+        $user = \app\models\Users::findOne(['cn' => $username]);
+        if ($user === null || !$user->hasAttribute('email')) {
+            return;
+        }
+        $email = trim((string) $user->email);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return;
+        }
+
+        try {
+            $token = \app\models\PasswordReset::issue($user->cn);
+        } catch (\Throwable $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+            return;
+        }
+        $url = Url::to(['/auth/reset-password', 'token' => $token], true);
+        $sent = false;
+        try {
+            $sent = Yii::$app->mailer->compose()
+                ->setTo($email)
+                ->setSubject(Yii::t('app', '重設管理員密碼'))
+                ->setTextBody(
+                    Yii::t('app', '請在 30 分鐘內開啟以下連結重設密碼（單次有效）：') . "\n\n" . $url . "\n\n"
+                    . Yii::t('app', '若您沒有提出此要求，請忽略這封信。')
+                )
+                ->send();
+        } catch (\Throwable $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+        }
+
+        if (!$sent) {
+            \app\models\PasswordReset::updateAll(
+                ['used_at' => date('Y-m-d H:i:s')],
+                ['token_hash' => hash('sha256', $token)]
+            );
+            return;
+        }
+
+        \app\models\Logs::add(\app\models\Logs::LOGIN_PASSWORD_RESET_REQUEST, Json::encode([
+            'username' => $user->cn,
+            'ip' => $clientIp,
+        ], 336));
+    }
+
+    private function passwordResetError(\app\models\Users $user, string $newPassword): ?string
+    {
+        if ($user->validatePassword($newPassword)) {
+            return Yii::t('app', '新密碼不可與目前密碼相同');
+        }
+        if (!preg_match('/[A-Za-z]/', $newPassword) || !preg_match('/[0-9]/', $newPassword)) {
+            return Yii::t('app', '密碼必須包含至少一個字母和一個數字');
+        }
+        $user->password_plain = $newPassword;
+        if (!$user->validate(['password_plain'])) {
+            return implode(' ', $user->getErrors('password_plain'));
+        }
+
+        return null;
     }
 }

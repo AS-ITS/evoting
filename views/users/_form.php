@@ -11,6 +11,11 @@ $form = ActiveForm::begin([
     <div class="col-md-6">
         <?= $form->field($model, 'cn') ?>
         <?= $form->field($model, 'name') ?>
+        <?php if ($model->hasAttribute('email')): ?>
+        <?= $form->field($model, 'email')->textInput([
+            'placeholder' => '用於忘記密碼寄信，可留空',
+        ])->hint('未填則無法自助重設密碼') ?>
+        <?php endif ?>
         <?= $form->field($model, 'password_plain')->passwordInput([
             'placeholder' => '留空表示不修改密碼'
         ])->hint('密碼規則：<br>• 長度至少 8 個字元<br>• 必須包含英文字母和數字<br>• 不可與帳號相同或過於相似') ?>

@@ -405,11 +405,28 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `cn` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '帳號',
   `name` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '姓名',
+  `email` varchar(255) DEFAULT NULL COMMENT '重設密碼信箱',
   `roles` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT '角色',
   `password` varchar(255) DEFAULT NULL COMMENT '加密密碼',
   `totp_secret` varchar(255) DEFAULT NULL COMMENT 'TOTP Base32 secret',
   `totp_enabled` char(1) NOT NULL DEFAULT '0' COMMENT '是否啟用 TOTP：0否 1是',
+  `auth_epoch` int unsigned NOT NULL DEFAULT 0 COMMENT '密碼變更序號，用於作廢既有 session',
   PRIMARY KEY (`cn`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `password_reset`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `password_reset` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `cn` varchar(20) NOT NULL COMMENT '帳號',
+  `token_hash` char(64) NOT NULL COMMENT 'SHA-256(token)',
+  `expires_at` datetime NOT NULL COMMENT '到期時間',
+  `used_at` datetime DEFAULT NULL COMMENT '使用時間',
+  `created_at` datetime NOT NULL COMMENT '建立時間',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `token_hash` (`token_hash`),
+  KEY `cn` (`cn`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `votes`;
