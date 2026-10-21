@@ -9,10 +9,12 @@ use Yii;
  *
  * @property string $cn 帳號
  * @property string $name 姓名
+ * @property string|null $email 重設密碼信箱
  * @property string $roles 角色
  * @property string $password 加密密碼
  * @property string|null $totp_secret TOTP secret（Base32）
  * @property string $totp_enabled 是否啟用 TOTP
+ * @property int $auth_epoch 密碼變更序號
  */
 class Users extends \yii\db\ActiveRecord
 {
@@ -31,7 +33,7 @@ class Users extends \yii\db\ActiveRecord
      */
     public function rules()
     {
-        return [
+        $rules = [
             [['cn', 'name'], 'required'],
             [['cn', 'name', 'roles'], 'string', 'max' => 20],
             [['password'], 'string', 'max' => 255],
@@ -44,6 +46,17 @@ class Users extends \yii\db\ActiveRecord
             [['password_plain'], 'validatePasswordNotSameAsUsername'],
             [['cn'], 'unique'],
         ];
+        $schema = static::getTableSchema();
+        if ($schema !== null && $schema->getColumn('email') !== null) {
+            $rules[] = [['email'], 'trim'];
+            $rules[] = [['email'], 'string', 'max' => 255];
+            $rules[] = [['email'], 'email'];
+        }
+        if ($schema !== null && $schema->getColumn('auth_epoch') !== null) {
+            $rules[] = [['auth_epoch'], 'integer', 'min' => 0];
+        }
+
+        return $rules;
     }
 
     /**
@@ -96,6 +109,7 @@ class Users extends \yii\db\ActiveRecord
         return [
             'cn' => '帳號',
             'name' => '姓名',
+            'email' => '信箱',
             'roles' => '角色',
             'password' => '密碼',
             'password_plain' => '密碼',
@@ -195,6 +209,9 @@ class Users extends \yii\db\ActiveRecord
     public function beforeSave($insert)
     {
         if (parent::beforeSave($insert)) {
+            if ($this->hasAttribute('email') && $this->email === '') {
+                $this->email = null;
+            }
             // 如果有輸入明文密碼，則雜湊後儲存
             if (!empty($this->password_plain)) {
                 $this->password = $this->hashPassword($this->password_plain);
@@ -210,5 +227,21 @@ class Users extends \yii\db\ActiveRecord
         $roles = isset($postData[$this->formName()]['roles']) ? $postData[$this->formName()]['roles'] : [];
         $this->roles = is_array($roles) ? implode(',', $roles) : null;
         return $this->save();
+    }
+
+    /**
+     * 寫入新密碼並遞增 auth_epoch（既有 session 下次請求會被登出）。
+     * 不變更 totp_secret／totp_enabled。
+     */
+    public function replacePassword(string $plainPassword): bool
+    {
+        $this->password_plain = $plainPassword;
+        $columns = ['password'];
+        if ($this->hasAttribute('auth_epoch')) {
+            $this->auth_epoch = (int) $this->auth_epoch + 1;
+            $columns[] = 'auth_epoch';
+        }
+
+        return $this->save(false, $columns);
     }
 }

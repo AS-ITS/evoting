@@ -211,6 +211,10 @@ interface LogInterface
     const USERS_TOTP_DISABLE = '423';
     /** 系統管理員同步 RBAC 權限 */
     const SYSTEM_RBAC_SYNC = '424';
+    /** 管理員申請重設密碼（已寄出連結） */
+    const LOGIN_PASSWORD_RESET_REQUEST = '425';
+    /** 管理員以重設連結變更密碼 */
+    const LOGIN_PASSWORD_RESET = '426';
     /** 匿名密碼登入 */
     const LOGIN_PASSWORD = '500';
     /** 匿名密碼登入失敗 */

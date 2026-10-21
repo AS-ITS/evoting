@@ -12,8 +12,8 @@ Electronic voting platform (general-purpose; originally a reference implementati
 
 **Quick start:**
 
-1. Stable: `git clone --branch v1.0.0 --depth 1 https://github.com/AS-ITS/evoting.git`
-   Contributors: clone the default branch instead. Do **not** use `composer create-project`.
+1. Clone `main` (has `install.sh`): `git clone --branch main --depth 1 https://github.com/AS-ITS/evoting.git`  
+   After a release that includes the installer (e.g. `v1.0.1+`), you may use that tag. Do **not** use `v1.0.0` for fresh install (no install script). Do **not** use `composer create-project`.
 2. **Recommended (fresh install):** one-liner in [SETUP.md](SETUP.md) (`git clone … && cd … && sudo bash scripts/install.sh`). For upgrades — do **not** re-run `init_db.sql`.
 3. Or manually: `composer install --prefer-dist`, then `bash scripts/ensure-writable-dirs.sh`, copy `.env.example` → `.env`, import [`docs/init_db.sql`](docs/init_db.sql), `php yii admin/create`, point Document Root to `web/`
 
@@ -32,8 +32,8 @@ Vote types: open ballot (no auth) and anonymous (one-time passwords). Maintenanc
 
 ## 快速開始
 
-1. 穩定版：`git clone --branch v1.0.0 --depth 1 https://github.com/AS-ITS/evoting.git`
-   參與開發者可改為 clone 預設分支。**不要**使用 `composer create-project`
+1. 請 clone **`main`**（含 `install.sh`）：`git clone --branch main --depth 1 https://github.com/AS-ITS/evoting.git`  
+   待有含安裝精靈的 release（如 `v1.0.1+`）再改用該 tag。**勿用 `v1.0.0` 新裝**。**不要**使用 `composer create-project`
 2. **建議新裝**：見 [SETUP.md](SETUP.md) 一行指令（`git clone … && cd … && sudo bash scripts/install.sh`）。**升級勿再跑 init_db**
 3. 或手動：`composer install --prefer-dist` → `bash scripts/ensure-writable-dirs.sh` → 設定 `.env` → 匯入 [`docs/init_db.sql`](docs/init_db.sql) → `php yii admin/create` → Document Root 指向 `web/`
 
@@ -46,6 +46,7 @@ Vote types: open ballot (no auth) and anonymous (one-time passwords). Maintenanc
 - **登入**: `/auth/login` 或 `/admin`
 - **登出**: `/auth/logout`
 - **修改密碼**: `/auth/change-password`
+- **忘記密碼**: `/auth/forgot-password`（帳號須先設定信箱；非正式環境信件寫入 `runtime/mail`）
 
 ### 密碼修改功能
 
@@ -63,6 +64,8 @@ Vote types: open ballot (no auth) and anonymous (one-time passwords). Maintenanc
 - 防止密碼重用
 - 操作日誌記錄（LOG 418）
 - 修改成功後自動登出，要求重新登入
+
+**忘記密碼**（`/auth/forgot-password`）：帳號須先設定信箱。連結 30 分鐘、單次；不關閉 TOTP。正式環境經 SMTP 寄出（LOG 425／426）；其他環境寫入 `runtime/mail/`。升級既有資料庫須執行 [`docs/migrations/20261021_password_reset.sql`](docs/migrations/20261021_password_reset.sql)。詳見 [SETUP.md](SETUP.md)。
 
 ### 二次驗證（TOTP）與敏感操作
 

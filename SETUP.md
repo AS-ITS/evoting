@@ -39,12 +39,12 @@
 ### 1. 複製專案
 
 ```bash
-git clone --branch v1.0.0 --depth 1 \
+git clone --branch main --depth 1 \
   https://github.com/AS-ITS/evoting.git /var/www/html/voting
 cd /var/www/html/voting
 ```
 
-以上安裝最新穩定標籤；參與開發者可 clone 預設分支。**不要**使用 `composer create-project`（本專案是可更新的應用，不是 Yii 模板）。`vendor/` 不上版控；`frontend/` 已在 repo，無需 npm。
+目前請用 **`main`**（含 `scripts/install.sh`）。待打出含安裝精靈的 release（例如 `v1.0.1`）後，可改回 `--branch v1.0.1`。**不要**使用已過期的 `v1.0.0` 做新裝（該 tag 尚無 install 腳本）。**不要**使用 `composer create-project`。`vendor/` 不上版控；`frontend/` 已在 repo，無需 npm。
 
 ### 快速安裝（建議新裝）
 
@@ -53,19 +53,19 @@ cd /var/www/html/voting
 **一行（clone + 進入目錄 + 安裝精靈）：**
 
 ```bash
-git clone --branch v1.0.0 --depth 1 https://github.com/AS-ITS/evoting.git /var/www/html/voting && cd /var/www/html/voting && sudo bash scripts/install.sh
+git clone --branch main --depth 1 https://github.com/AS-ITS/evoting.git /var/www/html/voting && cd /var/www/html/voting && sudo bash scripts/install.sh
 ```
 
 分步等同：
 
 ```bash
-git clone --branch v1.0.0 --depth 1 \
+git clone --branch main --depth 1 \
   https://github.com/AS-ITS/evoting.git /var/www/html/voting
 cd /var/www/html/voting
 sudo bash scripts/install.sh
 ```
 
-> 標籤請改為實際要安裝的 release（例如合併本安裝精靈後的 `v1.0.x`）。開發測試可改 `--branch main` 或功能分支。
+> 有含安裝精靈的正式 tag（如 `v1.0.1+`）後，將 `main` 換成該 tag。**勿用 `v1.0.0`**（無 `scripts/install.sh`）。
 
 腳本會先做環境檢查（PHP／擴展硬擋；MariaDB／nginx／Apache **版本僅警示**），再互動詢問 DB／網域／admin 密碼等，並自動：`composer install`、建立可寫目錄、寫入 `.env`（正式環境 `DB_PASSWORD` 密文、`/etc/voting/master.key`）、（可選）建庫、匯入 [`docs/init_db.sql`](docs/init_db.sql)、建立 `admin`、執行 `config/validate`。
 
@@ -75,6 +75,7 @@ sudo bash scripts/install.sh
 - 只檢查環境：`bash scripts/install.sh --check-only`（仍需能提供 `DB_PASSWORD` 等以便選填連線探測）。
 - 非互動範例：先 `export DB_PASSWORD=… ADMIN_PASSWORD=… ALLOWED_HOSTS=voting.example.com`，再 `sudo -E bash scripts/install.sh --non-interactive --with-db --init-db --create-admin`。
 - 細節與旗標：`bash scripts/install.sh --help`
+- **測試庫不在安裝精靈內**。`install.sh` 只建立正式庫 `DB_NAME`。Codeception 用的 `voting_test` 請另做，見下方 §測試資料庫。
 
 若只想手動安裝，繼續下列 §2–§5。
 
@@ -715,6 +716,18 @@ BASE_URL=https://voting.example.com tests/deploy-smoke.sh
 3. 依畫面完成 QR 掃描與 6 碼確認
 
 詳見 [`SECURITY.md`](SECURITY.md) §二次驗證。
+
+### 管理員密碼（修改／忘記）
+
+已登入：`/auth/change-password`。須驗證目前密碼；成功後登出（LOG 418）。
+
+忘記密碼：`/auth/forgot-password`。
+
+1. 升級既有庫（勿重跑 `init_db.sql`）：`mysql <DB_NAME> < docs/migrations/20261021_password_reset.sql`（只需一次）。全新 `init_db.sql` 已含 `users.email`、`auth_epoch`、`password_reset`。
+2. 使用者管理為帳號填**信箱**。未填則無法寄出；畫面不會透露帳號是否存在。
+3. 登入頁「忘記密碼」→ 輸入帳號。連結 30 分鐘、單次。重設成功會作廢該帳號既有後台 session，**不關閉 TOTP**（LOG 425 寄出、426 重設完成）。
+4. 正式環境（`APP_ENV=production`）走 SMTP。`SMTP_FROM_EMAIL` 可留空，預設 `noreply@example.com`；實際投遞請改成貴單位網域信箱。`SMTP_HOST` 等見 `.env.example`。
+5. **非正式環境不外寄**，信件寫在 `runtime/mail/*.eml`。請用郵件軟體開啟，不要從純文字編輯器複製網址（quoted-printable 的行尾 `=`、`=3D` 不是連結的一部分）。
 
 ### 開源 / 移轉釋出前
 

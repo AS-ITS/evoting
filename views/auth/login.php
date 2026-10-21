@@ -39,6 +39,10 @@ $this->title = Yii::t('app', '管理員登入');
                         ]) ?>
                     </div>
 
+                    <div class="text-center mt-2">
+                        <?= Html::a(Yii::t('app', '忘記密碼'), ['/auth/forgot-password'], ['class' => 'btn btn-link']) ?>
+                    </div>
+
                     <?php ActiveForm::end(); ?>
 
                     <?php if (Yii::$app->session->hasFlash('error')): ?>

@@ -28,7 +28,7 @@ echo GridView::widget([
     'dataProvider' => $dataProvider,
     'summary' => Yii::$app->tablePag->getSummaryText('users'),
     'tableOptions' => ['class' => 'table table-striped table-bordered table-sm'],
-    'columns' => [
+    'columns' => array_merge([
         [
             'label' => '帳號',
             'attribute' => 'cn',
@@ -47,6 +47,12 @@ echo GridView::widget([
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],
         ],
+    ], (new \app\models\Users())->hasAttribute('email') ? [[
+        'label' => '信箱',
+        'attribute' => 'email',
+        'headerOptions'  => ['class' => 'align-middle text-center'],
+        'contentOptions' => ['class' => 'align-middle text-center'],
+    ]] : [], [
         [
             'label' => '角色',
             'attribute' => 'roles',
@@ -82,6 +88,6 @@ echo GridView::widget([
             ],
             'contentOptions' => ['class' => 'align-middle text-center'],
         ],
-    ],
+    ]),
 ]);
 Pjax::end();
