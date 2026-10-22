@@ -54,7 +54,7 @@
         "as-its-dev3/yii2-dynamicform": "~2.0",
         "phpoffice/phpspreadsheet": "^5.0",
         "endroid/qr-code": "^6.0",
-        "bower-asset/adminlte": "v3.1.0",
+        "bower-asset/adminlte": "v4.10.1",
         "kartik-v/yii2-bootstrap5-dropdown": "@dev"
     },
     "require-dev": {
