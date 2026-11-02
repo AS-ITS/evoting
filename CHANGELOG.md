@@ -27,6 +27,8 @@
 ### Security
 
 * 重設密碼回應不透露帳號是否存在；token 只存 SHA-256；同帳號／IP 15 分鐘最多 5 次申請
+* 升級 `phpoffice/phpspreadsheet` 至 5.10.0（CVE-2026-108357、CVE-2026-108358、CVE-2026-108359、CVE-2026-108360）
+* 升級 `symfony/mime`、`symfony/mailer` 至 7.4.22（CVE-2026-45070，郵件參數名稱標頭注入）
 
 ### Fixed
 
