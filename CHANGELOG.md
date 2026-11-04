@@ -29,10 +29,18 @@
 * 重設密碼回應不透露帳號是否存在；token 只存 SHA-256；同帳號／IP 15 分鐘最多 5 次申請
 * 升級 `phpoffice/phpspreadsheet` 至 5.10.0（CVE-2026-108357、CVE-2026-108358、CVE-2026-108359、CVE-2026-108360）
 * 升級 `symfony/mime`、`symfony/mailer` 至 7.4.22（CVE-2026-45070，郵件參數名稱標頭注入）
+* 候選人照片與投票附件的檢視、下載、上傳、刪除統一由 `FileLoader::safePath()`／`voteDir()` 解析路徑，限制在該場次目錄內，防止路徑穿越（`candi/view-photo`、`vote/download-file`、`elect/upload-file`、`elect/delete-file`）
+* 附件上傳改以副檔名對 MIME 對照表檢查實際內容，偽造副檔名的檔案仍會被擋
+* 附件檔名在後台列表與投票說明頁輸出時跳脫 HTML
+* 刪除投票時，照片與附件目錄須經 `voteDir()` 驗證才移除
 
 ### Fixed
 
 * Functional Cest 在 `cleanup: false` 下於 `_before` 強制 `haveFixtures`，避免後續 Cest 缺 Group／ResultsConfig／Ballots
+* 附件刪除連結誤傳列表序號，刪除一律顯示「找不到該檔案」
+* 照片或附件存檔失敗（如目錄無寫入權限）仍顯示上傳成功，照片檔名也照樣寫入資料庫；改為回報失敗原因與檔名
+* CSV 與部分 Office 檔被 MIME 反查誤擋；不允許的檔案被前端驗證擋下時沒有任何提示，改由伺服器驗證並顯示原因
+* 附件目錄不存在時，投票說明頁發生 `count()` TypeError
 
 ### Removed
 
