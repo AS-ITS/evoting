@@ -212,7 +212,7 @@ $isOtherInfo = strip_tags($otherInfo = trim(Model::i18n($voteInfo->otherInfoE, $
                 <tbody>
                     <?php foreach($files as $key => $file): ?>
                     <tr>
-                        <td><?=$file?></td>
+                        <td><?=Html::encode($file)?></td>
                         <td>
                             <?=
                                 Html::a(

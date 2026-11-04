@@ -2,15 +2,16 @@
 
 use yii\helpers\Url;
 use yii\bootstrap5\Html;
-use yii\helpers\FileHelper;
 use yii\bootstrap5\ActiveForm;
 use rmrevin\yii\fontawesome\FAS;
+use app\components\helper\FileLoader;
 
-$path = FileHelper::normalizePath(realpath(Yii::getAlias('@filePool').'/candidateFile/'.$voteID));
-$files = !empty($path) ? scandir($path) : [];
-foreach ($files as $key => $file) {
-    if (in_array($file, ['.', '..'])) {
-        unset($files[$key]);
+// 附件列表（僅列出該場次附件目錄內的一般檔案）
+$path = FileLoader::voteDir(FileLoader::DIR_FILE, $voteID);
+$files = [];
+foreach (($path ? (scandir($path) ?: []) : []) as $file) {
+    if (is_file($path.DIRECTORY_SEPARATOR.$file)) {
+        $files[] = $file;
     }
 }
 
@@ -46,7 +47,8 @@ JS
                 <div class="col-md">
                     <div class="card">
                         <div class="card-header">
-                            <?= $uploadForm->field($FormUploadFile, 'files[]')->fileInput(['multiple' => 'true'])->label(false) ?>
+                            <?php // 由伺服器端驗證並以訊息顯示失敗原因（前端驗證失敗時不會顯示錯誤） ?>
+                            <?= $uploadForm->field($FormUploadFile, 'files[]', ['enableClientValidation' => false])->fileInput(['multiple' => 'true'])->label(false) ?>
                         </div>
                         <div class="card-body">
                             <h5 class="card-title">附件列表</h5>
@@ -58,13 +60,13 @@ JS
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach($files as $key => $file): ?>
+                                    <?php foreach($files as $file): ?>
                                     <tr>
-                                        <td><?=$file?></td>
+                                        <td><?=Html::encode($file)?></td>
                                         <td>
                                             <?=
                                                 Html::a(FAS::icon('trash', ['class' => 'text-danger']), 
-                                                Url::to(['delete-file', 'file' => $key, 'voteID' => $voteID]), 
+                                                Url::to(['delete-file', 'file' => $file, 'voteID' => $voteID]),
                                                 [
                                                     'id' => 'delete-file',
                                                     'data-bs-confirm' => Yii::t('yii', 'Are you sure you want to delete this item?'),

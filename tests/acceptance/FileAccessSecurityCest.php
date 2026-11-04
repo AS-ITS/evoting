@@ -159,6 +159,44 @@ class FileAccessSecurityCest
         }
     }
 
+    // ---- elect/delete-file ----
+
+    /**
+     * 管理者由附件列表刪除檔案：連結帶檔名，可正確刪除
+     */
+    public function testDeleteFileByName(AcceptanceTester $I)
+    {
+        $pool = Yii::getAlias('@filePool');
+        $target = $pool.'/candidateFile/'.self::VOTE_ID.'/probe_delete.txt';
+        $this->makeFile($target, 'DELETE-ME');
+
+        $I->amOnPage('/index-test.php/test/login?user=test_admin');
+        // 刪除後會導回 referrer，此處只驗證檔案結果
+        $I->amOnPage('/elect/delete-file?voteID='.self::VOTE_ID.'&file=probe_delete.txt');
+        $I->assertFileDoesNotExist($target);
+        $I->assertFileExists($pool.'/candidateFile/'.self::VOTE_ID.'/'.self::ATTACH_NAME);
+    }
+
+    /**
+     * 刪除檔案不可穿越到場次附件目錄之外
+     */
+    public function testDeleteFileTraversal(AcceptanceTester $I)
+    {
+        $pool = Yii::getAlias('@filePool');
+        $I->amOnPage('/index-test.php/test/login?user=test_admin');
+        foreach ([
+            ['voteID' => self::VOTE_ID, 'file' => '../'.self::SECRET_NAME],
+            ['voteID' => self::VOTE_ID, 'file' => '..\\'.self::SECRET_NAME],
+            ['voteID' => '..', 'file' => self::SECRET_NAME],
+            ['voteID' => self::VOTE_ID, 'file' => '..'],
+        ] as $params) {
+            $I->amOnPage('/elect/delete-file?'.http_build_query($params));
+            $I->seeResponseCodeIs(404);
+        }
+        $I->assertFileExists($pool.'/candidateFile/'.self::SECRET_NAME);
+        $I->assertFileExists($pool.'/candidateFile/'.self::VOTE_ID.'/'.self::ATTACH_NAME);
+    }
+
     /**
      * 匿名投票且需驗證後才顯示資訊時，未驗證不可下載附件
      */
