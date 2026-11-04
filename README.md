@@ -181,6 +181,14 @@ echo "yes" | php yii fixture/unload "Ballots,BallotsSelected" --appconfig=config
 
 **⚠️ 重要**: 務必使用 `--appconfig=config/console-test.php` 參數，確保操作測試資料庫而非正式資料庫。
 
+### 瀏覽器 E2E 測試
+以 Headless Chrome 實際操作畫面（全畫面巡檢、對話框、附件與照片、投票流程），不需安裝 Node.js。測試伺服器須以 `APP_ENV=testing` 啟動並已載入 fixture：
+```bash
+APP_ENV=testing php -S localhost:8080 -t web web/router-test.php
+php tests/e2e/run.php
+```
+詳見 [tests/e2e/README.md](tests/e2e/README.md)。
+
 ### 產生測試數據
 ```bash
 # 產生預期的測試資料: 從 /tests/fixtures/data 修改

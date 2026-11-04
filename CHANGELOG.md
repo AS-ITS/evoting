@@ -23,6 +23,7 @@
 * `install.sh` 環境檢查（PHP 硬擋；DB／Web 版本僅警示）、既有 DB／`master.key`／`.env`／admin 沿用
 * `scripts/encrypt-config-value.php`、`scripts/rebuild-yii-extensions.php`（正式密文與 extensions.php 修復）
 * `scripts/ensure-writable-dirs.sh`；composer post-install 自動建立 `runtime/sessions` 等目錄
+* 瀏覽器 E2E 測試 `tests/e2e/`：以 PHP 透過 CDP 操作 Headless Chrome（不需 Node.js），涵蓋全畫面巡檢、對話框、附件、照片、投票流程
 
 ### Security
 
@@ -45,6 +46,10 @@
 * CSV 與部分 Office 檔被 MIME 反查誤擋；不允許的檔案被前端驗證擋下時沒有任何提示，改由伺服器驗證並顯示原因
 * 附件目錄不存在時，投票說明頁發生 `count()` TypeError
 * 上傳同名附件會直接覆蓋舊檔且沒有提示；改為擋下並列出檔名，其他檔案照常上傳
+* 投票確認頁的已圈選名單、選票內容與開票選票明細的候選人姓名為白字白底看不見（Bootstrap 5 的 `.badge` 預設白字）
+* 顯示照片欄位時，沒有照片的候選人出現破圖並產生無效請求
+* 開票狀態頁在系統設定未載入或「每列欄數」為 0 時發生除以零錯誤（500）
+* 尚未建立候選名單配置時開啟新增／編輯候選人頁面發生 500；改為導向候選設定頁
 
 ### Removed
 

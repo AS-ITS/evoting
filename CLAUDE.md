@@ -42,6 +42,15 @@ php vendor/bin/codecept run acceptance --debug
 echo "yes" | php yii fixture/unload "Ballots,BallotsSelected" --appconfig=config/console-test.php
 ```
 
+**Browser E2E Tests** (headless Chrome over CDP, no Node.js; see `tests/e2e/README.md`):
+```bash
+# Test server must run with APP_ENV=testing (the test entry guard returns 404 otherwise)
+APP_ENV=testing php -S localhost:8080 -t web web/router-test.php
+php tests/e2e/run.php                      # all suites
+php tests/e2e/run.php --suite=pages,modals # selected suites
+```
+New screens: add the route to `tests/e2e/suites/pages.php` to get the shared page checks.
+
 **Test Server Notes:**
 - The `router-test.php` script routes all requests through `index-test.php` which uses the test configuration
 - Test configuration connects to the `voting_test` database (defined in `.env` as `TEST_DB_*`)
