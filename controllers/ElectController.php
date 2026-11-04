@@ -14,6 +14,7 @@ use app\models\FormBallots;
 use app\models\FormParties;
 use app\models\FormResults;
 use yii\helpers\FileHelper;
+use app\components\helper\FileLoader;
 use app\models\FormUploadFile;
 use app\models\FormResultsConfig;
 use app\components\helper\ArrayHelper;
@@ -311,9 +312,14 @@ class ElectController extends \app\components\Controller
     {
         $request = Yii::$app->request;
 
+        // voteID 須為存在的場次，避免以 ../ 將檔案寫到附件目錄之外
+        if (!\app\models\Votes::findOne(['voteID' => $voteID])) {
+            throw new \yii\web\NotFoundHttpException(Yii::t('app', '找不到該投票場次'));
+        }
+
         $FormUploadFile = new FormUploadFile();
 
-        $path = FileHelper::normalizePath(realpath(Yii::getAlias('@filePool').'/candidateFile/'.$voteID));
+        $path = FileLoader::voteDir(FileLoader::DIR_FILE, $voteID);
         $files = !empty($path) ? FileHelper::findFiles($path) : [];
 
         if ($request->isPost) {
@@ -327,7 +333,11 @@ class ElectController extends \app\components\Controller
                 Yii::$app->session->addFlash('success', '檔案上傳成功！');
             }
             else {
-                Yii::$app->session->addFlash('error', '檔案上傳失敗！');
+                $failed = $FormUploadFile->failedFiles;
+                Yii::$app->session->addFlash('error', empty($failed)
+                    ? '檔案上傳失敗！'
+                    : '下列檔案上傳失敗，請洽系統管理員確認檔案目錄權限：'.\yii\helpers\Html::encode(implode('、', $failed))
+                );
             }
         }
         return $this->redirect(Yii::$app->request->referrer);
@@ -342,25 +352,13 @@ class ElectController extends \app\components\Controller
      */
     public function actionDeleteFile($file, $voteID)
     {
-        if (!\app\models\Votes::findOne(['voteID' => $voteID])) {
-            throw new \yii\web\NotFoundHttpException(Yii::t('app', '找不到該投票場次'));
-        }
-
-        $baseDir = realpath(Yii::getAlias('@filePool') . '/candidateFile/' . $voteID . '/');
-        if ($baseDir === false || !is_dir($baseDir)) {
+        // voteID 須為存在的場次、file 僅取純檔名，且解析後須位於該場次的附件目錄內
+        $baseDir = FileLoader::voteDir(FileLoader::DIR_FILE, $voteID);
+        $targetPath = $baseDir ? FileLoader::safePath($baseDir, $file) : null;
+        if (!$targetPath) {
             throw new \yii\web\NotFoundHttpException(Yii::t('app', '找不到該檔案'));
         }
-
-        $fileName = basename((string) $file);
-        if ($fileName === '' || $fileName === '.' || $fileName === '..') {
-            throw new \yii\web\BadRequestHttpException(Yii::t('app', '無效的檔案名稱'));
-        }
-
-        $targetPath = realpath($baseDir . DIRECTORY_SEPARATOR . $fileName);
-        if ($targetPath === false || !is_file($targetPath)
-            || strpos($targetPath, $baseDir . DIRECTORY_SEPARATOR) !== 0) {
-            throw new \yii\web\NotFoundHttpException(Yii::t('app', '找不到該檔案'));
-        }
+        $fileName = basename($targetPath);
 
         if (FileHelper::unlink($targetPath)) {
             Logs::add(Logs::VOTE_FILE_DELETE, Json::encode(compact('fileName', 'voteID'), 336));

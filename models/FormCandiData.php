@@ -400,17 +400,22 @@ class FormCandiData extends CandiData
 
         // 處理照片
         if (!empty($this->photo)) {
-            $picPath = Yii::getAlias('@filePool').DIRECTORY_SEPARATOR.'candidatePic'.DIRECTORY_SEPARATOR;
-            if (!file_exists($picPath.$voteID)) {
-                \yii\helpers\FileHelper::createDirectory($picPath.$voteID.DIRECTORY_SEPARATOR, 0755);
-            }
             if (empty($model->photo)) {
                 $photo = Yii::$app->security->generateRandomString(6).'.'.$this->photo->extension;
             }
             else {
                 $photo = $model->photo;
             }
-            $this->photo->saveAs($picPath.$voteID.DIRECTORY_SEPARATOR.$photo);
+            // 照片須確實寫入檔案後才更新資料，避免資料庫記錄不存在的檔案
+            $picDir = FileLoader::voteDir(FileLoader::DIR_PIC, $voteID, true);
+            if (!$picDir || !FileLoader::isSafeSegment($photo) || !$this->photo->saveAs($picDir.DIRECTORY_SEPARATOR.$photo)) {
+                Yii::$app->session->addFlash('error', '照片儲存失敗，請洽系統管理員確認檔案目錄權限！');
+                Logs::add(
+                    $action == 'create' ? Logs::VOTE_CANDI_MANUAL_CREATE_FAIL : Logs::VOTE_CANDI_MANUAL_EDIT_FAIL,
+                    Json::encode(compact('voteID', 'photo') + ['error' => 'photo save failed'], 336)
+                );
+                return false;
+            }
             $this->photo = $photo;
         }
         else {

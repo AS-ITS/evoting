@@ -71,7 +71,8 @@ elseif ($voteInfo->active == FormVotes::STATUS_ACTIVE && $toDate >= strtotime($v
 }
 // 附件檔案
 $path = FileHelper::normalizePath(realpath(Yii::getAlias('@filePool').'/candidateFile/'.$voteInfo->voteID));
-$files = !empty($path) ? scandir($path) : [];
+// 目錄可能已被刪除（realpath cache 仍回傳舊路徑），scandir 失敗時視為無附件
+$files = (!empty($path) && is_dir($path)) ? (scandir($path) ?: []) : [];
 foreach ($files as $key => $file) {
     if (in_array($file, ['.', '..'])) {
         unset($files[$key]);

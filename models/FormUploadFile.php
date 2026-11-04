@@ -5,6 +5,7 @@ use Yii;
 use yii\base\Model;
 use yii\helpers\FileHelper;
 use yii\helpers\Json;
+use app\components\helper\FileLoader;
 
 class FormUploadFile extends Model
 {
@@ -14,6 +15,13 @@ class FormUploadFile extends Model
     const MAX_UPLOAD_COUNT = 5;
     
     public $files;
+
+    /**
+     * 上傳失敗的檔名
+     *
+     * @var string[]
+     */
+    public $failedFiles = [];
 
     /**
      * Returns the validation rules for attributes.
@@ -54,17 +62,26 @@ class FormUploadFile extends Model
      */
     public function upload($voteID)
     {
-        if ($this->validate()) { 
-            $filePath = realpath(Yii::getAlias('@filePool').DIRECTORY_SEPARATOR.'candidateFile');
-            // 判斷資料夾是否存在
-            if (!file_exists($filePath.DIRECTORY_SEPARATOR.$voteID)) {
-                FileHelper::createDirectory($filePath.DIRECTORY_SEPARATOR.$voteID, 0755);
+        if ($this->validate()) {
+            // voteID 須為存在的場次，目錄不存在時建立
+            $filePath = FileLoader::voteDir(FileLoader::DIR_FILE, $voteID, true);
+            $this->failedFiles = [];
+            if (!$filePath) {
+                $this->failedFiles = array_map(function ($file) { return $file->name; }, (array) $this->files);
+                Logs::add(Logs::VOTE_FILE_UPLOAD_FAIL, Json::encode(compact('voteID') + ['error' => 'directory not writable'], 336));
+                return false;
             }
             foreach ($this->files as $file) {
                 // 檔名消毒：僅取純檔名並移除控制字元，防止路徑穿越與特殊字元
                 $safeName = basename(str_replace('\\', '/', $file->name));
                 $safeName = preg_replace('/[\x00-\x1F\x7F]/u', '', $safeName);
-                $file->saveAs($filePath.DIRECTORY_SEPARATOR.$voteID.DIRECTORY_SEPARATOR.$safeName);
+                if (!FileLoader::isSafeSegment($safeName) || !$file->saveAs($filePath.DIRECTORY_SEPARATOR.$safeName)) {
+                    $this->failedFiles[] = $file->name;
+                }
+            }
+            if (!empty($this->failedFiles)) {
+                Logs::add(Logs::VOTE_FILE_UPLOAD_FAIL, Json::encode(compact('voteID') + ['failed' => $this->failedFiles], 336));
+                return false;
             }
             Logs::add(Logs::VOTE_FILE_UPLOAD, Json::encode(compact('voteID')+$this->files, 336));
             return true;

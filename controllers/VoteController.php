@@ -747,18 +747,17 @@ class VoteController extends \app\components\Controller
             }
         }
 
-        $path = FileHelper::normalizePath(realpath(Yii::getAlias('@filePool').'/candidateFile/'.$vote->voteID.'/'));
-        if (empty($path) || !is_dir($path)) {
+        $path = FileLoader::voteDir(FileLoader::DIR_FILE, $vote->voteID);
+        if (!$path) {
             throw new \yii\web\NotFoundHttpException(Yii::t('app', '找不到該檔案'));
         }
 
+        // file 為目錄清單中的整數序號，僅允許目錄下實際存在的一般檔案
         $files = scandir($path);
-        // 僅允許目錄下實際存在的一般檔案（排除 . / .. 與子目錄）
-        $fileName = isset($files[$file]) ? basename($files[$file]) : null;
-        if ($fileName && !in_array($fileName, ['.', '..'], true)
-            && is_file($path.DIRECTORY_SEPARATOR.$fileName)) {
-            $FileLoader = new FileLoader(Yii::getAlias('@filePool'));
-            return $FileLoader->downloadFile($fileName, '/candidateFile/'.$vote->voteID.'/');
+        $index = filter_var($file, FILTER_VALIDATE_INT);
+        $filePath = ($index !== false && isset($files[$index])) ? FileLoader::safePath($path, $files[$index]) : null;
+        if ($filePath) {
+            return Yii::$app->response->sendFile($filePath);
         }
 
         throw new \yii\web\NotFoundHttpException(Yii::t('app', '找不到該檔案'));
