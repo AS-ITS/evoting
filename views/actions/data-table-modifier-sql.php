@@ -26,7 +26,7 @@ echo \app\widgets\Alert::widget();
     ]); ?>
     <div class="row">
         <div class="col-md">
-            <div class="form-group">
+            <div class="mb-3">
                 <label for="sqlTextarea">批次SQL語法(請使用分號分隔每段指令)</label>
                 <?=Html::textarea('sql', $inputSql, ['class'=>'form-control', 'id'=>'sqlTextarea', 'rows'=>'20']);?>
             </div>
@@ -37,14 +37,14 @@ echo \app\widgets\Alert::widget();
             <?= Html::submitButton('查詢', ['class' => 'btn btn-primary']); ?>
         </div>
         <div class="col-md">
-            <div class="custom-control custom-checkbox">
+            <div class="form-check">
                 <?=Html::checkbox('remember', true, [
                     'id' => 'rememberSql',
-                    'class' => 'custom-control-input',
+                    'class' => 'form-check-input',
                     'uncheck'=>'0',
                 ]);?>
                 <?=Html::label('記住 SQL','rememberSql', [
-                    'class'=>'custom-control-label',
+                    'class'=>'form-check-label',
                 ]);?>
             </div>
         </div>

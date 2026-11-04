@@ -51,11 +51,11 @@ class ScrollToTop extends Widget
                             'margin-right': '15px',
                             'font-size': '16px'
                         });
-                        $('.fixme-vote').addClass('badge badge-primary text-wrap h5');
+                        $('.fixme-vote').addClass('badge bg-primary text-wrap h5');
                     } else {
                         $('.fixme').css({ position: 'static' });
                         $('.fixme-vote').css({ width: '', 'margin-top': '', 'margin-right': '', 'font-size': '24px'});
-                        $('.fixme-vote').removeClass('badge badge-primary text-wrap');
+                        $('.fixme-vote').removeClass('badge bg-primary text-wrap');
                     }
                 });
 

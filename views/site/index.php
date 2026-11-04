@@ -21,7 +21,7 @@ $this->params['navItems'] = [
 $this->title = Yii::t('app','Yii2 公版');
 
 ?>
-<div class="jumbotron">
+<div class="p-5 mb-4 bg-light rounded-3">
     <h1><?=Yii::t('app','恭喜你!')?></h1>
     <p class="lead"><?=Yii::t('app','您已成功創建基於 Yii 的應用程序。')?></p>
     <p><a class="btn btn-lg btn-success" href="http://www.yiiframework.com"><?=Yii::t('app','開始使用 Yii')?></a></p>

@@ -297,7 +297,7 @@ class Votes extends \yii\db\ActiveRecord
      */
     public function getRoundBadge()
     {
-        return Html::tag('span', "輪次: {$this->round}", ['class' => 'badge badge-dark']);
+        return Html::tag('span', "輪次: {$this->round}", ['class' => 'badge bg-dark']);
     }
 
     /**
@@ -307,7 +307,7 @@ class Votes extends \yii\db\ActiveRecord
      */
     public function getVoteIdBadge()
     {
-        return Html::tag('span', "{$this->voteID}", ['class' => 'badge badge-primary']);
+        return Html::tag('span', "{$this->voteID}", ['class' => 'badge bg-primary']);
     }
 
     /**
@@ -317,7 +317,7 @@ class Votes extends \yii\db\ActiveRecord
      */
     public function getStatusBadge()
     {
-        return Html::tag('span', "投票狀態: ".Yii::$app->params['ct.activeAry'][$this->active], ['class' => 'badge badge-dark']);
+        return Html::tag('span', "投票狀態: ".Yii::$app->params['ct.activeAry'][$this->active], ['class' => 'badge bg-dark']);
     }
 
     /**

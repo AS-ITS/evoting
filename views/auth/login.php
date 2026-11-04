@@ -31,9 +31,9 @@ $this->title = Yii::t('app', '管理員登入');
                         'placeholder' => Yii::t('app', '請輸入密碼'),
                     ])->label(Yii::t('app', '密碼')) ?>
 
-                    <div class="form-group text-center mt-4">
+                    <div class="text-center mt-4 mb-3">
                         <?= Html::submitButton(Yii::t('app', '登入'), [
-                            'class' => 'btn btn-primary btn-block w-100',
+                            'class' => 'btn btn-primary w-100',
                             'name' => 'login-button',
                             'type' => 'submit'
                         ]) ?>
