@@ -40,7 +40,7 @@ $form = ActiveForm::begin([
                     (!empty($voteInfo->session) ?
                     $form->field($model, 'session', [
                         'options' => ['class' => 'mb-0'],
-                        'labelOptions' => ['class' => 'col-md-6 col-lg-5 col-xl-5 col-form-label text-end pr-0'],
+                        'labelOptions' => ['class' => 'col-md-6 col-lg-5 col-xl-5 col-form-label text-end pe-0'],
                     ])
                     ->label(Yii::t('app', '場次碼').'：')
                     ->textInput([
@@ -49,12 +49,12 @@ $form = ActiveForm::begin([
                         // 'placeholder' => Yii::t('app', '請在此輸入場次碼'),
                     ]) : '').
                     $form->field($model, 'password', [
-                        'labelOptions' => ['class' => 'col-md-6 col-lg-5 col-xl-5 col-form-label text-end pr-0'],
+                        'labelOptions' => ['class' => 'col-md-6 col-lg-5 col-xl-5 col-form-label text-end pe-0'],
                         'addon' => [
                             'append' => [
                                 'content' => Html::button(FAS::icon('eye-slash'), [
                                     'id' => 'eye', 
-                                    'class'=>'btn btn-outline-dark border-left-0 py-1 border-dark rounded-right eye',
+                                    'class'=>'btn btn-outline-dark border-start-0 py-1 border-dark rounded-end eye',
                                 ]), 
                                 'asButton' => true,
                             ],
@@ -62,7 +62,7 @@ $form = ActiveForm::begin([
                     ])
                     ->label(Yii::t('app', '密碼').'：')
                     ->passwordInput([
-                        'class'=>'form-control border-right-0 border-dark',
+                        'class'=>'form-control border-end-0 border-dark',
                         'id' => 'passwd',
                         'autocomplete' => 'off',
                         // 'placeholder' => Yii::t('app', '請在此輸入投票密碼'),

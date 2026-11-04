@@ -342,11 +342,11 @@ class TablePagination extends \yii\base\BaseObject
             'page' => Html::a('{page}', null, [
                 'onclick' => 'return false;',
                 'title'   => Yii::t($this->category,'第 {begin} - {end} 筆'),
-                'class'   => 'text-monospace',
+                'class'   => 'font-monospace',
                 'data-bs-toggle' => 'tooltip',
             ]),
-            'pageCount' => Html::tag('span', '{pageCount}', ['class'=>'text-monospace']),
-            'totalCount' => Html::tag('span', '{totalCount}', ['class'=>'text-monospace']),
+            'pageCount' => Html::tag('span', '{pageCount}', ['class'=>'font-monospace']),
+            'totalCount' => Html::tag('span', '{totalCount}', ['class'=>'font-monospace']),
             'showCount' => Html::dropDownList($this->setPageGetName, $pageSize, $this->pageSizeList, [ 'onchange'=>$onchange, 'class'=>'pjax'])
         ]), $this->options);
     }

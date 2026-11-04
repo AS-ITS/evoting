@@ -179,8 +179,8 @@ foreach (Yii::$app->params['ct.candi.fieldSortName'] as $col => $name) {
 <hr class="mb-3">
 <h4 id="bs">自定義欄位</h4>
 <div class="row">
-    <div class="col-md-6 text-center h4"><span class="badge badge-primary">中文介面顯示</span></div>
-    <div class="col-md-6 text-center h4"><span class="badge badge-primary">英文介面顯示</span></div>
+    <div class="col-md-6 text-center h4"><span class="badge bg-primary">中文介面顯示</span></div>
+    <div class="col-md-6 text-center h4"><span class="badge bg-primary">英文介面顯示</span></div>
 </div>
 <?php foreach (range('A', 'F') as $letter): ?>
     <div class="row">
@@ -223,8 +223,8 @@ foreach (Yii::$app->params['ct.candi.fieldSortName'] as $col => $name) {
     </div>
 </div>
 <div class="row">
-    <div class="col-md-6 text-center h4"><span class="badge badge-primary">中文介面顯示</span></div>
-    <div class="col-md-6 text-center h4"><span class="badge badge-primary">英文介面顯示</span></div>
+    <div class="col-md-6 text-center h4"><span class="badge bg-primary">中文介面顯示</span></div>
+    <div class="col-md-6 text-center h4"><span class="badge bg-primary">英文介面顯示</span></div>
 </div>
 <?php foreach (range('A', 'C') as $letter): ?>
     <div class="row">
@@ -246,8 +246,8 @@ foreach (Yii::$app->params['ct.candi.fieldSortName'] as $col => $name) {
     </div>
 </div>
 <div class="row">
-    <div class="col-md-6 text-center h4"><span class="badge badge-primary">顯示的欄位</span></div>
-    <div class="col-md-6 text-center h4"><span class="badge badge-primary">隱藏的欄位</span></div>
+    <div class="col-md-6 text-center h4"><span class="badge bg-primary">顯示的欄位</span></div>
+    <div class="col-md-6 text-center h4"><span class="badge bg-primary">隱藏的欄位</span></div>
 </div>
 <div class="row">
     <div class="col-md list-group col" id="sortListLeft">
@@ -332,8 +332,8 @@ foreach (Yii::$app->params['ct.candi.fieldSortName'] as $col => $name) {
         </div>
     </div>
     <div class="row">
-        <div class="col-md-6 text-center h4"><span class="badge badge-primary">要排序的欄位</span></div>
-        <div class="col-md-6 text-center h4"><span class="badge badge-primary">不排序的欄位</span></div>
+        <div class="col-md-6 text-center h4"><span class="badge bg-primary">要排序的欄位</span></div>
+        <div class="col-md-6 text-center h4"><span class="badge bg-primary">不排序的欄位</span></div>
     </div>
     <div class="row">
         <div class="col-md list-group col" id="sortColumnLeft">

@@ -107,9 +107,9 @@ $form = ActiveForm::begin([
 </div>
 <div class="row align-items-center mb-2">
     <div class="col-auto">
-        <div class="custom-control custom-checkbox me-sm-2">
-            <input type="checkbox" class="custom-control-input" name="vote-rule-check" id="vote-rule-check" onclick="voteRule(this)">
-            <label class="custom-control-label" for="vote-rule-check">自訂規則</label>
+        <div class="form-check me-sm-2">
+            <input type="checkbox" class="form-check-input" name="vote-rule-check" id="vote-rule-check" onclick="voteRule(this)">
+            <label class="form-check-label" for="vote-rule-check">自訂規則</label>
         </div>
     </div>
     <div class="col-sm">

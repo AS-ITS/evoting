@@ -189,19 +189,15 @@ EOT;
         let inputHtml = '';
         if(canRemove) {
             removeHtml = `
-                <div class="input-group-prepend">
-                    <div class="input-group-text">
-                        <a href="#" class="remove_party">刪除此分組</a>
-                    </div>
+                <div class="input-group-text">
+                    <a href="#" class="remove_party">刪除此分組</a>
                 </div>
             `;
         }
         else {
             removeHtml = `
-                <div class="input-group-prepend">
-                    <div class="input-group-text">
-                        預設
-                    </div>
+                <div class="input-group-text">
+                    預設
                 </div>
             `;
         }
@@ -234,8 +230,8 @@ EOT;
         }
 
         let party = `
-        <div id="vr-`+type+`" class="no-gutters new-party`+(def == true ? ' def-party' : '')+`">
-            <label class="sr-only" for="partyName`+type+`">分組名稱</label>
+        <div id="vr-`+type+`" class="new-party`+(def == true ? ' def-party' : '')+`">
+            <label class="visually-hidden" for="partyName`+type+`">分組名稱</label>
             <div class="input-group mb-2 field-formparties-`+type+`-name field-formparties-`+type+`-nameE">
                 `+inputHtml+`
             </div>
@@ -257,21 +253,21 @@ EOT;
                         </div>
                     </div>
                     <div class="col-lg">
-                        <div class="form-group field-formparties-`+type+`-maxelect">
+                        <div class="mb-3 field-formparties-`+type+`-maxelect">
                             <label for="formparties-`+type+`-maxelect">當選人數</label>
                             <input type="text" id="formparties-`+type+`-maxelect" class="form-control" name="FormParties[`+type+`][maxElect]" value="1" required>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
                     <div class="col-lg">
-                        <div class="form-group field-formparties-`+type+`-numofkeep">
+                        <div class="mb-3 field-formparties-`+type+`-numofkeep">
                             <label for="formparties-`+type+`-numofkeep">遞補人數</label>
                             <input type="text" id="formparties-`+type+`-numofkeep" class="form-control" name="FormParties[`+type+`][numOfKeep]" value="1" required>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
                     <div class="col-lg`+($('#'+addiconditionId).val() === 'female' ? '' : ' d-none')+`" id="vr-`+type+`-female">
-                        <div class="form-group field-formparties-`+type+`-numfemalekeep">
+                        <div class="mb-3 field-formparties-`+type+`-numfemalekeep">
                             <label for="formparties-`+type+`-numfemalekeep">女性保留人數</label>
                             <input type="text" id="formparties-`+type+`-numfemalekeep" class="form-control" name="FormParties[`+type+`][numFemaleKeep]" value="0" `+($('#'+addiconditionId).val() === 'female' ? '' : 'disabled="disabled"')+`>
                             <div class="invalid-feedback"></div>

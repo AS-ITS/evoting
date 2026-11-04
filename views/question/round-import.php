@@ -74,7 +74,7 @@ $form = ActiveForm::begin([
 <div class="panel-body container-items">
     <?php foreach ($questions as $index => $question): ?>
         <div class="item card card-outline card-dark mb-2 border-dark" style="border-width: 2px;">
-            <div class="card-body py-2 pr-2">
+            <div class="card-body py-2 pe-2">
                 <h6 class="card-title">
                     <span class="panel-title fw-bold"><?= 
                         ($voteInfo->partyOrNot ? Html::tag('span', '分組：', ['class' => 'text-primary']).$parties[$question->party].'&nbsp;&nbsp;' : '').

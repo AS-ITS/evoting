@@ -38,7 +38,7 @@ if($isConfig)
         );
     }
 ?>
-<div class="form-row d-flex justify-content-center">
+<div class="row g-2 d-flex justify-content-center">
     <div class="col-md-3">
         <?= $form->field($model, 'sort')
             ->label(Yii::t('app', '開票結果排序'))

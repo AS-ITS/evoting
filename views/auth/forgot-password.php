@@ -28,7 +28,7 @@ $this->title = Yii::t('app', '忘記密碼');
                         'placeholder' => Yii::t('app', '請輸入帳號'),
                     ])->label(Yii::t('app', '帳號')) ?>
 
-                    <div class="form-group text-center mt-4">
+                    <div class="text-center mt-4 mb-3">
                         <?= Html::submitButton(Yii::t('app', '寄出重設連結'), [
                             'class' => 'btn btn-primary w-100',
                         ]) ?>

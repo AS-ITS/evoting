@@ -36,6 +36,9 @@
 
 ### Fixed
 
+* 殘留的 Bootstrap 4 樣式在 Bootstrap 5 下失效：輪次與投票狀態徽章看不見、對話框關閉鈕錯位，核取方塊、輸入群組、間距與邊框也一併改為 Bootstrap 5 寫法
+* `app\widgets\Modal::renderCloseButton()` 缺少回傳型別，Yii log 檢視頁發生 fatal error
+* 對話框有時被灰色遮罩蓋住、按鈕點了沒反應（OverlayScrollbars 晚於對話框初始化時，`.os-padding` 的堆疊環境讓 backdrop 壓在對話框上）
 * Functional Cest 在 `cleanup: false` 下於 `_before` 強制 `haveFixtures`，避免後續 Cest 缺 Group／ResultsConfig／Ballots
 * 附件刪除連結誤傳列表序號，刪除一律顯示「找不到該檔案」
 * 照片或附件存檔失敗（如目錄無寫入權限）仍顯示上傳成功，照片檔名也照樣寫入資料庫；改為回報失敗原因與檔名

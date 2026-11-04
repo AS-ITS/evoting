@@ -340,7 +340,7 @@ class DataTableModifierAction extends Action implements CacheDataInterface
                             return $model->{$column->attribute};
                         },
                         'headerOptions' => ['class' => 'align-middle text-center'],
-                        'contentOptions'=> ['class' => 'align-middle text-center text-monospace'],
+                        'contentOptions'=> ['class' => 'align-middle text-center font-monospace'],
                     ];
                 }
 
