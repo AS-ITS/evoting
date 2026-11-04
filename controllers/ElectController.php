@@ -330,7 +330,7 @@ class ElectController extends \app\components\Controller
                 Yii::$app->session->addFlash('error', "檔案上傳失敗，檔案總數量上限為".FormUploadFile::MAX_UPLOAD_COUNT."個");
             }
             elseif ($FormUploadFile->upload($voteID)) {
-                Yii::$app->session->addFlash('success', '檔案上傳成功！');
+                Yii::$app->session->addFlash('success', \yii\helpers\Html::encode('檔案上傳成功：'.implode('、', $FormUploadFile->savedFiles)));
             }
             else {
                 if (!empty($FormUploadFile->savedFiles)) {
