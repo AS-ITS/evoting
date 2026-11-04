@@ -333,9 +333,15 @@ class ElectController extends \app\components\Controller
                 Yii::$app->session->addFlash('success', '檔案上傳成功！');
             }
             else {
-                $failed = $FormUploadFile->failedFiles;
+                if (!empty($FormUploadFile->savedFiles)) {
+                    Yii::$app->session->addFlash('success', \yii\helpers\Html::encode('檔案上傳成功：'.implode('、', $FormUploadFile->savedFiles)));
+                }
+                $failed = [];
+                foreach ($FormUploadFile->failedFiles as $name => $reason) {
+                    $failed[] = "{$name}（{$reason}）";
+                }
                 if (!empty($failed)) {
-                    $message = '下列檔案上傳失敗，請洽系統管理員確認檔案目錄權限：'.implode('、', $failed);
+                    $message = '下列檔案未上傳：'.implode('、', $failed);
                 }
                 elseif ($FormUploadFile->hasErrors()) {
                     $message = '檔案上傳失敗：'.implode(' ', $FormUploadFile->getErrorSummary(true));

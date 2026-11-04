@@ -3,8 +3,20 @@
 namespace app\tests\unit\models;
 
 use app\models\FormUploadFile;
+use app\tests\fixtures\VotesFixture;
 use yii\helpers\FileHelper;
 use yii\web\UploadedFile;
+
+/**
+ * 測試用上傳檔：非真正 HTTP 上傳，saveAs 以複製代替 move_uploaded_file
+ */
+class CopyUploadedFile extends UploadedFile
+{
+    public function saveAs($file, $deleteTempFile = true)
+    {
+        return copy($this->tempName, \Yii::getAlias($file));
+    }
+}
 
 /**
  * 附件上傳檔案類型驗證測試
@@ -17,6 +29,15 @@ class FormUploadFileTest extends \Codeception\Test\Unit
      * @var \UnitTester
      */
     protected $tester;
+
+    const VOTE_ID = 'NoAuthVoteTest';
+
+    public function _fixtures()
+    {
+        return [
+            'votes' => VotesFixture::class,
+        ];
+    }
 
     /**
      * 暫存目錄
@@ -143,6 +164,78 @@ class FormUploadFileTest extends \Codeception\Test\Unit
     {
         $model = $this->validateFiles([$this->uploaded('run.sh', $this->put('a', "echo hi\n"))]);
         $this->assertFalse($model->validate());
+    }
+
+    // ==================== upload() ====================
+
+    /**
+     * 以暫存 FilePool 執行 upload()
+     *
+     * @param  array $names 上傳檔名 => 內容
+     * @param  array $existing 預先存在的附件 檔名 => 內容
+     * @return array [FormUploadFile, 附件目錄]
+     */
+    private function runUpload(array $names, array $existing = [])
+    {
+        $pool = $this->dir.DIRECTORY_SEPARATOR.'pool';
+        $voteDir = $pool.DIRECTORY_SEPARATOR.'candidateFile'.DIRECTORY_SEPARATOR.self::VOTE_ID;
+        FileHelper::createDirectory($voteDir);
+        foreach ($existing as $name => $content) {
+            file_put_contents($voteDir.DIRECTORY_SEPARATOR.$name, $content);
+        }
+
+        $files = [];
+        foreach ($names as $name => $content) {
+            $files[] = new CopyUploadedFile([
+                'name' => $name,
+                'tempName' => $this->put(uniqid('t'), $content),
+                'type' => 'text/plain',
+                'size' => strlen($content),
+                'error' => UPLOAD_ERR_OK,
+            ]);
+        }
+
+        $original = \Yii::getAlias('@filePool', false);
+        \Yii::setAlias('@filePool', $pool);
+        try {
+            $model = new FormUploadFile();
+            $model->files = $files;
+            $model->upload(self::VOTE_ID);
+            $this->assertSame([], $model->errors, '驗證不應失敗：'.json_encode($model->errors, JSON_UNESCAPED_UNICODE));
+        } finally {
+            \Yii::setAlias('@filePool', $original ?: null);
+        }
+        return [$model, $voteDir];
+    }
+
+    public function testUploadSavesAllSelectedFiles()
+    {
+        [$model, $dir] = $this->runUpload(['a.txt' => "hello attachment A\n", 'b.csv' => "x,y\n"]);
+        $this->assertSame([], $model->failedFiles);
+        $this->assertSame(['a.txt', 'b.csv'], $model->savedFiles);
+        $this->assertStringEqualsFile($dir.'/a.txt', "hello attachment A\n");
+        $this->assertStringEqualsFile($dir.'/b.csv', "x,y\n");
+    }
+
+    public function testUploadRejectsDuplicateNameWithoutOverwriting()
+    {
+        [$model, $dir] = $this->runUpload(
+            ['old.txt' => "new content\n", 'new.txt' => "another file\n"],
+            ['old.txt' => "old content\n"]
+        );
+        $this->assertSame(['old.txt' => FormUploadFile::FAIL_DUPLICATE], $model->failedFiles);
+        $this->assertSame(['new.txt'], $model->savedFiles);
+        $this->assertStringEqualsFile($dir.'/old.txt', "old content\n");
+        $this->assertFileExists($dir.'/new.txt');
+    }
+
+    public function testUploadRejectsDuplicateNameInSameBatch()
+    {
+        // 不同路徑但檔名相同（basename 後相同）
+        [$model, $dir] = $this->runUpload(['a.txt' => "first file\n", 'x/a.txt' => "second file\n"]);
+        $this->assertSame(['a.txt'], $model->savedFiles);
+        $this->assertSame(['x/a.txt' => FormUploadFile::FAIL_DUPLICATE], $model->failedFiles);
+        $this->assertStringEqualsFile($dir.'/a.txt', "first file\n");
     }
 
     // ==================== isAllowedMime() ====================

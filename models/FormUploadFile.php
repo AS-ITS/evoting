@@ -17,12 +17,26 @@ class FormUploadFile extends Model
     
     public $files;
 
+    /** 失敗原因：已有同名檔案 */
+    const FAIL_DUPLICATE = '已有同名檔案，請先刪除舊檔再上傳';
+    /** 失敗原因：檔名不合法 */
+    const FAIL_INVALID_NAME = '檔名不合法';
+    /** 失敗原因：無法寫入 */
+    const FAIL_SAVE = '無法寫入，請洽系統管理員確認檔案目錄權限';
+
     /**
-     * 上傳失敗的檔名
+     * 上傳失敗的檔案，[原始檔名 => 原因]
+     *
+     * @var array<string, string>
+     */
+    public $failedFiles = [];
+
+    /**
+     * 已成功儲存的檔名
      *
      * @var string[]
      */
-    public $failedFiles = [];
+    public $savedFiles = [];
 
     /**
      * Returns the validation rules for attributes.
@@ -126,24 +140,40 @@ class FormUploadFile extends Model
             // voteID 須為存在的場次，目錄不存在時建立
             $filePath = FileLoader::voteDir(FileLoader::DIR_FILE, $voteID, true);
             $this->failedFiles = [];
+            $this->savedFiles = [];
             if (!$filePath) {
-                $this->failedFiles = array_map(function ($file) { return $file->name; }, (array) $this->files);
-                Logs::add(Logs::VOTE_FILE_UPLOAD_FAIL, Json::encode(compact('voteID') + ['error' => 'directory not writable'], 336));
+                foreach ((array) $this->files as $file) {
+                    $this->failedFiles[$file->name] = self::FAIL_SAVE;
+                }
+                Logs::add(Logs::VOTE_FILE_UPLOAD_FAIL, Json::encode(compact('voteID') + ['failed' => $this->failedFiles], 336));
                 return false;
             }
             foreach ($this->files as $file) {
                 // 檔名消毒：僅取純檔名並移除控制字元，防止路徑穿越與特殊字元
                 $safeName = basename(str_replace('\\', '/', $file->name));
                 $safeName = preg_replace('/[\x00-\x1F\x7F]/u', '', $safeName);
-                if (!FileLoader::isSafeSegment($safeName) || !$file->saveAs($filePath.DIRECTORY_SEPARATOR.$safeName)) {
-                    $this->failedFiles[] = $file->name;
+                $target = $filePath.DIRECTORY_SEPARATOR.$safeName;
+                if (!FileLoader::isSafeSegment($safeName)) {
+                    $this->failedFiles[$file->name] = self::FAIL_INVALID_NAME;
                 }
+                elseif (file_exists($target)) {
+                    // 不覆蓋既有附件（含同一批次內的同名檔），避免誤蓋已公開給投票者的文件
+                    $this->failedFiles[$file->name] = self::FAIL_DUPLICATE;
+                }
+                elseif (!$file->saveAs($target)) {
+                    $this->failedFiles[$file->name] = self::FAIL_SAVE;
+                }
+                else {
+                    $this->savedFiles[] = $safeName;
+                }
+            }
+            if (!empty($this->savedFiles)) {
+                Logs::add(Logs::VOTE_FILE_UPLOAD, Json::encode(compact('voteID') + ['files' => $this->savedFiles], 336));
             }
             if (!empty($this->failedFiles)) {
                 Logs::add(Logs::VOTE_FILE_UPLOAD_FAIL, Json::encode(compact('voteID') + ['failed' => $this->failedFiles], 336));
                 return false;
             }
-            Logs::add(Logs::VOTE_FILE_UPLOAD, Json::encode(compact('voteID')+$this->files, 336));
             return true;
         } 
         else {
