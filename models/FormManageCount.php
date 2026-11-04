@@ -456,6 +456,8 @@ class FormManageCount extends \yii\base\BaseObject implements \app\interfaces\Co
     {
         $dataProvider = new DataProvider;
         $candiConfigModel = new CandiConfig;
+        // 每列欄數來自系統設定（session）；未設定或為 0 時以 1 計，避免除以零
+        $splitRow = max(1, (int) $splitRow);
 
         $result = [];
         $models = [];

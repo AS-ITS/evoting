@@ -148,7 +148,7 @@ echo GridView::widget([
             'content' => function ($model, $key, $index, $column)
             {
                 if (isset($model->photo)) {
-                    return Html::img(['candi/view-photo', 'voteID' => $model->voteID, 'file' => $model->photo], ['width'=>'250', 'class'=>'img-fluid']);
+                    return empty($model->photo) ? '' : Html::img(['candi/view-photo', 'voteID' => $model->voteID, 'file' => $model->photo], ['width'=>'250', 'class'=>'img-fluid']);
                 }
                 return '';
             },

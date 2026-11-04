@@ -20,7 +20,7 @@ echo Html::beginTag('table', ['class' => 'table table-bordered table-sm mb-0']);
                     $selCandiName = [];
                     foreach ($ballot->ballotsSelected as $value) {
                         $selCandiName[] = Html::tag('font', 
-                            Html::tag('span', Model::i18n($value->candiData->NameE, $value->candiData->Name), ['class' => 'badge'])
+                            Html::tag('span', Model::i18n($value->candiData->NameE, $value->candiData->Name), ['class' => 'badge text-body'])
                         , ['size' => 5]) ;
                     }
                     echo Html::tag('tr',
@@ -34,7 +34,7 @@ echo Html::beginTag('table', ['class' => 'table table-bordered table-sm mb-0']);
                     $selCandiName = [];
                     foreach ($ballot->ballotsSelected as $value) {
                         $selCandiName[] = Html::tag('font', 
-                            Html::tag('span', Model::i18n($value->candiData->NameE, $value->candiData->Name), ['class' => 'badge'])
+                            Html::tag('span', Model::i18n($value->candiData->NameE, $value->candiData->Name), ['class' => 'badge text-body'])
                         , ['size' => 5]) ;
                     }
                     echo Html::tag('tr',

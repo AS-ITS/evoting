@@ -139,7 +139,7 @@ else
                 'attribute' => 'photo',
                 'content' => function ($model, $key, $index, $column)
                 {
-                    return Html::img(['candi/view-photo', 'voteID' => $model->voteID, 'file' => $model->photo], ['width'=>'250', 'class'=>'img-fluid']);
+                    return empty($model->photo) ? '' : Html::img(['candi/view-photo', 'voteID' => $model->voteID, 'file' => $model->photo], ['width'=>'250', 'class'=>'img-fluid']);
                 },
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],

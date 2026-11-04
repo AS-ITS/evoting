@@ -59,7 +59,7 @@ echo GridView::widget([
                 }
                 // 圈選的候選人清單
                 foreach ($ballots[$model['ballotID']] as $candi) {
-                    $selCandiName[] = '<span class="badge fw-lighter" style="font-size: 1rem">'.$candi['Name'].'</span>';
+                    $selCandiName[] = '<span class="badge text-body fw-lighter" style="font-size: 1rem">'.$candi['Name'].'</span>';
                 }
                 return implode("、", $selCandiName);
             },
