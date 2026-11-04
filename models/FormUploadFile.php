@@ -5,6 +5,7 @@ use Yii;
 use yii\base\Model;
 use yii\helpers\FileHelper;
 use yii\helpers\Json;
+use yii\web\UploadedFile;
 use app\components\helper\FileLoader;
 
 class FormUploadFile extends Model
@@ -35,13 +36,72 @@ class FormUploadFile extends Model
             [
                 ['files'], 
                 'file', 
-                'extensions' => 'png, jpg, jpeg, gif, docx, doc, pdf, pptx, ppt, csv, xlsx, xls, txt, odt, ods, odp',
-                // 依檔案實際內容 (MIME) 驗證副檔名，防止偽造副檔名上傳惡意檔案
-                'checkExtensionByMimeType' => true,
+                'extensions' => implode(', ', array_keys(self::MIME_MAP)),
+                // 改由 validateMimeType() 依對照表檢查內容，避免 csv、Office 檔被 Yii 內建反查誤擋
+                'checkExtensionByMimeType' => false,
                 'maxFiles' => 5,
                 'maxSize' => 6144000
             ],
+            [['files'], 'validateMimeType'],
         ];
+    }
+
+    /**
+     * 允許的副檔名與其檔案內容 (MIME) 對照
+     *
+     * OOXML / ODF 實為 zip 封裝，部分產生器的檔案會被偵測為 application/zip；
+     * 舊版 Office (OLE) 檔依 libmagic 版本可能偵測為 vnd.ms-office / CDFV2。
+     */
+    const MIME_MAP = [
+        'png'  => ['image/png'],
+        'jpg'  => ['image/jpeg', 'image/pjpeg'],
+        'jpeg' => ['image/jpeg', 'image/pjpeg'],
+        'gif'  => ['image/gif'],
+        'pdf'  => ['application/pdf', 'application/x-pdf'],
+        'txt'  => ['text/plain'],
+        'csv'  => ['text/plain', 'text/csv', 'application/csv', 'text/x-csv', 'application/vnd.ms-excel'],
+        'doc'  => ['application/msword', 'application/vnd.ms-office', 'application/cdfv2', 'application/x-ole-storage'],
+        'xls'  => ['application/vnd.ms-excel', 'application/vnd.ms-office', 'application/cdfv2', 'application/x-ole-storage'],
+        'ppt'  => ['application/vnd.ms-powerpoint', 'application/vnd.ms-office', 'application/cdfv2', 'application/x-ole-storage'],
+        'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/zip'],
+        'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip'],
+        'pptx' => ['application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/zip'],
+        'odt'  => ['application/vnd.oasis.opendocument.text', 'application/zip'],
+        'ods'  => ['application/vnd.oasis.opendocument.spreadsheet', 'application/zip'],
+        'odp'  => ['application/vnd.oasis.opendocument.presentation', 'application/zip'],
+    ];
+
+    /**
+     * 依檔案實際內容檢查是否與副檔名相符，防止偽造副檔名上傳惡意檔案
+     *
+     * @param  string $attribute
+     * @return void
+     */
+    public function validateMimeType($attribute)
+    {
+        foreach ((array) $this->$attribute as $file) {
+            if (!$file instanceof UploadedFile || $file->error !== UPLOAD_ERR_OK) {
+                continue;
+            }
+            $mime = FileHelper::getMimeType($file->tempName, null, false);
+            if (!self::isAllowedMime($file->extension, $mime)) {
+                $this->addError($attribute, "檔案「{$file->name}」的內容與副檔名不符，無法上傳。");
+            }
+        }
+    }
+
+    /**
+     * 副檔名與偵測到的 MIME 是否相符
+     *
+     * @param  string $extension
+     * @param  string|null $mime
+     * @return bool
+     */
+    public static function isAllowedMime($extension, $mime)
+    {
+        $extension = strtolower((string) $extension);
+        $mime = strtolower(trim(explode(';', (string) $mime)[0]));
+        return isset(self::MIME_MAP[$extension]) && in_array($mime, self::MIME_MAP[$extension], true);
     }
 
     /**
