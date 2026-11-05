@@ -55,12 +55,22 @@ class CandidateMarkupCest
         $this->checkPage($I, 'print', 'en-US');
     }
 
+    public function testPrintedNumericColumnChinese(FunctionalTester $I): void
+    {
+        $this->checkPage($I, 'print', 'zh-TW', true);
+    }
+
+    public function testPrintedNumericColumnEnglish(FunctionalTester $I): void
+    {
+        $this->checkPage($I, 'print', 'en-US', true);
+    }
+
     private function markup(string $marker): string
     {
         return $marker.'<br><b>R&D</b><script>p2attack()</script>';
     }
 
-    private function checkPage(FunctionalTester $I, string $page, string $language): void
+    private function checkPage(FunctionalTester $I, string $page, string $language, bool $numeric = false): void
     {
         $vote = Votes::findOne(['voteID' => 'AnonNoPartyTest']);
         $config = CandiConfig::findOne(['voteID' => $vote->voteID]);
@@ -92,6 +102,10 @@ class CandidateMarkupCest
                 'Name' => 'NZ<br><b>R&D</b>',
                 'showFieldSort' => json_encode($fields), 'useBeforeHeader' => 0, 'columnNum' => 1,
             ]));
+            if ($numeric) {
+                $values['otherColA'] = '3';
+                $values['otherColAE'] = '4';
+            }
             $candidate->updateAttributes($values);
             if ($page === 'print') {
                 $I->amLoggedInAsAdmin('sa');
@@ -113,7 +127,8 @@ class CandidateMarkupCest
                 libxml_use_internal_errors($previous);
             }
             $xpath = new DOMXPath($dom);
-            Assert::assertSame(0, $xpath->query('//svg[@onload] | //script[contains(., "p2attack")] | //*[@onclick[contains(., "p2attack")] or @onerror[contains(., "p2attack")]]')->length);
+            // Encoded candidate names may also occur as inert JSON inside legitimate handlers.
+            Assert::assertSame(0, $xpath->query('//script[normalize-space(.) = "p2attack()"] | //*[@onclick = "p2attack()" or @onerror = "p2attack()"]')->length);
             $markers = ['DA'.($language === 'zh-TW' ? 'Zh' : 'En')];
             if ($page === 'start-vote') {
                 foreach (range('A', 'F') as $field) {
@@ -125,7 +140,9 @@ class CandidateMarkupCest
                     $token = $field === 'Name' ? 'N' : substr($field, -1);
                     foreach (['Zh', 'En'] as $suffix) {
                         $markers[] = $field === 'Name' && $suffix === 'Zh' ? 'NZ' : 'L'.$token.$suffix;
-                        $markers[] = 'D'.$token.$suffix;
+                        if (!$numeric || $field !== 'otherColA') {
+                            $markers[] = 'D'.$token.$suffix;
+                        }
                     }
                 }
             }
@@ -134,6 +151,10 @@ class CandidateMarkupCest
                 $bold = $xpath->query('//*[contains(text(), "'.$marker.'")]/b');
                 Assert::assertGreaterThan(0, $bold->length, $marker.' keeps safe formatting');
                 Assert::assertSame('R&D', $bold->item(0)->textContent, $marker.' is not double encoded');
+            }
+            if ($numeric) {
+                $expected = $language === 'zh-TW' ? '3' : '4';
+                Assert::assertGreaterThan(0, $xpath->query('//td/span[normalize-space(.) = "'.$expected.'"]')->length, 'Numeric values retain their existing locale selection');
             }
         } finally {
             Yii::$app->language = $originalLanguage;

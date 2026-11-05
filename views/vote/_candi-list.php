@@ -1,5 +1,6 @@
 <?php
 use yii\helpers\Html;
+use yii\helpers\HtmlPurifier;
 use yii\grid\GridView;
 
 use app\components\Model;
@@ -154,7 +155,7 @@ else
                 ],
                 'content' => function ($model, $key, $index, $column)
                 {
-                    return Html::tag('span', $model[$column->attribute], [
+                    return Html::tag('span', HtmlPurifier::process($model[$column->attribute], Yii::$app->params['HtmlPurifier.config']), [
                         'class' => 'd-block text-truncate text-mw', 
                     ]);
                 },

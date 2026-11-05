@@ -410,8 +410,8 @@ class FormCandiConfig extends CandiConfig
                         $contentsCh = explode(',', $this->$name);
                         $contentsEn = explode(',', $this->$nameE);
                         $content = $contentsCh > 1 && (!is_null($gridViewKey) && !empty($contentsCh[$gridViewKey])) 
-                            ? Html::tag('span', $contentsCh[$gridViewKey], ['class' => 'text-ch']).'<br>'.
-                              Html::tag('span', $contentsEn[$gridViewKey], ['class' => 'text-en']) : $content;
+                            ? Html::tag('span', HtmlPurifier::process($contentsCh[$gridViewKey], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                              Html::tag('span', HtmlPurifier::process($contentsEn[$gridViewKey] ?? '', Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']) : $content;
                     }
                 }
                 else {
