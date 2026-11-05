@@ -1,6 +1,7 @@
 <?php
 
 use yii\bootstrap5\Html;
+use yii\helpers\HtmlPurifier;
 use app\components\Model;
 use app\models\CandiData;
 use app\models\Questions;
@@ -195,14 +196,13 @@ foreach ($candidateLists as $key => $candidateList) {
                 'contentOptions' => ['class' => 'align-middle text-center'],
             ],
             'Name' => [
-                'header' => Html::tag('span', $candiConfig->Name, ['class' => 'text-ch']).'<br>'.
-                            Html::tag('span', $candiConfig->NameE, ['class' => 'text-en']),
+                'header' => Html::tag('span', HtmlPurifier::process($candiConfig->Name, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                            Html::tag('span', HtmlPurifier::process($candiConfig->NameE, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']),
                 'attribute' => 'id',
                 'value' => function ($model, $key, $index, $column)
                 {
-                    return Html::tag('span', $model->Name, ['class' => 'text-ch']).'<br>'.
-                           Html::tag('span', $model->NameE, ['class' => 'text-en']);
-                    return Model::i18n($model->NameE, $model->Name, false);
+                    return Html::tag('span', HtmlPurifier::process($model->Name, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                           Html::tag('span', HtmlPurifier::process($model->NameE, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']);
                 },
                 'format' => 'raw',
                 'headerOptions'  => ['class' => 'align-middle text-center'],
@@ -239,97 +239,109 @@ foreach ($candidateLists as $key => $candidateList) {
                 'contentOptions' => ['class' => 'align-middle text-center'],
             ],
             'otherColA' => [
-                'header' => Html::tag('span', $candiConfig->otherColNameA, ['class' => 'text-ch']).'<br>'.
-                            Html::tag('span', $candiConfig->otherColNameAE, ['class' => 'text-en']),
-                'attribute' => Model::i18n('otherColAE', 'otherColA'),
+                'header' => Html::tag('span', HtmlPurifier::process($candiConfig->otherColNameA, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                            Html::tag('span', HtmlPurifier::process($candiConfig->otherColNameAE, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']),
+                'attribute' => 'otherColA',
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => [
                     'class' => 'align-middle text-start',
                 ],
                 'content' => function ($model, $key, $index, $column)
                 {
-                    if (is_numeric($model[$column->attribute])) {
-                        return Html::tag('span', $model[$column->attribute]);
+                    $numericAttribute = strtolower(Yii::$app->language) === 'zh-tw'
+                        ? $column->attribute : $column->attribute.'E';
+                    if (is_numeric($model[$numericAttribute])) {
+                        return Html::tag('span', $model[$numericAttribute]);
                     }
-                    return Html::tag('span', $model[$column->attribute], ['class' => 'text-ch']).'<br>'.
-                           Html::tag('span', $model[$column->attribute.'E'], ['class' => 'text-en']);
+                    return Html::tag('span', HtmlPurifier::process($model[$column->attribute], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                           Html::tag('span', HtmlPurifier::process($model[$column->attribute.'E'], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']);
                 },
             ],
             'otherColB' => [
-                'header' => Html::tag('span', $candiConfig->otherColNameB, ['class' => 'text-ch']).'<br>'.
-                            Html::tag('span', $candiConfig->otherColNameBE, ['class' => 'text-en']),
+                'header' => Html::tag('span', HtmlPurifier::process($candiConfig->otherColNameB, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                            Html::tag('span', HtmlPurifier::process($candiConfig->otherColNameBE, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']),
                 'encodeLabel' => false,
-                'attribute' => Model::i18n('otherColBE', 'otherColB'),
+                'attribute' => 'otherColB',
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
                 'content' => function ($model, $key, $index, $column)
                 {
-                    if (is_numeric($model[$column->attribute])) {
-                        return Html::tag('span', $model[$column->attribute]);
+                    $numericAttribute = strtolower(Yii::$app->language) === 'zh-tw'
+                        ? $column->attribute : $column->attribute.'E';
+                    if (is_numeric($model[$numericAttribute])) {
+                        return Html::tag('span', $model[$numericAttribute]);
                     }
-                    return Html::tag('span', $model[$column->attribute], ['class' => 'text-ch']).'<br>'.
-                           Html::tag('span', $model[$column->attribute.'E'], ['class' => 'text-en']);
+                    return Html::tag('span', HtmlPurifier::process($model[$column->attribute], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                           Html::tag('span', HtmlPurifier::process($model[$column->attribute.'E'], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']);
                 },
             ],
             'otherColC' => [
-                'header' => Html::tag('span', $candiConfig->otherColNameC, ['class' => 'text-ch']).'<br>'.
-                            Html::tag('span', $candiConfig->otherColNameCE, ['class' => 'text-en']),
+                'header' => Html::tag('span', HtmlPurifier::process($candiConfig->otherColNameC, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                            Html::tag('span', HtmlPurifier::process($candiConfig->otherColNameCE, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']),
                 'encodeLabel' => false,
-                'attribute' => Model::i18n('otherColCE', 'otherColC'),
+                'attribute' => 'otherColC',
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
                 'content' => function ($model, $key, $index, $column)
                 {
-                    if (is_numeric($model[$column->attribute])) {
-                        return Html::tag('span', $model[$column->attribute]);
+                    $numericAttribute = strtolower(Yii::$app->language) === 'zh-tw'
+                        ? $column->attribute : $column->attribute.'E';
+                    if (is_numeric($model[$numericAttribute])) {
+                        return Html::tag('span', $model[$numericAttribute]);
                     }
-                    return Html::tag('span', $model[$column->attribute], ['class' => 'text-ch']).'<br>'.
-                           Html::tag('span', $model[$column->attribute.'E'], ['class' => 'text-en']);
+                    return Html::tag('span', HtmlPurifier::process($model[$column->attribute], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                           Html::tag('span', HtmlPurifier::process($model[$column->attribute.'E'], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']);
                 },
             ],
             'otherColD' => [
-                'header' => Html::tag('span', $candiConfig->otherColNameD, ['class' => 'text-ch']).'<br>'.
-                            Html::tag('span', $candiConfig->otherColNameDE, ['class' => 'text-en']),
-                'attribute' => Model::i18n('otherColDE', 'otherColD'),
+                'header' => Html::tag('span', HtmlPurifier::process($candiConfig->otherColNameD, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                            Html::tag('span', HtmlPurifier::process($candiConfig->otherColNameDE, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']),
+                'attribute' => 'otherColD',
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
                 'content' => function ($model, $key, $index, $column)
                 {
-                    if (is_numeric($model[$column->attribute])) {
-                        return Html::tag('span', $model[$column->attribute]);
+                    $numericAttribute = strtolower(Yii::$app->language) === 'zh-tw'
+                        ? $column->attribute : $column->attribute.'E';
+                    if (is_numeric($model[$numericAttribute])) {
+                        return Html::tag('span', $model[$numericAttribute]);
                     }
-                    return Html::tag('span', $model[$column->attribute], ['class' => 'text-ch']).'<br>'.
-                           Html::tag('span', $model[$column->attribute.'E'], ['class' => 'text-en']);
+                    return Html::tag('span', HtmlPurifier::process($model[$column->attribute], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                           Html::tag('span', HtmlPurifier::process($model[$column->attribute.'E'], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']);
                 },
             ],
             'otherColE' => [
-                'header' => Html::tag('span', $candiConfig->otherColNameE, ['class' => 'text-ch']).'<br>'.
-                            Html::tag('span', $candiConfig->otherColNameEE, ['class' => 'text-en']),
-                'attribute' => Model::i18n('otherColEE', 'otherColE'),
+                'header' => Html::tag('span', HtmlPurifier::process($candiConfig->otherColNameE, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                            Html::tag('span', HtmlPurifier::process($candiConfig->otherColNameEE, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']),
+                'attribute' => 'otherColE',
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
                 'content' => function ($model, $key, $index, $column)
                 {
-                    if (is_numeric($model[$column->attribute])) {
-                        return Html::tag('span', $model[$column->attribute]);
+                    $numericAttribute = strtolower(Yii::$app->language) === 'zh-tw'
+                        ? $column->attribute : $column->attribute.'E';
+                    if (is_numeric($model[$numericAttribute])) {
+                        return Html::tag('span', $model[$numericAttribute]);
                     }
-                    return Html::tag('span', $model[$column->attribute], ['class' => 'text-ch']).'<br>'.
-                           Html::tag('span', $model[$column->attribute.'E'], ['class' => 'text-en']);
+                    return Html::tag('span', HtmlPurifier::process($model[$column->attribute], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                           Html::tag('span', HtmlPurifier::process($model[$column->attribute.'E'], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']);
                 },
             ],
             'otherColF' => [
-                'header' => Html::tag('span', $candiConfig->otherColNameF, ['class' => 'text-ch']).'<br>'.
-                            Html::tag('span', $candiConfig->otherColNameFE, ['class' => 'text-en']),
-                'attribute' => Model::i18n('otherColFE', 'otherColF'),
+                'header' => Html::tag('span', HtmlPurifier::process($candiConfig->otherColNameF, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                            Html::tag('span', HtmlPurifier::process($candiConfig->otherColNameFE, Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']),
+                'attribute' => 'otherColF',
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
                 'content' => function ($model, $key, $index, $column)
                 {
-                    if (is_numeric($model[$column->attribute])) {
-                        return Html::tag('span', $model[$column->attribute]);
+                    $numericAttribute = strtolower(Yii::$app->language) === 'zh-tw'
+                        ? $column->attribute : $column->attribute.'E';
+                    if (is_numeric($model[$numericAttribute])) {
+                        return Html::tag('span', $model[$numericAttribute]);
                     }
-                    return Html::tag('span', $model[$column->attribute], ['class' => 'text-ch']).'<br>'.
-                           Html::tag('span', $model[$column->attribute.'E'], ['class' => 'text-en']);
+                    return Html::tag('span', HtmlPurifier::process($model[$column->attribute], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-ch']).'<br>'.
+                           Html::tag('span', HtmlPurifier::process($model[$column->attribute.'E'], Yii::$app->params['HtmlPurifier.config']), ['class' => 'text-en']);
                 },
             ],
         ],[

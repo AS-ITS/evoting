@@ -437,7 +437,7 @@ CSS
                     'contentOptions' => ['class' => 'align-middle text-center'],
                 ],
                 'otherColA' => [
-                    'label' => Model::i18n($candiConfig->otherColNameAE, $candiConfig->otherColNameA, null),
+                    'label' => Model::i18n($candiConfig->otherColNameAE, $candiConfig->otherColNameA, false),
                     'encodeLabel' => false,
                     'attribute' => Model::i18n('otherColAE', 'otherColA'),
                     'headerOptions'  => ['class' => 'align-middle text-center'],
@@ -447,41 +447,41 @@ CSS
                     ],
                     'content' => function ($model, $key, $index, $column)
                     {
-                        return Html::tag('span', $model[$column->attribute], [
+                        return Html::tag('span', HtmlPurifier::process($model[$column->attribute], Yii::$app->params['HtmlPurifier.config']), [
                             'class' => 'd-block text-truncate text-mw', 
                         ]);
                     },
                 ],
                 'otherColB' => [
-                    'label' => Model::i18n($candiConfig->otherColNameBE, $candiConfig->otherColNameB, null),
+                    'label' => Model::i18n($candiConfig->otherColNameBE, $candiConfig->otherColNameB, false),
                     'encodeLabel' => false,
                     'attribute' => Model::i18n('otherColBE', 'otherColB'),
                     'headerOptions'  => ['class' => 'align-middle text-center'],
                     'contentOptions' => ['class' => 'align-middle text-center'],
                 ],
                 'otherColC' => [
-                    'label' => Model::i18n($candiConfig->otherColNameCE, $candiConfig->otherColNameC, null),
+                    'label' => Model::i18n($candiConfig->otherColNameCE, $candiConfig->otherColNameC, false),
                     'encodeLabel' => false,
                     'attribute' => Model::i18n('otherColCE', 'otherColC'),
                     'headerOptions'  => ['class' => 'align-middle text-center'],
                     'contentOptions' => ['class' => 'align-middle text-center'],
                 ],
                 'otherColD' => [
-                    'label' => Model::i18n($candiConfig->otherColNameDE, $candiConfig->otherColNameD, null),
+                    'label' => Model::i18n($candiConfig->otherColNameDE, $candiConfig->otherColNameD, false),
                     'encodeLabel' => false,
                     'attribute' => Model::i18n('otherColDE', 'otherColD'),
                     'headerOptions'  => ['class' => 'align-middle text-center'],
                     'contentOptions' => ['class' => 'align-middle text-center'],
                 ],
                 'otherColE' => [
-                    'label' => Model::i18n($candiConfig->otherColNameEE, $candiConfig->otherColNameE, null),
+                    'label' => Model::i18n($candiConfig->otherColNameEE, $candiConfig->otherColNameE, false),
                     'encodeLabel' => false,
                     'attribute' => Model::i18n('otherColEE', 'otherColE'),
                     'headerOptions'  => ['class' => 'align-middle text-center'],
                     'contentOptions' => ['class' => 'align-middle text-center'],
                 ],
                 'otherColF' => [
-                    'label' => Model::i18n($candiConfig->otherColNameFE, $candiConfig->otherColNameF, null),
+                    'label' => Model::i18n($candiConfig->otherColNameFE, $candiConfig->otherColNameF, false),
                     'encodeLabel' => false,
                     'attribute' => Model::i18n('otherColFE', 'otherColF'),
                     'headerOptions'  => ['class' => 'align-middle text-center'],

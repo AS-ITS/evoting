@@ -28,6 +28,7 @@
 
 ### Security
 
+* 投票頁自訂欄位標題、候選名單內容與紙本選票的中英文資料統一淨化原本直接輸出的 HTML；列印分段表頭也套用淨化，保留既有換行與合法排版
 * 重設密碼回應不透露帳號是否存在；token 只存 SHA-256；同帳號／IP 15 分鐘最多 5 次申請
 * 升級 `phpoffice/phpspreadsheet` 至 5.10.0（CVE-2026-108357、CVE-2026-108358、CVE-2026-108359、CVE-2026-108360）
 * 升級 `symfony/mime`、`symfony/mailer` 至 7.4.22（CVE-2026-45070，郵件參數名稱標頭注入）
@@ -39,6 +40,7 @@
 
 ### Fixed
 
+* 英文介面的紙本選票自訂文字欄位誤讀多一個 E 的欄名而發生錯誤；保留中英並列與原有數字欄位的語言選擇
 * Yii log 檢視頁的 UrlModal 資產指向未隨 Git 提供的目錄而發生 500；改為追蹤前端腳本，內容載入沿用目前頁面的協定與主機
 * 殘留的 Bootstrap 4 樣式在 Bootstrap 5 下失效：輪次與投票狀態徽章看不見、對話框關閉鈕錯位，核取方塊、輸入群組、間距與邊框也一併改為 Bootstrap 5 寫法
 * `app\widgets\Modal::renderCloseButton()` 缺少回傳型別，Yii log 檢視頁發生 fatal error
