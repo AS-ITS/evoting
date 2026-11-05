@@ -15,6 +15,7 @@
 * 操作手冊截圖對人名、專長與 IP 等欄位去識別化
 * 安裝說明標明 `composer install --prefer-dist` 與 `composer check-platform-reqs`
 * 測試文件 fixture 清單對齊 `tests/run-all.sh`（含 Group／Ballots／ResultsConfig）
+* 測試文件：測試伺服器啟動指令加上 `APP_ENV=testing`；說明 `fixture/unload` 會連同相依 Fixture 清除，重設資料改用 `fixture/load`
 
 ### Added
 

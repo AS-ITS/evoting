@@ -164,7 +164,8 @@ php vendor/bin/codecept run functional --debug
 
 ```bash
 # 步驟 1：啟動測試伺服器（在獨立終端機中執行，保持執行）
-php -S localhost:8080 -t web web/router-test.php
+# 測試入口僅在 APP_ENV=testing 時啟用；.env 為 development／production 時須如下指定，否則一律回 404
+APP_ENV=testing php -S localhost:8080 -t web web/router-test.php
 
 # 步驟 2：載入所有 Fixture（必須包含 Config、Users、Rbac）
 echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac,Group,GroupMember,Ballots,BallotsSelected,ResultsConfig" --appconfig=config/console-test.php
@@ -175,9 +176,10 @@ php vendor/bin/codecept run acceptance
 # 執行特定測試
 php vendor/bin/codecept run acceptance AnonVoteCest
 
-# 步驟 4（選用）：清除投票資料以便重複測試
-echo "yes" | php yii fixture/unload "Ballots,BallotsSelected" --appconfig=config/console-test.php
+# 步驟 4：重複測試前，重新執行步驟 2 即可將測試資料還原為初始狀態
 ```
+
+> **注意**：`fixture/unload` 會連同相依的 Fixture 一起清除。例如 `fixture/unload "Ballots,BallotsSelected"` 也會清空 `CandiData`、`Questions`、`Votes`（`BallotsSelected` 相依 `CandiData`／`Questions`，`CandiData` 相依 `Votes`），之後的測試會因缺少投票資料而失敗。重設資料請用 `fixture/load`。
 
 **⚠️ 重要**: 務必使用 `--appconfig=config/console-test.php` 參數，確保操作測試資料庫而非正式資料庫。
 
@@ -203,7 +205,7 @@ php yii fixture/generate <fixtures> --count=<number> --appconfig=config/console-
 # 清除所有測試資料
 php yii fixture/unload "*" --appconfig=config/console-test.php
 
-# 清除特定測試資料
+# 清除特定測試資料（會連同相依的 Fixture 一起清除，見上方注意事項）
 php yii fixture/unload "Ballots,BallotsSelected" --appconfig=config/console-test.php
 ```
 

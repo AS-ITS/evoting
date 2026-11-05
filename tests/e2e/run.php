@@ -7,7 +7,7 @@
  * --base    受測網站（預設 E2E_BASE_URL 或 http://localhost:8080），須為測試入口並已載入 fixture
  * --cdp     既有 Chrome 遠端除錯位址（預設 E2E_CDP_URL 或 http://127.0.0.1:9222）；無法連線時自動啟動 Chrome
  * --chrome  Chrome／Edge 執行檔（預設 E2E_CHROME 或自動偵測）
- * --suite   只跑指定組別：pages, header, modals, attachments, photos, results, voting, layout
+ * --suite   只跑指定組別：pages, header, modals, attachments, photos, results, voting, anon, layout
  *
  * 結束代碼：全部通過為 0，否則為 1。截圖與 results.json 輸出至 tests/_output/e2e/
  */
@@ -18,7 +18,7 @@ require __DIR__.'/lib/PageCheck.php';
 $opt = getopt('', ['base:', 'cdp:', 'chrome:', 'suite:']);
 $base = $opt['base'] ?? getenv('E2E_BASE_URL') ?: 'http://localhost:8080';
 $cdpUrl = rtrim($opt['cdp'] ?? getenv('E2E_CDP_URL') ?: 'http://127.0.0.1:9222', '/');
-$allSuites = ['pages', 'header', 'modals', 'attachments', 'photos', 'results', 'voting', 'layout'];
+$allSuites = ['pages', 'header', 'modals', 'attachments', 'photos', 'results', 'voting', 'anon', 'layout'];
 $suites = isset($opt['suite']) ? array_intersect(explode(',', $opt['suite']), $allSuites) : $allSuites;
 $outDir = dirname(__DIR__).'/_output/e2e';
 @mkdir($outDir.'/files', 0777, true);
@@ -75,6 +75,8 @@ try {
     echo "受測網站：$base\n";
     $admin = new Browser($cdpUrl, $base, $outDir);
     $guest = new Browser($cdpUrl, $base, $outDir, true);
+    /** @var Browser[] 所有瀏覽器（suite 另建的也加入此陣列以收集結果） */
+    $browsers = [$admin, $guest];
     $admin->login('test_admin');
 
     foreach ($suites as $suite) {
@@ -86,7 +88,7 @@ try {
         }
     }
 
-    $results = array_merge($admin->results, $guest->results);
+    $results = array_merge(...array_map(function ($b) { return $b->results; }, $browsers));
     $failed = array_values(array_filter($results, function ($r) { return !$r['ok']; }));
     printf("\n== 結果：%d 項，通過 %d，失敗 %d\n", count($results), count($results) - count($failed), count($failed));
     foreach ($failed as $r) {

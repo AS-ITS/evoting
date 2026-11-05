@@ -6,7 +6,7 @@
  * 以有選票的 AnonPartyTest：開票 → 取結果中的第一位候選人 → 候選設定加入照片欄位並上傳照片
  * → 計票結果設定加入照片欄位 → 檢查後台開票結果、投票結果的照片都有載入，最後還原。
  *
- * 前台 /vote/result 對匿名投票須以投票密碼登入（fixture 密碼為加密值），需人工確認。
+ * 前台 /vote/result 以 fixture 投票密碼（明碼 testN*）登入後檢查。
  *
  * @var Browser $admin
  * @var callable $file
@@ -93,6 +93,21 @@ try {
         $problems = PageCheck::inspect($admin);
         $admin->check("{$label}：含照片欄位時共用檢查", !$problems, implode(' / ', $problems));
     }
+
+    // 前台投票結果：匿名投票須先以投票密碼登入（AnonPartyTest 明碼為 testN1～testN100）
+    $resultVoter = new Browser($cdpUrl, $base, $outDir, true);
+    $resultVoter->group = 'results';
+    $browsers[] = $resultVoter;
+    $resultVoter->go("/site/password?voteID=$vote");
+    $resultVoter->js('document.querySelector("#passwd").value = '.json_encode('testN'.random_int(60, 100)));
+    $resultVoter->click("[...document.querySelectorAll('button[type=submit]')].find(e => e.innerText.includes('登入'))");
+    $resultVoter->waitLoad();
+    $status = $resultVoter->go("/vote/result?voteID=$vote");
+    $resultVoter->sleep(800);
+    // 前台表格列沒有 data-key，改檢查頁面上是否有載入測試照片（100x80）
+    $r = $resultVoter->js("(() => { const i = [...document.querySelectorAll('img[src*=\"view-photo\"]')].find(i => i.complete && i.naturalWidth === 100); return {row: true, loaded: !!i}; })()");
+    $resultVoter->check('投票結果（前台，投票者登入後）：顯示候選人照片', $status === 200 && $r['row'] && $r['loaded'], "HTTP $status ".json_encode($r).' '.$resultVoter->js('location.pathname'));
+    $resultVoter->shot('results-投票結果_前台_');
 } finally {
     // 6. 還原：刪除照片、還原計票結果設定與候選設定（中途失敗也執行）
     $admin->go($manual);
