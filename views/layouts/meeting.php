@@ -11,7 +11,7 @@ $this->title = $this->title . ' - ' . Yii::t('app', Yii::$app->name);
 echo $this->render('@views/partials/_navbar');
 ?>
 <header class="header-container">
-    <nav class="navbar pl-0">
+    <nav class="navbar ps-0">
         <?php if ($logoUrl = \app\components\Branding::logoUrl()): ?>
         <img id="logo" src="<?= \yii\helpers\Html::encode($logoUrl) ?>" alt="logo">
         <?php endif; ?>

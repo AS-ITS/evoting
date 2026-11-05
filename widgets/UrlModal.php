@@ -49,7 +49,7 @@ class UrlModal extends \yii\base\Widget
     /** @var array $footerOptions Modal 底部的 HTML 屬性選項 */
     public $footerOptions = ['style'=>['display'=>'block','padding'=>'0.25rem 0.75rem']];
     /** @var string $loadingText 加載時顯示的文字或 HTML 內容 */
-    public $loadingText = '<div class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>';
+    public $loadingText = '<div class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
     /**
      * 初始化 Widget，檢查必要的配置是否已設置。

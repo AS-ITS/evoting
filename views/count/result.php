@@ -99,8 +99,8 @@ $form = ActiveForm::begin(['enableClientValidation'=>false]);
     </div>
 </div>
 <div class="row">
-    <div class="col-md-6 text-center h4"><span class="badge badge-primary">顯示的欄位</span></div>
-    <div class="col-md-6 text-center h4"><span class="badge badge-primary">隱藏的欄位</span></div>
+    <div class="col-md-6 text-center h4"><span class="badge bg-primary">顯示的欄位</span></div>
+    <div class="col-md-6 text-center h4"><span class="badge bg-primary">隱藏的欄位</span></div>
 </div>
 <div class="row mb-2">
     <div class="col-md">

@@ -20,6 +20,10 @@ class ScrollToTop extends Widget
     public function run()
     {
         $view = Yii::$app->view;
+        // OverlayScrollbars 會把 body 內容包進 z-index:0 的 .os-padding（形成獨立堆疊環境）；
+        // Bootstrap 對話框若被包進去，而 backdrop 加在 body 下，backdrop 會蓋住對話框導致無法點擊。
+        // 取消該堆疊環境，讓對話框 (1055) 與 backdrop (1050) 在同一層比較。
+        $view->registerCss('.os-host > .os-padding { z-index: auto !important; }');
         $view->registerJs(<<<JS
             $(function(){
                 let btnScroller = $('#scroller');
@@ -51,11 +55,11 @@ class ScrollToTop extends Widget
                             'margin-right': '15px',
                             'font-size': '16px'
                         });
-                        $('.fixme-vote').addClass('badge badge-primary text-wrap h5');
+                        $('.fixme-vote').addClass('badge bg-primary text-wrap h5');
                     } else {
                         $('.fixme').css({ position: 'static' });
                         $('.fixme-vote').css({ width: '', 'margin-top': '', 'margin-right': '', 'font-size': '24px'});
-                        $('.fixme-vote').removeClass('badge badge-primary text-wrap');
+                        $('.fixme-vote').removeClass('badge bg-primary text-wrap');
                     }
                 });
 

@@ -44,9 +44,9 @@ $this->title = Yii::t('app', '修改密碼');
                         'placeholder' => Yii::t('app', '請再次輸入新密碼'),
                     ])->label(Yii::t('app', '確認新密碼')) ?>
 
-                    <div class="form-group text-center mt-4">
+                    <div class="text-center mt-4 mb-3">
                         <?= Html::submitButton(Yii::t('app', '確認修改'), [
-                            'class' => 'btn btn-primary btn-block w-100',
+                            'class' => 'btn btn-primary w-100',
                             'name' => 'change-password-button',
                         ]) ?>
                     </div>

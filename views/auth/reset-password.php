@@ -48,7 +48,7 @@ $this->title = Yii::t('app', '重設密碼');
                         <?= $form->field($model, 'confirm_password')->passwordInput()
                             ->label(Yii::t('app', '確認新密碼')) ?>
 
-                        <div class="form-group text-center mt-4">
+                        <div class="text-center mt-4 mb-3">
                             <?= Html::submitButton(Yii::t('app', '確認重設'), [
                                 'class' => 'btn btn-primary w-100',
                             ]) ?>

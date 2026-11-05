@@ -72,12 +72,12 @@ $round = $voteInfo->round - 1;
                     $checked = $label['isReachThreshold'] == CandiData::REACH_THRESHOLD;
                     $rank = $label['rank'] == 0 ? "(-)" : "({$label['rank']})";
                     return Html::tag('div', 
-                        Html::checkbox($name, $checked, ['id' => "i{$index}", 'value' => $value, 'class' => 'custom-control-input']).
+                        Html::checkbox($name, $checked, ['id' => "i{$index}", 'value' => $value, 'class' => 'form-check-input']).
                         Html::label(
                             "{$label['Name']} ".Html::tag('span', $rank, ['class' => 'text-danger'])
-                            , "i{$index}", ['class' => 'custom-control-label']
+                            , "i{$index}", ['class' => 'form-check-label']
                         ), 
-                    ['class' => 'custom-control custom-checkbox custom-control-inline col-md-2 col-sm-4 col-6']);
+                    ['class' => 'form-check form-check-inline col-md-2 col-sm-4 col-6']);
                 }
             ])
             ->label(false) ?>
