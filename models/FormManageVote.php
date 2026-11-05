@@ -73,6 +73,12 @@ class FormManageVote extends \yii\base\BaseObject
         if(is_null($voteID))
             $voteID = $this->voteID;
 
+        // 先取得並驗證照片、附件目錄（須於刪除投票資料前，voteDir 需由資料庫確認場次）
+        $voteDirs = array_filter([
+            \app\components\helper\FileLoader::voteDir(\app\components\helper\FileLoader::DIR_PIC, $this->voteID),
+            \app\components\helper\FileLoader::voteDir(\app\components\helper\FileLoader::DIR_FILE, $this->voteID),
+        ]);
+
         // 刪除基本資料: 因為其他與投票相關資料都有Constraint，故只有額外刪除組別(parties)
         $FormVotes = new FormVotes;
         $statusVoteInfo = $FormVotes->deleteVote($this->voteID);
@@ -81,15 +87,9 @@ class FormManageVote extends \yii\base\BaseObject
         $FormParties = new FormParties;
         $statusParty = $FormParties->deleteParty($this->voteID);
 
-        // 刪除照片
-        $picPath = Yii::getAlias('@filePool').DIRECTORY_SEPARATOR.'candidatePic'.DIRECTORY_SEPARATOR;
-        if (file_exists($picPath.$voteID)) {
-            \yii\helpers\FileHelper::removeDirectory($picPath.$voteID);
-        }
-        // 刪除附件
-        $filePath = Yii::getAlias('@filePool').DIRECTORY_SEPARATOR.'candidateFile'.DIRECTORY_SEPARATOR;
-        if (file_exists($filePath.$voteID)) {
-            \yii\helpers\FileHelper::removeDirectory($filePath.$voteID);
+        // 刪除照片、附件目錄
+        foreach ($voteDirs as $dir) {
+            \yii\helpers\FileHelper::removeDirectory($dir);
         }
 
         return [
