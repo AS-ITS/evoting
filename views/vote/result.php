@@ -199,7 +199,8 @@ echo GridView::widget([
             'attribute' => 'photo',
             'content' => function ($model, $key, $index, $column)
             {
-                return empty($model->photo) ? '' : Html::img(['candi/view-photo', 'voteID' => $model->voteID, 'file' => $model->photo ?? ''], ['width'=>'250', 'class'=>'img-fluid']);
+                $photo = $model->candiData->photo ?? null; // 照片存於候選人資料，results 無此欄位
+                return empty($photo) ? '' : Html::img(['candi/view-photo', 'voteID' => $model->voteID, 'file' => $photo], ['width'=>'250', 'class'=>'img-fluid']);
             },
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],
