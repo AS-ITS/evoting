@@ -29,6 +29,7 @@
 * 重設密碼回應不透露帳號是否存在；token 只存 SHA-256；同帳號／IP 15 分鐘最多 5 次申請
 * 升級 `phpoffice/phpspreadsheet` 至 5.10.0（CVE-2026-108357、CVE-2026-108358、CVE-2026-108359、CVE-2026-108360）
 * 升級 `symfony/mime`、`symfony/mailer` 至 7.4.22（CVE-2026-45070，郵件參數名稱標頭注入）
+* 升級 `symfony/yaml` 至 7.4.23（GHSA-hwfg-qwvh-2wfx，YAML 解析時間指數成長；僅開發相依，經 Codeception 引入）
 * 候選人照片與投票附件的檢視、下載、上傳、刪除統一由 `FileLoader::safePath()`／`voteDir()` 解析路徑，限制在該場次目錄內，防止路徑穿越（`candi/view-photo`、`vote/download-file`、`elect/upload-file`、`elect/delete-file`）
 * 附件上傳改以副檔名對 MIME 對照表檢查實際內容，偽造副檔名的檔案仍會被擋
 * 附件檔名在後台列表與投票說明頁輸出時跳脫 HTML
