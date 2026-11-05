@@ -66,8 +66,8 @@ $admin->go('/group-member/clear-search?groupId=1');
 // 使用不存在的 inode 驗證真正的 AJAX 回應，不讀取主機既有日誌內容。
 $admin->go('/site/yii-log-view');
 $logModal = '#details-modal-yii-log-view';
-$admin->js("(() => { const b = document.createElement('button'); b.id = 'e2e-url-modal'; b.type = 'button'; b.textContent = 'E2E UrlModal'; b.dataset.bsToggle = 'modal'; b.dataset.bsTarget = '$logModal'; b.dataset.id = '0'; b.dataset.encode = 'T'; document.body.appendChild(b); })()");
-$admin->check('Yii log：開啟內容對話框', $admin->openModal("document.querySelector('#e2e-url-modal')", $logModal));
+$admin->js("(() => { const b = document.createElement('button'); b.dataset.id = '0'; b.dataset.encode = 'T'; bootstrap.Modal.getOrCreateInstance(document.querySelector('$logModal')).show(b); })()");
+$admin->check('Yii log：開啟內容對話框', $admin->waitFor("document.querySelector('$logModal').classList.contains('show') && getComputedStyle(document.querySelector('$logModal')).opacity === '1'"));
 $loaded = "document.querySelector('$logModal-contact').textContent.trim() === '無此檔案'";
 $admin->check('Yii log：AJAX 取得無檔案回應', $admin->waitFor($loaded, 10000));
 $admin->js("document.querySelector('$logModal-contact').textContent = 'refresh pending'");
