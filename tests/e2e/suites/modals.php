@@ -45,6 +45,7 @@ $admin->check("遮罩不蓋住對話框：重新載入 $tries 次「上傳」鈕
 
 // ---- 新增群組成員對話框 ----
 $admin->go('/group-member/clear-search?groupId=1');
+
 $admin->go('/group-member/create?groupId=1');
 $admin->js("document.querySelector('#labelCn').value = 'test_va2'");
 $admin->click("[...document.querySelectorAll('button[type=submit]')].find(e => e.innerText.includes('查詢'))");
@@ -61,3 +62,17 @@ if ($admin->check('新增群組成員：查詢 test_va2 有結果', $admin->js("
     $admin->check('新增群組成員：點 × 關閉', !$admin->modalShown('#createMember'));
 }
 $admin->go('/group-member/clear-search?groupId=1');
+
+// 使用不存在的 inode 驗證真正的 AJAX 回應，不讀取主機既有日誌內容。
+$admin->go('/site/yii-log-view');
+$logModal = '#details-modal-yii-log-view';
+$admin->js("(() => { const b = document.createElement('button'); b.id = 'e2e-url-modal'; b.type = 'button'; b.textContent = 'E2E UrlModal'; b.dataset.bsToggle = 'modal'; b.dataset.bsTarget = '$logModal'; b.dataset.id = '0'; b.dataset.encode = 'T'; document.body.appendChild(b); })()");
+$admin->check('Yii log：開啟內容對話框', $admin->openModal("document.querySelector('#e2e-url-modal')", $logModal));
+$loaded = "document.querySelector('$logModal-contact').textContent.trim() === '無此檔案'";
+$admin->check('Yii log：AJAX 取得無檔案回應', $admin->waitFor($loaded, 10000));
+$admin->js("document.querySelector('$logModal-contact').textContent = 'refresh pending'");
+$admin->click("document.querySelector('$logModal #refresh')");
+$admin->check('Yii log：重新整理取得回應', $admin->waitFor($loaded, 10000));
+$admin->click("document.querySelector('$logModal .btn-close')");
+$admin->sleep(900);
+$admin->check('Yii log：關閉對話框', !$admin->modalShown($logModal));
