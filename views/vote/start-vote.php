@@ -429,7 +429,7 @@ CSS
                     'content' => function ($model, $key, $index, $column)
                     {
                         if (isset($model->photo)) {
-                            return Html::img(['candi/view-photo', 'voteID' => $model->voteID, 'file' => $model->photo], ['width'=>'250', 'class'=>'img-fluid']);
+                            return empty($model->photo) ? '' : Html::img(['candi/view-photo', 'voteID' => $model->voteID, 'file' => $model->photo], ['width'=>'250', 'class'=>'img-fluid']);
                         }
                         return '';
                     },
@@ -976,7 +976,7 @@ $this->registerJs(<<<JS
                 if (index !== array.length - 1) {
                     candidate += '、';
                 }
-                this.people.push('<span class="badge ps-1 pe-0" style="font-size: 1.2rem">' + candidate + '</span>');
+                this.people.push('<span class="badge text-body ps-1 pe-0" style="font-size: 1.2rem">' + candidate + '</span>');
             }, this);
             //  ^-- Since the thisArg parameter (this) is provided to forEach()
             //      it is passed to callback each time it's invoked, for use as its this value.

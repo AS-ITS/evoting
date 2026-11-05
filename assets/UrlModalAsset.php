@@ -12,7 +12,7 @@ namespace app\assets;
 class UrlModalAsset extends \yii\web\AssetBundle
 {
     /** @var string $sourcePath 包含此資產包原始資產檔案的目錄。 */
-    public $sourcePath = '@app/assets/files/urlModal';
+    public $sourcePath = '@frontend/url-modal';
 
     /** @var array $css 此資產包中包含的 CSS 檔案清單。 */
     public $css = [];

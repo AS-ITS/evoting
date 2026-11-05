@@ -293,7 +293,13 @@ class CandiController extends \app\components\Controller
             // 判斷候選名單配置
             $candiConfig = $FormCandiConfig->getConfigWithVoteID($voteID);
         }
-        
+
+        // 尚未建立候選名單配置時無法顯示表單欄位
+        if (is_null($candiConfig)) {
+            Yii::$app->session->setFlash('warning', '尚未建立候選名單配置！');
+            return $this->redirect(['candi/config', 'voteID' => $voteID]);
+        }
+
         return $this->render('manual', [
             'model' => $FormCandiData,
             'action' => $action,

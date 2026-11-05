@@ -22,7 +22,9 @@ php vendor/bin/codecept run unit
 **Acceptance Tests:**
 ```bash
 # Step 1: Start the test server (uses router-test.php to route all requests to index-test.php)
-php -S localhost:8080 -t web web/router-test.php
+# APP_ENV=testing is required: the test entry guard returns 404 for any other environment,
+# and .env on dev hosts usually sets APP_ENV=development
+APP_ENV=testing php -S localhost:8080 -t web web/router-test.php
 
 # Step 2: Load fixtures (in a separate terminal)
 # IMPORTANT: Use --appconfig to target test database
@@ -38,9 +40,19 @@ php vendor/bin/codecept run acceptance AnonVoteCest
 # Run with debug output
 php vendor/bin/codecept run acceptance --debug
 
-# Step 4: Clean up after testing
-echo "yes" | php yii fixture/unload "Ballots,BallotsSelected" --appconfig=config/console-test.php
+# Step 4: To re-run, reload the fixtures (Step 2) — that resets the test data
 ```
+
+**⚠️ `fixture/unload` also unloads dependencies:** `fixture/unload "Ballots,BallotsSelected"` empties `CandiData`, `Questions` and `Votes` too (`BallotsSelected` depends on `CandiData`/`Questions`, `CandiData` depends on `Votes`), even though only the two requested fixtures are listed in the output. Later tests then fail for missing votes. Use `fixture/load` to reset data.
+
+**Browser E2E Tests** (headless Chrome over CDP, no Node.js; see `tests/e2e/README.md`):
+```bash
+# Test server must run with APP_ENV=testing (the test entry guard returns 404 otherwise)
+APP_ENV=testing php -S localhost:8080 -t web web/router-test.php
+php tests/e2e/run.php                      # all suites
+php tests/e2e/run.php --suite=pages,modals # selected suites
+```
+New screens: add the route to `tests/e2e/suites/pages.php` to get the shared page checks.
 
 **Test Server Notes:**
 - The `router-test.php` script routes all requests through `index-test.php` which uses the test configuration
@@ -63,7 +75,7 @@ php yii fixture/generate <fixtures> --count=<number> --appconfig=config/console-
 # Unload all fixtures
 php yii fixture/unload "*" --appconfig=config/console-test.php
 
-# Unload specific fixtures
+# Unload specific fixtures (their dependencies are unloaded too — see the note above)
 php yii fixture/unload "Ballots,BallotsSelected" --appconfig=config/console-test.php
 ```
 

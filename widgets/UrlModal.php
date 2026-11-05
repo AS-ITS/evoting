@@ -141,12 +141,13 @@ class UrlModal extends \yii\base\Widget
     protected function registerClientScript($modalId, $contactId, $footerId)
     {
         $loadingText = $this->loadingText;
-        $contactURL = Url::to([$this->contactAjaxAction], 'https');
+        $contactURL = Url::to([$this->contactAjaxAction]);
+        $footerURL = '';
 
         if (is_null($this->footer))
         {
             $footerStatus = 'true';
-            $footerURL = Url::to([$this->footerAjaxAction], 'https');
+            $footerURL = Url::to([$this->footerAjaxAction]);
         }
         else
         {

@@ -7,6 +7,7 @@
 | 目錄 | 版本 | 用途 |
 | --- | --- | --- |
 | AdminLTE3_ComVer | 1.0 | 依 AdminLTE 調整的專案樣式 |
+| url-modal | 專案自製 | UrlModal 的 AJAX 內容載入；原始碼隨 Git 追蹤 |
 | [bootstrap-select](https://github.com/snapappointments/bootstrap-select/) | 1.13.18 | 下拉選單 |
 | [bootstrap-steps](https://github.com/ycs77/bootstrap-steps) | 1.0.3 | 步驟列 |
 | [highlight.js](https://highlightjs.org/) | 11.11.1 | 語法高亮 |

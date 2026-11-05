@@ -15,6 +15,7 @@
 * 操作手冊截圖對人名、專長與 IP 等欄位去識別化
 * 安裝說明標明 `composer install --prefer-dist` 與 `composer check-platform-reqs`
 * 測試文件 fixture 清單對齊 `tests/run-all.sh`（含 Group／Ballots／ResultsConfig）
+* 測試文件：測試伺服器啟動指令加上 `APP_ENV=testing`；說明 `fixture/unload` 會連同相依 Fixture 清除，重設資料改用 `fixture/load`
 
 ### Added
 
@@ -23,6 +24,7 @@
 * `install.sh` 環境檢查（PHP 硬擋；DB／Web 版本僅警示）、既有 DB／`master.key`／`.env`／admin 沿用
 * `scripts/encrypt-config-value.php`、`scripts/rebuild-yii-extensions.php`（正式密文與 extensions.php 修復）
 * `scripts/ensure-writable-dirs.sh`；composer post-install 自動建立 `runtime/sessions` 等目錄
+* 瀏覽器 E2E 測試 `tests/e2e/`：以 PHP 透過 CDP 操作 Headless Chrome（不需 Node.js），涵蓋全畫面巡檢、對話框、附件、照片、投票流程
 
 ### Security
 
@@ -37,6 +39,7 @@
 
 ### Fixed
 
+* Yii log 檢視頁的 UrlModal 資產指向未隨 Git 提供的目錄而發生 500；改為追蹤前端腳本，內容載入沿用目前頁面的協定與主機
 * 殘留的 Bootstrap 4 樣式在 Bootstrap 5 下失效：輪次與投票狀態徽章看不見、對話框關閉鈕錯位，核取方塊、輸入群組、間距與邊框也一併改為 Bootstrap 5 寫法
 * `app\widgets\Modal::renderCloseButton()` 缺少回傳型別，Yii log 檢視頁發生 fatal error
 * 對話框有時被灰色遮罩蓋住、按鈕點了沒反應（OverlayScrollbars 晚於對話框初始化時，`.os-padding` 的堆疊環境讓 backdrop 壓在對話框上）
@@ -46,6 +49,11 @@
 * CSV 與部分 Office 檔被 MIME 反查誤擋；不允許的檔案被前端驗證擋下時沒有任何提示，改由伺服器驗證並顯示原因
 * 附件目錄不存在時，投票說明頁發生 `count()` TypeError
 * 上傳同名附件會直接覆蓋舊檔且沒有提示；改為擋下並列出檔名，其他檔案照常上傳
+* 投票確認頁的已圈選名單、選票內容與開票選票明細的候選人姓名為白字白底看不見（Bootstrap 5 的 `.badge` 預設白字）
+* 顯示照片欄位時，沒有照片的候選人出現破圖並產生無效請求
+* 開票結果、投票結果與投票確認頁的照片欄位讀取不存在的 `results.photo`，照片從未顯示；改由候選人資料取得
+* 開票狀態頁在系統設定未載入或「每列欄數」為 0 時發生除以零錯誤（500）
+* 尚未建立候選名單配置時開啟新增／編輯候選人頁面發生 500；改為導向候選設定頁
 
 ### Removed
 
