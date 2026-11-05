@@ -489,26 +489,11 @@ class CandiController extends \app\components\Controller
      */
     public function actionViewPhoto($voteID, $file)
     {
-        // voteID 必須是存在的投票場次，避免路徑穿越
-        $vote = \app\models\Votes::findOne($voteID);
-        if (!$vote) {
-            throw new \yii\web\NotFoundHttpException(Yii::t('app', '找不到該投票場次'));
-        }
-
-        // 檔名消毒：僅允許純檔名，禁止任何路徑成分
-        $file = basename($file);
-
-        $baseDir = realpath(Yii::getAlias('@filePool').DIRECTORY_SEPARATOR.'candidatePic'.DIRECTORY_SEPARATOR.$vote->voteID);
-        if ($baseDir === false) {
-            throw new \yii\web\NotFoundHttpException(Yii::t('app', '找不到該檔案'));
-        }
-
-        $filePath = realpath($baseDir.DIRECTORY_SEPARATOR.$file);
-
-        // 確認解析後的路徑仍位於該投票的圖片目錄內
-        if ($filePath !== false && is_file($filePath)
-            && strpos($filePath, $baseDir.DIRECTORY_SEPARATOR) === 0) {
-            return Yii::$app->response->sendFile($filePath, $file, ['inline' => true]);
+        // voteID 須為存在的場次、file 僅取純檔名，且解析後須位於該場次的圖片目錄內
+        $baseDir = FileLoader::voteDir(FileLoader::DIR_PIC, $voteID);
+        $filePath = $baseDir ? FileLoader::safePath($baseDir, $file) : null;
+        if ($filePath) {
+            return Yii::$app->response->sendFile($filePath, basename($filePath), ['inline' => true]);
         }
 
         throw new \yii\web\NotFoundHttpException(Yii::t('app', '找不到該檔案'));
