@@ -54,6 +54,11 @@ try {
         $admin->click($count);
         $admin->waitLoad();
     }
+    // Administrative login and voter login are independent sessions in the app.
+    $admin->go('/site/password?voteID='.$vote);
+    $admin->js('document.querySelector("#passwd").value = "testN90"');
+    $admin->click("[...document.querySelectorAll('button[type=submit]')].find(e => e.innerText.includes('登入'))");
+    $admin->waitLoad();
     foreach (['zh-TW' => 'Zh', 'en-US' => 'En'] as $language => $locale) {
         foreach (['ballot-work/result', 'result/index', 'vote/result', 'vote/vote-detail', 'ballot/edit'] as $page) {
             $extra = $page === 'ballot/edit' ? '&party=0&ballotID=1' : '';

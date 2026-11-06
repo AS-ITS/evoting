@@ -5,6 +5,7 @@ use app\models\CandiData;
 use app\models\FormManageVote;
 use app\models\FormResults;
 use app\models\ResultsConfig;
+use app\models\Votes;
 use Codeception\Example;
 use PHPUnit\Framework\Assert;
 use yii\data\ActiveDataProvider;
@@ -84,6 +85,8 @@ class ResultFieldRenderingCest
             $results = new FormResults();
             $results->deleteResults($voteID, 1);
             Assert::assertTrue($results->createResults($voteID));
+            // Keep this rendering test independent of anonymous login policy.
+            Votes::findOne(['voteID' => $voteID])->updateAttributes(['type' => Votes::TYPE_NO_AUTH]);
             $before = FormResults::find()->where(['voteID' => $voteID])->orderBy('candID')->asArray()->all();
             Yii::$app->language = $case['language'];
             Yii::$app->session->set('language', $case['language']);
@@ -111,7 +114,8 @@ class ResultFieldRenderingCest
                 libxml_use_internal_errors($previous);
             }
             $xpath = new DOMXPath($dom);
-            Assert::assertSame(0, $xpath->query('//script[contains(., "p16attack()")] | //*[@onclick="p16attack()" or @onerror="p16attack()"]')->length);
+            // Candidate strings may appear as inert JSON inside the page's own scripts.
+            Assert::assertSame(0, $xpath->query('//script[normalize-space(.)="p16attack()"] | //*[@onclick="p16attack()" or @onerror="p16attack()"]')->length);
             $locale = $case['language'] === 'zh-TW' ? 'Zh' : 'En';
             foreach (range('A', 'F') as $letter) {
                 $headers = $xpath->query('//th[contains(., "L'.$letter.$locale.'")]');

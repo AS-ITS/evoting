@@ -7,7 +7,7 @@
  * --base    受測網站（預設 E2E_BASE_URL 或 http://localhost:8080），須為測試入口並已載入 fixture
  * --cdp     既有 Chrome 遠端除錯位址（預設 E2E_CDP_URL 或 http://127.0.0.1:9222）；無法連線時自動啟動 Chrome
  * --chrome  Chrome／Edge 執行檔（預設 E2E_CHROME 或自動偵測）
- * --suite   只跑指定組別：pages, header, modals, attachments, photos, results, voting, anon, layout
+ * --suite   只跑指定組別：pages, header, modals, attachments, photos, results, result-fields, voting, anon, layout
  *
  * 結束代碼：全部通過為 0，否則為 1。截圖與 results.json 輸出至 tests/_output/e2e/
  */
