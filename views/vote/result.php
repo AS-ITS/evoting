@@ -1,6 +1,4 @@
 <?php
-use Yii;
-
 use yii\helpers\Url;
 
 use yii\helpers\Html;
@@ -132,8 +130,7 @@ echo GridView::widget([
                     return '';
                 return Model::i18n(
                     Yii::$app->params['ct.candi.jobLctnEAry'][$model->candiData->jobLctn],
-                    Yii::$app->params['ct.candi.jobLctnAry'][$model->candiData->jobLctn]
-                );
+                    Yii::$app->params['ct.candi.jobLctnAry'][$model->candiData->jobLctn], null);
             },
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],
@@ -149,10 +146,10 @@ echo GridView::widget([
                 {
                     if(ArrayHelper::keyExists($model->candiData->instName,$instEAry))
                     {
-                        return Model::i18n($instEAry[$model->candiData->instName],$model->candiData->instName);
+                        return Model::i18n($instEAry[$model->candiData->instName],$model->candiData->instName, null);
                     }
                 }
-                return Model::i18n($model->candiData->instNameE,$model->candiData->instName);
+                return Model::i18n($model->candiData->instNameE,$model->candiData->instName, null);
             },
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],
@@ -164,14 +161,16 @@ echo GridView::widget([
             {
                 if(trim($model->candiData->title ?? '') == '')
                     return '';
-                return Model::i18n($model->candiData->titleE,$model->candiData->title);
+                return Model::i18n($model->candiData->titleE,$model->candiData->title, null);
             },
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],
         ],
         'Name' => [
+            'encodeLabel' => false,
             'label' => Model::i18n($candiConfig->NameE, $candiConfig->Name),
             'attribute' => 'Name',
+            'format' => 'raw',
             'value' => function ($model, $key, $index, $column)
             {
                 return Model::i18n($model->candiData->NameE ?? '', $model->candiData->Name ?? '', false);
@@ -188,8 +187,7 @@ echo GridView::widget([
                     return '';
                 return Model::i18n(
                     Yii::$app->params['ct.candi.sexEAry'][$model->candiData->sex ?? ''],
-                    Yii::$app->params['ct.candi.sexAry'][$model->candiData->sex ?? '']
-                );
+                    Yii::$app->params['ct.candi.sexAry'][$model->candiData->sex ?? ''], null);
             },
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],
@@ -206,61 +204,68 @@ echo GridView::widget([
             'contentOptions' => ['class' => 'align-middle text-center'],
         ],
         'otherColA' => [
-            'label' => Model::i18n($candiConfig->otherColNameAE ?? '', $candiConfig->otherColNameA ?? ''),
+            'encodeLabel' => false,
+            'label' => Model::i18n($candiConfig->otherColNameAE ?? '', $candiConfig->otherColNameA ?? '', false),
             'attribute' => Model::i18n('otherColAE', 'otherColA'),
+            'format' => 'raw',
             'value' => function ($model, $key, $index, $column)
             {
-                return Model::i18n($model->candiData->otherColAE ?? '', $model->candiData->otherColA ?? '');
+                return Model::i18n($model->candiData->otherColAE ?? '', $model->candiData->otherColA ?? '', false);
             },
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],
         ],
         'otherColB' => [
-            'label' => Model::i18n($candiConfig->otherColNameBE ?? '', $candiConfig->otherColNameB ?? ''),
+            'encodeLabel' => false,
+            'label' => Model::i18n($candiConfig->otherColNameBE ?? '', $candiConfig->otherColNameB ?? '', false),
             'attribute' => Model::i18n('otherColBE', 'otherColB'),
             'value' => function ($model, $key, $index, $column)
             {
-                return Model::i18n($model->candiData->otherColBE ?? '', $model->candiData->otherColB ?? '');
+                return Model::i18n($model->candiData->otherColBE ?? '', $model->candiData->otherColB ?? '', null);
             },
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],
         ],
         'otherColC' => [
-            'label' => Model::i18n($candiConfig->otherColNameCE ?? '', $candiConfig->otherColNameC ?? ''),
+            'encodeLabel' => false,
+            'label' => Model::i18n($candiConfig->otherColNameCE ?? '', $candiConfig->otherColNameC ?? '', false),
             'attribute' => Model::i18n('otherColCE', 'otherColC'),
             'value' => function ($model, $key, $index, $column)
             {
-                return Model::i18n($model->candiData->otherColCE ?? '', $model->candiData->otherColC ?? '');
+                return Model::i18n($model->candiData->otherColCE ?? '', $model->candiData->otherColC ?? '', null);
             },
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],
         ],
         'otherColD' => [
-            'label' => Model::i18n($candiConfig->otherColNameDE ?? '', $candiConfig->otherColNameD ?? ''),
+            'encodeLabel' => false,
+            'label' => Model::i18n($candiConfig->otherColNameDE ?? '', $candiConfig->otherColNameD ?? '', false),
             'attribute' => Model::i18n('otherColDE', 'otherColD'),
             'value' => function ($model, $key, $index, $column)
             {
-                return Model::i18n($model->candiData->otherColDE ?? '', $model->candiData->otherColD ?? '');
+                return Model::i18n($model->candiData->otherColDE ?? '', $model->candiData->otherColD ?? '', null);
             },
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],
         ],
         'otherColE' => [
-            'label' => Model::i18n($candiConfig->otherColNameEE ?? '', $candiConfig->otherColNameE ?? ''),
+            'encodeLabel' => false,
+            'label' => Model::i18n($candiConfig->otherColNameEE ?? '', $candiConfig->otherColNameE ?? '', false),
             'attribute' => Model::i18n('otherColEE', 'otherColE'),
             'value' => function ($model, $key, $index, $column)
             {
-                return Model::i18n($model->candiData->otherColEE, $model->candiData->otherColE);
+                return Model::i18n($model->candiData->otherColEE, $model->candiData->otherColE, null);
             },
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],
         ],
         'otherColF' => [
-            'label' => Model::i18n($candiConfig->otherColNameFE ?? '', $candiConfig->otherColNameF ?? ''),
+            'encodeLabel' => false,
+            'label' => Model::i18n($candiConfig->otherColNameFE ?? '', $candiConfig->otherColNameF ?? '', false),
             'attribute' => Model::i18n('otherColFE', 'otherColF'),
             'value' => function ($model, $key, $index, $column)
             {
-                return Model::i18n($model->candiData->otherColFE ?? '', $model->candiData->otherColF ?? '');
+                return Model::i18n($model->candiData->otherColFE ?? '', $model->candiData->otherColF ?? '', null);
             },
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],

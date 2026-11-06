@@ -73,8 +73,7 @@ else
                         return '';
                     return Model::i18n(
                         Yii::$app->params['ct.candi.jobLctnEAry'][$model->jobLctn],
-                        Yii::$app->params['ct.candi.jobLctnAry'][$model->jobLctn]
-                    );
+                        Yii::$app->params['ct.candi.jobLctnAry'][$model->jobLctn], null);
                 },
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
@@ -90,10 +89,10 @@ else
                     {
                         if(ArrayHelper::keyExists($model->instName,$instEAry))
                         {
-                            return Model::i18n($instEAry[$model->instName],$model->instName);
+                            return Model::i18n($instEAry[$model->instName],$model->instName, null);
                         }
                     }
-                    return Model::i18n($model->instNameE,$model->instName);
+                    return Model::i18n($model->instNameE,$model->instName, null);
                 },
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
@@ -105,17 +104,18 @@ else
                 {
                     if(trim($model->title) == '')
                         return '';
-                    return Model::i18n($model->titleE,$model->title);
+                    return Model::i18n($model->titleE,$model->title, null);
                 },
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
             ],
             'Name' => [
+                'encodeLabel' => false,
                 'label' => Model::i18n($candiConfig->NameE, $candiConfig->Name),
                 'attribute' => 'Name',
                 'value' => function ($model, $key, $index, $column)
                 {
-                    return Model::i18n($model->NameE,$model->Name);
+                    return Model::i18n($model->NameE,$model->Name, null);
                 },
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center text-nowrap'],
@@ -129,8 +129,7 @@ else
                         return '';
                     return Model::i18n(
                         Yii::$app->params['ct.candi.sexEAry'][$model->sex],
-                        Yii::$app->params['ct.candi.sexAry'][$model->sex]
-                    );
+                        Yii::$app->params['ct.candi.sexAry'][$model->sex], null);
                 },
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
@@ -146,7 +145,8 @@ else
                 'contentOptions' => ['class' => 'align-middle text-center'],
             ],
             'otherColA' => [
-                'label' => Model::i18n($candiConfig->otherColNameAE, $candiConfig->otherColNameA),
+                'encodeLabel' => false,
+                'label' => Model::i18n($candiConfig->otherColNameAE, $candiConfig->otherColNameA, false),
                 'attribute' => Model::i18n('otherColAE', 'otherColA'),
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => [
@@ -161,31 +161,36 @@ else
                 },
             ],
             'otherColB' => [
-                'label' => Model::i18n($candiConfig->otherColNameBE, $candiConfig->otherColNameB),
+                'encodeLabel' => false,
+                'label' => Model::i18n($candiConfig->otherColNameBE, $candiConfig->otherColNameB, false),
                 'attribute' => Model::i18n('otherColBE', 'otherColB'),
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
             ],
             'otherColC' => [
-                'label' => Model::i18n($candiConfig->otherColNameCE, $candiConfig->otherColNameC),
+                'encodeLabel' => false,
+                'label' => Model::i18n($candiConfig->otherColNameCE, $candiConfig->otherColNameC, false),
                 'attribute' => Model::i18n('otherColCE', 'otherColC'),
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
             ],
             'otherColD' => [
-                'label' => Model::i18n($candiConfig->otherColNameDE, $candiConfig->otherColNameD),
+                'encodeLabel' => false,
+                'label' => Model::i18n($candiConfig->otherColNameDE, $candiConfig->otherColNameD, false),
                 'attribute' => Model::i18n('otherColDE', 'otherColD'),
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
             ],
             'otherColE' => [
-                'label' => Model::i18n($candiConfig->otherColNameEE, $candiConfig->otherColNameE),
+                'encodeLabel' => false,
+                'label' => Model::i18n($candiConfig->otherColNameEE, $candiConfig->otherColNameE, false),
                 'attribute' => Model::i18n('otherColEE', 'otherColE'),
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
             ],
             'otherColF' => [
-                'label' => Model::i18n($candiConfig->otherColNameFE, $candiConfig->otherColNameF),
+                'encodeLabel' => false,
+                'label' => Model::i18n($candiConfig->otherColNameFE, $candiConfig->otherColNameF, false),
                 'attribute' => Model::i18n('otherColFE', 'otherColF'),
                 'headerOptions'  => ['class' => 'align-middle text-center'],
                 'contentOptions' => ['class' => 'align-middle text-center'],
