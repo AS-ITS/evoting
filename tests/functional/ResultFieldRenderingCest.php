@@ -175,12 +175,11 @@ class ResultFieldRenderingCest
         try {
             $candidate = CandiData::find()->where(['voteID' => $voteID])->orderBy('id')->one();
             Assert::assertNotNull($candidate);
-            $config = CandiConfig::findOne(['voteID' => $voteID]);
-            Assert::assertNotNull($config);
-            $config->updateAttributes(['showFieldSort' => json_encode(array_map(
+            // The page may use any question's configuration, so show the fields in all of them.
+            Assert::assertGreaterThan(0, CandiConfig::updateAll(['showFieldSort' => json_encode(array_map(
                 fn ($id) => ['id' => $id, 'children' => []],
                 ['Name', 'otherColA', 'otherColB']
-            ))]);
+            ))], ['voteID' => $voteID]));
             $candidate->updateAttributes([
                 'otherColA' => 'MA<br><b onclick="p16attack()">R&D</b>',
                 'otherColB' => 'MB<br>R&D',
