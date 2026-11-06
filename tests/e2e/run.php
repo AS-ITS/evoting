@@ -95,6 +95,36 @@ try {
         echo "  ✖ [{$r['group']}] {$r['name']}\n      {$r['detail']}\n";
     }
     file_put_contents($outDir.'/results.json', json_encode($results, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
+    // CSP 違規彙整（僅紀錄，不影響結果）；伺服器以 CSP_POLICY=strict 啟動時才能看出 inline／eval 的依賴
+    $csp = array_merge(...array_map(function ($b) {
+        try {
+            return $b->cspViolations();
+        } catch (Throwable $e) {
+            return [];
+        }
+    }, $browsers));
+    file_put_contents($outDir.'/csp-violations.json', json_encode($csp, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    $byDirective = [];
+    foreach ($csp as $v) {
+        $d = $v['directive'] ?? '?';
+        $byDirective[$d]['count'] = ($byDirective[$d]['count'] ?? 0) + 1;
+        $byDirective[$d]['pages'][$v['page'] ?? '?'] = true;
+        $src = ($v['blocked'] ?? '') === 'inline' || ($v['blocked'] ?? '') === 'eval'
+            ? $v['blocked'].' @ '.basename(parse_url($v['source'] ?? '', PHP_URL_PATH) ?: '(page)')
+            : ($v['blocked'] ?? '');
+        $byDirective[$d]['sources'][$src] = ($byDirective[$d]['sources'][$src] ?? 0) + 1;
+    }
+    printf("\n== CSP 違規（僅紀錄）：%d 筆不重複\n", count($csp));
+    ksort($byDirective);
+    foreach ($byDirective as $d => $info) {
+        arsort($info['sources']);
+        printf("  %s：%d 筆，%d 個頁面\n", $d, $info['count'], count($info['pages']));
+        foreach (array_slice($info['sources'], 0, 5, true) as $src => $n) {
+            echo "      $n × $src\n";
+        }
+    }
+    echo "明細：$outDir/csp-violations.json\n";
     echo "截圖：$outDir/shots\n";
     $exitCode = $failed ? 1 : 0;
 } finally {

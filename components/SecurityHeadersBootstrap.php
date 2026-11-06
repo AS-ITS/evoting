@@ -77,19 +77,7 @@ class SecurityHeadersBootstrap implements BootstrapInterface
             return;
         }
 
-        // AdminLTE / Bootstrap 需 inline script/style；先以 report-only 或寬鬆 policy 過渡
-        $policy = implode('; ', [
-            "default-src 'self'",
-            "base-uri 'self'",
-            "form-action 'self'",
-            "frame-ancestors 'self'",
-            "object-src 'none'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-            "style-src 'self' 'unsafe-inline'",
-            "img-src 'self' data: blob:",
-            "font-src 'self' data:",
-            "connect-src 'self'",
-        ]);
+        $policy = static::contentSecurityPolicy(getenv('CSP_POLICY') ?: 'compat');
 
         if ($mode === 'enforce') {
             $headers->set('Content-Security-Policy', $policy);
@@ -97,5 +85,30 @@ class SecurityHeadersBootstrap implements BootstrapInterface
         }
 
         $headers->set('Content-Security-Policy-Report-Only', $policy);
+    }
+
+    /**
+     * CSP 政策內容
+     *
+     * - compat（預設）：AdminLTE / Bootstrap / Yii 需 inline script、style 與 eval，過渡用的寬鬆政策
+     * - strict：不允許任何 unsafe-*，為最終目標。搭配 report-only 用於測試環境找出違規
+     *   （見 tests/e2e/README.md 的 CSP 違規收集）；修正完成前不可搭配 enforce
+     */
+    public static function contentSecurityPolicy(string $name): string
+    {
+        $strict = strtolower(trim($name)) === 'strict';
+
+        return implode('; ', [
+            "default-src 'self'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "frame-ancestors 'self'",
+            "object-src 'none'",
+            $strict ? "script-src 'self'" : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            $strict ? "style-src 'self'" : "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: blob:",
+            "font-src 'self' data:",
+            "connect-src 'self'",
+        ]);
     }
 }

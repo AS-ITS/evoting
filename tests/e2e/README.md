@@ -53,6 +53,18 @@ php tests/e2e/run.php --base=http://localhost:18080
 
 測試會在測試資料庫與 FilePool 建立資料（附件、照片、候選設定與候選人、開票結果），結束前會刪除附件、照片與測試候選人並還原設定；`anon` 組會實際送出一張選票（該密碼標記為已投票），`NoAuthVoteTest` 的候選設定與開票結果會保留。重新載入 fixture 即可全部還原。
 
+## CSP 違規收集
+
+每次執行都會監聽頁面的 `securitypolicyviolation` 事件，結束時列出摘要並寫入 `tests/_output/e2e/csp-violations.json`。違規只做紀錄，不影響通過與否。
+
+預設的 `compat` 政策允許 inline script／style 與 eval，因此不會回報這些依賴。要找出改用嚴格政策前需要修正的地方，測試伺服器改以嚴格政策的 report-only 啟動（只回報、不阻擋，畫面行為不變）：
+
+```bash
+APP_ENV=testing CSP_MODE=report-only CSP_POLICY=strict php -S localhost:8080 -t web web/router-test.php
+```
+
+摘要依指令（如 `script-src-elem`、`script-src-attr`、`style-src-attr`）分組，列出頁面數與主要來源（`inline @ 檔名`、`eval` 或被擋的網址）。這個收集只涵蓋 E2E 走過的畫面。
+
 ## 新增畫面
 
 在 `suites/pages.php` 的清單加一行即可套用全部共用檢查。只放 GET 時不會變更資料的畫面（刪除、重設、匯出、切換等動作不要放）。

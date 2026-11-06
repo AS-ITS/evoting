@@ -104,6 +104,38 @@ class SecurityHeadersBootstrapTest extends \Codeception\Test\Unit
         $this->assertSame('max-age=31536000', $this->hstsFor(['APP_ENV' => 'production'], Response::FORMAT_RAW));
     }
 
+    public function testCompatPolicyIsDefaultAndStrictDropsUnsafeSources()
+    {
+        $compat = SecurityHeadersBootstrap::contentSecurityPolicy('compat');
+        $this->assertStringContainsString("script-src 'self' 'unsafe-inline' 'unsafe-eval'", $compat);
+        $this->assertSame($compat, SecurityHeadersBootstrap::contentSecurityPolicy('anything-else'));
+
+        $strict = SecurityHeadersBootstrap::contentSecurityPolicy('strict');
+        $this->assertStringNotContainsString('unsafe-', $strict);
+        $this->assertStringContainsString("script-src 'self'", $strict);
+        $this->assertStringContainsString("object-src 'none'", $strict);
+    }
+
+    public function testStrictPolicyIsSentInReportOnlyMode()
+    {
+        $saved = [getenv('CSP_MODE'), getenv('CSP_POLICY')];
+        putenv('CSP_MODE=report-only');
+        putenv('CSP_POLICY=strict');
+        try {
+            (new SecurityHeadersBootstrap())->bootstrap(\Yii::$app);
+            $response = new Response(['format' => Response::FORMAT_HTML]);
+            $response->trigger(Response::EVENT_BEFORE_SEND);
+            $this->assertSame(
+                SecurityHeadersBootstrap::contentSecurityPolicy('strict'),
+                $response->headers->get('Content-Security-Policy-Report-Only')
+            );
+            $this->assertNull($response->headers->get('Content-Security-Policy'));
+        } finally {
+            putenv($saved[0] === false ? 'CSP_MODE' : 'CSP_MODE=' . $saved[0]);
+            putenv($saved[1] === false ? 'CSP_POLICY' : 'CSP_POLICY=' . $saved[1]);
+        }
+    }
+
     public function testAttributeDiffHelperNoLongerSendsHeaders()
     {
         $source = file_get_contents(dirname(__DIR__, 3) . '/components/helper/ArrayHelper.php');
