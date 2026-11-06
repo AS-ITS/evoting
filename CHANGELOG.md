@@ -20,6 +20,7 @@
 
 ### Added
 
+* `CSP_POLICY=strict`（不允許 inline 與 eval，僅供測試環境搭配 report-only 使用）；瀏覽器 E2E 收集 CSP 違規並輸出 `tests/_output/e2e/csp-violations.json`，作為改用強制 CSP 前的盤點。測試設定改為與正式設定相同送出安全標頭
 * 管理員忘記密碼：登入頁自助重設（須先跑 `docs/migrations/20261021_password_reset.sql`；`users.email`、30 分鐘單次連結、既有 session 作廢；不關閉 TOTP）
 * 新裝精靈 `scripts/install.sh`（composer、可寫目錄、`.env`、可選建庫／`init_db.sql`／admin）
 * `install.sh` 環境檢查（PHP 硬擋；DB／Web 版本僅警示）、既有 DB／`master.key`／`.env`／admin 沿用

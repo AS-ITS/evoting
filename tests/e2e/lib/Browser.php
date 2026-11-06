@@ -13,6 +13,11 @@ class Browser
     public $results = [];
     /** @var string 目前的測試組別 */
     public $group = '';
+    /** @var array<string, array> 收集到的 CSP 違規（以內容去重） */
+    public $csp = [];
+
+    /** 頁面腳本以此前綴經 console.debug 回報 CSP 違規 */
+    const CSP_PREFIX = '__E2E_CSP__';
 
     /**
      * @param string $endpoint Chrome 遠端除錯位址
@@ -29,6 +34,39 @@ class Browser
         $this->cdp->send('Page.enable');
         $this->cdp->send('Runtime.enable');
         $this->cdp->send('Emulation.setDeviceMetricsOverride', ['width' => 1400, 'height' => 900, 'deviceScaleFactor' => 1, 'mobile' => false]);
+        // 在頁面腳本執行前註冊 CSP 違規監聽（report-only 也會觸發）
+        $this->cdp->send('Page.addScriptToEvaluateOnNewDocument', ['source' => "document.addEventListener('securitypolicyviolation', function (e) {"
+            ."console.debug('".self::CSP_PREFIX."' + JSON.stringify({directive: e.effectiveDirective || e.violatedDirective,"
+            ." blocked: e.blockedURI, source: e.sourceFile, line: e.lineNumber, page: location.pathname,"
+            ." disposition: e.disposition, sample: e.sample}));});"]);
+    }
+
+    /** 將已收到的 CSP 違規事件移入 $this->csp（清除事件緩衝前呼叫） */
+    private function harvestCsp()
+    {
+        foreach ($this->cdp->events('Runtime.consoleAPICalled') as $e) {
+            $text = $e['args'][0]['value'] ?? '';
+            if (!is_string($text) || strpos($text, self::CSP_PREFIX) !== 0) {
+                continue;
+            }
+            $v = json_decode(substr($text, strlen(self::CSP_PREFIX)), true);
+            if (!is_array($v)) {
+                continue;
+            }
+            $v['group'] = $this->group;
+            $key = implode('|', [$v['directive'] ?? '', $v['blocked'] ?? '', $v['source'] ?? '', $v['line'] ?? '', $v['page'] ?? '']);
+            if (!isset($this->csp[$key])) {
+                $this->csp[$key] = $v;
+            }
+        }
+    }
+
+    /** 目前為止收集到的 CSP 違規 */
+    public function cspViolations()
+    {
+        $this->js('0'); // 讀入尚在途中的事件
+        $this->harvestCsp();
+        return array_values($this->csp);
     }
 
     public function url($path)
@@ -43,6 +81,7 @@ class Browser
      */
     public function go($path, $referrer = null)
     {
+        $this->harvestCsp();
         $this->cdp->clearEvents();
         $params = ['url' => $this->url($path)];
         if ($referrer) {
@@ -110,6 +149,7 @@ class Browser
 
     public function mouse($x, $y)
     {
+        $this->harvestCsp();
         $this->cdp->clearEvents();
         foreach (['mousePressed', 'mouseReleased'] as $type) {
             $this->cdp->send('Input.dispatchMouseEvent', ['type' => $type, 'x' => $x, 'y' => $y, 'button' => 'left', 'clickCount' => 1]);
