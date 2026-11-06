@@ -59,9 +59,7 @@ class ArrayHelper extends BaseArrayHelper
     {
         // 先確認是否有差異
         $diff = array_diff_assoc($attributes, $oldAttributes);
-        header('Content-Type: text/html; charset=utf-8');
-        // Missing HSTS Header
-        header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
+        // 安全標頭（含 HSTS）統一由 SecurityHeadersBootstrap 送出
         if (empty($diff)) {
             return [];
         }
