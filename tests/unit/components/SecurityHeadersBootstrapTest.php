@@ -51,6 +51,65 @@ class SecurityHeadersBootstrapTest extends \Codeception\Test\Unit
         putenv('CSP_MODE');
     }
 
+    /**
+     * 以全新 Response 觸發，避免沿用其他測試留下的標頭
+     */
+    private function hstsFor(array $env, string $format = Response::FORMAT_HTML): ?string
+    {
+        $names = ['APP_ENV', 'HSTS_MAX_AGE', 'HSTS_INCLUDE_SUBDOMAINS'];
+        $saved = [];
+        foreach ($names as $name) {
+            $saved[$name] = getenv($name);
+            putenv(array_key_exists($name, $env) ? "{$name}={$env[$name]}" : $name);
+        }
+        try {
+            (new SecurityHeadersBootstrap())->bootstrap(\Yii::$app);
+            $response = new Response(['format' => $format]);
+            $response->trigger(Response::EVENT_BEFORE_SEND);
+            return $response->headers->get('Strict-Transport-Security');
+        } finally {
+            foreach ($saved as $name => $value) {
+                putenv($value === false ? $name : "{$name}={$value}");
+            }
+        }
+    }
+
+    public function testProductionSendsHstsWithoutPreloadOrSubdomainsByDefault()
+    {
+        $this->assertSame('max-age=31536000', $this->hstsFor(['APP_ENV' => 'production']));
+    }
+
+    public function testHstsIncludeSubdomainsIsOptIn()
+    {
+        $value = $this->hstsFor(['APP_ENV' => 'production', 'HSTS_INCLUDE_SUBDOMAINS' => 'true']);
+        $this->assertSame('max-age=31536000; includeSubDomains', $value);
+        $this->assertStringNotContainsString('preload', $value);
+    }
+
+    public function testHstsMaxAgeConfigurableAndZeroDisables()
+    {
+        $this->assertSame('max-age=600', $this->hstsFor(['APP_ENV' => 'production', 'HSTS_MAX_AGE' => '600']));
+        $this->assertNull($this->hstsFor(['APP_ENV' => 'production', 'HSTS_MAX_AGE' => '0']));
+    }
+
+    public function testNonProductionSendsNoHsts()
+    {
+        foreach (['development', 'testing'] as $appEnv) {
+            $this->assertNull($this->hstsFor(['APP_ENV' => $appEnv]), $appEnv);
+        }
+    }
+
+    public function testHstsAppliesToRawResponses()
+    {
+        $this->assertSame('max-age=31536000', $this->hstsFor(['APP_ENV' => 'production'], Response::FORMAT_RAW));
+    }
+
+    public function testAttributeDiffHelperNoLongerSendsHeaders()
+    {
+        $source = file_get_contents(dirname(__DIR__, 3) . '/components/helper/ArrayHelper.php');
+        $this->assertStringNotContainsString('Strict-Transport-Security', $source);
+    }
+
     public function testRawFormatSkipsSecurityHeaders()
     {
         (new SecurityHeadersBootstrap())->bootstrap(\Yii::$app);
