@@ -6,6 +6,13 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # Revisit these ranges when the supported PHP platform is upgraded.
+    ignore:
+      - dependency-name: codeception/module-yii2
+        update-types: ["version-update:semver-major"]
+      - dependency-name: endroid/qr-code
+        # 6.1 raises the PHP requirement within the same major version.
+        versions: [">=6.1"]
 
   - package-ecosystem: github-actions
     directory: /
