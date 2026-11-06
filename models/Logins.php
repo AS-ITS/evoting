@@ -69,7 +69,25 @@ class Logins extends \yii\db\ActiveRecord
         }
 
         $sessionFile = Yii::getAlias('@runtime/sessions/sess_' . $login->session);
+        clearstatcache(true, $sessionFile);
+        $lastActivity = is_file($sessionFile) ? @filemtime($sessionFile) : false;
+        if ($lastActivity === false) {
+            return false;
+        }
 
-        return file_exists($sessionFile);
+        // 已登入的投票者每次請求都會更新 anon 逾時並寫回 session 檔。
+        // 超過 anon authTimeout 未活動時，原裝置的登入已失效；session 檔可能要等 GC 才刪除，
+        // 不可因此持續擋住同一密碼重新登入（例如未完成投票就關閉瀏覽器）。
+        return (time() - $lastActivity) < static::anonAuthTimeout();
+    }
+
+    /**
+     * 匿名投票登入的閒置逾時秒數，與 anon 元件的 authTimeout 一致
+     */
+    protected static function anonAuthTimeout(): int
+    {
+        $timeout = Yii::$app->has('anon') ? (int) (Yii::$app->anon->authTimeout ?? 0) : 0;
+
+        return $timeout > 0 ? $timeout : 1800;
     }
 }
