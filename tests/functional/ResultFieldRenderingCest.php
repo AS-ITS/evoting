@@ -70,6 +70,8 @@ class ResultFieldRenderingCest
                     $values[$field.$suffix] = 'R&D<br>';
                 }
             }
+            $values['Name'] = 'NZ<br><b onclick="p16attack()">R&D</b>';
+            $values['NameE'] = 'NE<br><b onclick="p16attack()">R&D</b>';
             if ($case['encoded']) {
                 $values['otherColA'] = $values['otherColAE'] = 'Literal&lt;br&gt;R&amp;D';
             }
@@ -135,6 +137,17 @@ class ResultFieldRenderingCest
                 }
             }
             Assert::assertGreaterThan(0, $xpath->query('//td[normalize-space(.)="R&D<br>"]')->length, 'Plain text is encoded once');
+            Assert::assertGreaterThan(0, $xpath->query('//th[normalize-space(.)="R&D"]')->length, 'Name label is encoded once');
+            $names = $xpath->query('//td[contains(., "'.($locale === 'Zh' ? 'NZ' : 'NE').'")]');
+            Assert::assertGreaterThan(0, $names->length);
+            $nameCell = $names->item(0);
+            if (in_array($case['page'], ['ballot-work/result', 'result/index', 'vote/result', 'selected'])) {
+                Assert::assertGreaterThan(0, $xpath->query('.//br', $nameCell)->length, 'Already purified names render once');
+                Assert::assertSame('R&D', $xpath->query('.//b', $nameCell)->item(0)->textContent);
+            } else {
+                Assert::assertSame(0, $xpath->query('.//br | .//b', $nameCell)->length);
+                Assert::assertSame($values['Name'.($locale === 'Zh' ? '' : 'E')], trim($nameCell->textContent));
+            }
             Assert::assertSame($before, FormResults::find()->where(['voteID' => $voteID])->orderBy('candID')->asArray()->all(), 'Rendering leaves counts, ranks and elected status unchanged');
         } finally {
             Yii::$app->language = $originalLanguage;
