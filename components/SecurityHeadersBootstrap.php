@@ -104,8 +104,9 @@ class SecurityHeadersBootstrap implements BootstrapInterface
             "form-action 'self'",
             "frame-ancestors 'self'",
             "object-src 'none'",
-            $strict ? "script-src 'self'" : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-            $strict ? "style-src 'self'" : "style-src 'self' 'unsafe-inline'",
+            // report-sample：違規報告附上程式碼前 40 字，便於定位來源（不放寬任何限制）
+            $strict ? "script-src 'self' 'report-sample'" : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            $strict ? "style-src 'self' 'report-sample'" : "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data: blob:",
             "font-src 'self' data:",
             "connect-src 'self'",

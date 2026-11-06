@@ -112,7 +112,7 @@ class SecurityHeadersBootstrapTest extends \Codeception\Test\Unit
 
         $strict = SecurityHeadersBootstrap::contentSecurityPolicy('strict');
         $this->assertStringNotContainsString('unsafe-', $strict);
-        $this->assertStringContainsString("script-src 'self'", $strict);
+        $this->assertStringContainsString("script-src 'self' 'report-sample'", $strict);
         $this->assertStringContainsString("object-src 'none'", $strict);
     }
 
