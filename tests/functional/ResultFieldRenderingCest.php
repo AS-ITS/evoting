@@ -86,7 +86,9 @@ class ResultFieldRenderingCest
             $results->deleteResults($voteID, 1);
             Assert::assertTrue($results->createResults($voteID));
             // Keep this rendering test independent of anonymous login policy.
-            Votes::findOne(['voteID' => $voteID])->updateAttributes(['type' => Votes::TYPE_NO_AUTH]);
+            if (in_array($case['page'], ['vote/result', 'selected'])) {
+                Votes::findOne(['voteID' => $voteID])->updateAttributes(['type' => Votes::TYPE_NO_AUTH]);
+            }
             $before = FormResults::find()->where(['voteID' => $voteID])->orderBy('candID')->asArray()->all();
             Yii::$app->language = $case['language'];
             Yii::$app->session->set('language', $case['language']);
