@@ -24,31 +24,45 @@ class SecurityHeadersBootstrapTest extends \Codeception\Test\Unit
         $this->assertSame('0', $response->headers->get('X-XSS-Protection'));
     }
 
-    public function testReportOnlyCspByDefault()
+    /**
+     * @return array{0: ?string, 1: ?string} [Content-Security-Policy, Content-Security-Policy-Report-Only]
+     */
+    private function cspHeadersFor(?string $mode, ?string $policy = null): array
     {
-        putenv('CSP_MODE');
-        (new SecurityHeadersBootstrap())->bootstrap(\Yii::$app);
+        $saved = [getenv('CSP_MODE'), getenv('CSP_POLICY')];
+        putenv($mode === null ? 'CSP_MODE' : "CSP_MODE={$mode}");
+        putenv($policy === null ? 'CSP_POLICY' : "CSP_POLICY={$policy}");
+        try {
+            (new SecurityHeadersBootstrap())->bootstrap(\Yii::$app);
+            $response = new Response(['format' => Response::FORMAT_HTML]);
+            $response->trigger(Response::EVENT_BEFORE_SEND);
+            return [
+                $response->headers->get('Content-Security-Policy'),
+                $response->headers->get('Content-Security-Policy-Report-Only'),
+            ];
+        } finally {
+            putenv($saved[0] === false ? 'CSP_MODE' : 'CSP_MODE=' . $saved[0]);
+            putenv($saved[1] === false ? 'CSP_POLICY' : 'CSP_POLICY=' . $saved[1]);
+        }
+    }
 
-        $response = \Yii::$app->response;
-        $response->format = Response::FORMAT_HTML;
-        $response->trigger(Response::EVENT_BEFORE_SEND);
+    public function testCompatCspIsEnforcedByDefault()
+    {
+        [$enforced, $reportOnly] = $this->cspHeadersFor(null);
+        $this->assertSame(SecurityHeadersBootstrap::contentSecurityPolicy('compat'), $enforced);
+        $this->assertNull($reportOnly);
+    }
 
-        $this->assertNotNull($response->headers->get('Content-Security-Policy-Report-Only'));
-        $this->assertNull($response->headers->get('Content-Security-Policy'));
+    public function testReportOnlyModeRemainsAvailableForRollback()
+    {
+        [$enforced, $reportOnly] = $this->cspHeadersFor('report-only');
+        $this->assertNull($enforced);
+        $this->assertSame(SecurityHeadersBootstrap::contentSecurityPolicy('compat'), $reportOnly);
     }
 
     public function testCspOffSkipsHeader()
     {
-        putenv('CSP_MODE=off');
-        (new SecurityHeadersBootstrap())->bootstrap(\Yii::$app);
-
-        $response = \Yii::$app->response;
-        $response->format = Response::FORMAT_HTML;
-        $response->trigger(Response::EVENT_BEFORE_SEND);
-
-        $this->assertNull($response->headers->get('Content-Security-Policy-Report-Only'));
-        $this->assertNull($response->headers->get('Content-Security-Policy'));
-        putenv('CSP_MODE');
+        $this->assertSame([null, null], $this->cspHeadersFor('off'));
     }
 
     /**
@@ -107,7 +121,8 @@ class SecurityHeadersBootstrapTest extends \Codeception\Test\Unit
     public function testCompatPolicyIsDefaultAndStrictDropsUnsafeSources()
     {
         $compat = SecurityHeadersBootstrap::contentSecurityPolicy('compat');
-        $this->assertStringContainsString("script-src 'self' 'unsafe-inline' 'unsafe-eval'", $compat);
+        $this->assertStringContainsString("script-src 'self' 'unsafe-inline';", $compat);
+        $this->assertStringNotContainsString('unsafe-eval', $compat);
         $this->assertSame($compat, SecurityHeadersBootstrap::contentSecurityPolicy('anything-else'));
 
         $strict = SecurityHeadersBootstrap::contentSecurityPolicy('strict');

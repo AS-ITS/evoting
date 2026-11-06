@@ -57,7 +57,7 @@ php tests/e2e/run.php --base=http://localhost:18080
 
 每次執行都會監聽頁面的 `securitypolicyviolation` 事件，結束時列出摘要並寫入 `tests/_output/e2e/csp-violations.json`。違規只做紀錄，不影響通過與否。
 
-預設的 `compat` 政策允許 inline script／style 與 eval，因此不會回報這些依賴。要找出改用嚴格政策前需要修正的地方，測試伺服器改以嚴格政策的 report-only 啟動（只回報、不阻擋，畫面行為不變）：
+預設的 `compat` 政策（預設強制套用）允許 inline script／style、不允許 eval，因此只會回報 eval 等違規。要找出改用嚴格政策前需要修正的地方，測試伺服器改以嚴格政策的 report-only 啟動（只回報、不阻擋，畫面行為不變）：
 
 ```bash
 APP_ENV=testing CSP_MODE=report-only CSP_POLICY=strict php -S localhost:8080 -t web web/router-test.php
