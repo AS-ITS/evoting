@@ -72,7 +72,7 @@ class SecurityHeadersBootstrap implements BootstrapInterface
 
     private static function applyContentSecurityPolicy($headers): void
     {
-        $mode = strtolower(trim(getenv('CSP_MODE') ?: 'report-only'));
+        $mode = strtolower(trim(getenv('CSP_MODE') ?: 'enforce'));
         if ($mode === 'off' || $mode === 'false' || $mode === '0') {
             return;
         }
@@ -90,7 +90,8 @@ class SecurityHeadersBootstrap implements BootstrapInterface
     /**
      * CSP 政策內容
      *
-     * - compat（預設）：AdminLTE / Bootstrap / Yii 需 inline script、style 與 eval，過渡用的寬鬆政策
+     * - compat（預設）：AdminLTE / Bootstrap / Yii 需 inline script 與 style，過渡用政策；不允許 eval
+     *   （E2E 盤點與實際載入的前端套件均未使用 eval）
      * - strict：不允許任何 unsafe-*，為最終目標。搭配 report-only 用於測試環境找出違規
      *   （見 tests/e2e/README.md 的 CSP 違規收集）；修正完成前不可搭配 enforce
      */
@@ -105,7 +106,7 @@ class SecurityHeadersBootstrap implements BootstrapInterface
             "frame-ancestors 'self'",
             "object-src 'none'",
             // report-sample：違規報告附上程式碼前 40 字，便於定位來源（不放寬任何限制）
-            $strict ? "script-src 'self' 'report-sample'" : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            $strict ? "script-src 'self' 'report-sample'" : "script-src 'self' 'unsafe-inline'",
             $strict ? "style-src 'self' 'report-sample'" : "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data: blob:",
             "font-src 'self' data:",

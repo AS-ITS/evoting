@@ -70,7 +70,7 @@
 
 - `SA_DB_TOOLS_ENABLED` 預設為 **false**（SA 資料庫工具關閉）
 - `SENSITIVE_REAUTH` 預設為 **true**（高敏感操作需管理員密碼確認）
-- `CSP_MODE` 預設為 **report-only**（Content-Security-Policy 觀察模式）
+- `CSP_MODE` 預設為 **enforce**（強制套用 Content-Security-Policy；`compat` 政策允許 inline、不允許 eval）
 - `YII_DEBUG` 預設為 **false**
 - 勿將 `.env` 或 `master.key` 提交至版本控制
 

@@ -667,7 +667,7 @@ SESSION_TIMEOUT=7200
 - [ ] `DB_PASSWORD` 已加密（`php yii encrypt/db-password`）；`php yii config/validate` 全綠
 - [ ] `SA_DB_TOOLS_ENABLED` 未設或為 `false`
 - [ ] `SENSITIVE_REAUTH=true`（密碼匯出、RBAC 同步等敏感操作）
-- [ ] `CSP_MODE=report-only` 或依政策設 `enforce`
+- [ ] `CSP_MODE` 未設或為 `enforce`（預設）；僅在頁面功能異常時暫設 `report-only`
 - [ ] `TRUSTED_PROXY_CIDRS` 已設（若反向代理不在 127.0.0.1）
 - [ ] 遷移完成後 `DISABLE_LEGACY_ADMIN_PASSWORD=true`（先跑 `php yii migrate-passwords/admin-legacy-report`）
 - [ ] `composer.lock` 已納入版控；部署使用 `composer install --no-dev`（post-install 會套用 `patches/`）

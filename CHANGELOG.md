@@ -30,6 +30,7 @@
 
 ### Security
 
+* Content-Security-Policy 預設改為強制套用（`CSP_MODE=enforce`），`compat` 政策移除 `'unsafe-eval'`（E2E 盤點與實際載入的前端套件均未使用 eval），仍允許 inline script／style。**升級注意**：若正式環境有畫面功能被擋，可暫於 `.env` 設 `CSP_MODE=report-only` 還原，不需重新部署
 * HSTS 改由安全標頭元件於正式環境的每個回應送出，預設 `max-age=31536000`，不再帶難以撤回的 `preload`；`includeSubDomains` 需確認所有子網域皆為 HTTPS 後以 `HSTS_INCLUDE_SUBDOMAINS=true` 開啟。原本僅在部分存檔動作才送出
 * 測試專用登入路由移出正式程式目錄（`tests/_support/TestLoginController.php`），只由測試設定掛載，且須 Yii 測試模式加上 `APP_ENV=testing`／`test` 才可使用，其他情況回 404
 * **升級注意**：正式環境（`APP_ENV=production`）必須為 `YII_ENV=prod`（或未設定）且 `YII_DEBUG=false`，否則系統拒絕啟動並列出原因；升級前請先檢查正式機 `.env`
