@@ -1,17 +1,35 @@
 <?php
-namespace app\controllers;
+namespace app\tests\_support;
 
 use Yii;
 use yii\web\Controller;
+use yii\web\NotFoundHttpException;
 use app\models\Users;
 use app\components\AdminIdentity;
 
-class TestController extends Controller
+/**
+ * 測試專用登入（acceptance／瀏覽器 E2E）。
+ *
+ * 只由 config/test.php 的 controllerMap 掛載為 `test` 路由，正式設定與 controllers/ 不含此類別；
+ * 部署時 tests/ 目錄不需隨程式發布。
+ */
+class TestLoginController extends Controller
 {
+    /**
+     * 測試環境才允許：Yii 以測試模式啟動，且 APP_ENV 為 testing／test（與測試入口相同政策）
+     */
+    public static function isAllowed(?string $appEnv): bool
+    {
+        $isTestEnvironment = require dirname(__DIR__, 2) . '/config/test-entry-policy.php';
+
+        return YII_ENV_TEST && $isTestEnvironment($appEnv);
+    }
+
     public function actionLogin($user)
     {
-        if (!YII_ENV_TEST) {
-            throw new \yii\web\ForbiddenHttpException('Not allowed');
+        $appEnv = getenv('APP_ENV');
+        if (!self::isAllowed($appEnv === false ? null : $appEnv)) {
+            throw new NotFoundHttpException();
         }
 
         // 使用 cn 欄位查找使用者

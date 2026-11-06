@@ -43,6 +43,11 @@ $config = [
     'defaultRoute' => 'vote/index',
     'basePath' => $basePath,
 
+    // 測試專用登入路由 /index-test.php/test/login；類別位於 tests/，正式設定不掛載
+    'controllerMap' => [
+        'test' => \app\tests\_support\TestLoginController::class,
+    ],
+
     'bootstrap' => [
         'lang', 'log',
         function($app) {

@@ -46,6 +46,7 @@ class ConfigValidator
             $errors = array_merge($errors, self::validateProductionAllowedHosts());
             $errors = array_merge($errors, self::validateProductionSaDbTools());
             $errors = array_merge($errors, self::validateProductionLegacyAdminPassword());
+            $errors = array_merge($errors, self::validateProductionRuntimeMode());
         }
 
         // 3. 檢查資料庫配置
@@ -154,6 +155,31 @@ class ConfigValidator
         }
 
         return [];
+    }
+
+    /**
+     * 正式環境必須以 YII_ENV=prod、YII_DEBUG=false 執行
+     *
+     * 測試模式會啟用測試專用行為，除錯模式會顯示堆疊與內部資訊；正式環境設定錯誤時拒絕啟動。
+     *
+     * @param string|null $yiiEnv 預設取 YII_ENV 常數
+     * @param bool|null $yiiDebug 預設取 YII_DEBUG 常數
+     * @return array
+     */
+    public static function validateProductionRuntimeMode(?string $yiiEnv = null, ?bool $yiiDebug = null): array
+    {
+        $yiiEnv = $yiiEnv ?? (defined('YII_ENV') ? (string) YII_ENV : 'prod');
+        $yiiDebug = $yiiDebug ?? (defined('YII_DEBUG') && YII_DEBUG);
+        $errors = [];
+
+        if ($yiiEnv !== 'prod') {
+            $errors[] = "正式環境必須使用 YII_ENV=prod（目前為 {$yiiEnv}；YII_ENV 只接受 prod、dev、test，與 APP_ENV 不同），請修正 .env 的 YII_ENV 或移除該設定";
+        }
+        if ($yiiDebug) {
+            $errors[] = '正式環境不得啟用 YII_DEBUG，請在 .env 設定 YII_DEBUG=false';
+        }
+
+        return $errors;
     }
 
     /**
