@@ -9,6 +9,7 @@
 
 ### Changed
 
+* Composer 依最低 PHP 8.2.0 解析依賴，CI 另檢查實際平台需求；Dependabot 暫緩需較高 PHP 的 Yii2 測試模組主要版本與 QR Code 6.1 以上更新
 * 將最低 PHP 版本與 lock file 統一為 PHP 8.2，並明列必要 extensions
 * 公開文件改用通用發布、架構、環境權限與版本支援說明
 * Web 測試入口改為僅在明確測試環境啟用
