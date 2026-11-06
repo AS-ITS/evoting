@@ -37,20 +37,26 @@ $manualUrl = "/candi/manual?voteID=$vote&action=update&id=$candidateId&hl=zh-TW"
 $admin->go($manualUrl);
 $questionId = $admin->js('document.querySelector("#formcandidata-questionid").value');
 $configUrl = "/candi/config?voteID=$vote&questionID=$questionId&hl=zh-TW";
-$originalConfig = $readFields($configUrl, ['formcandiconfig-showfieldsort', 'formcandiconfig-othercolnamea', 'formcandiconfig-othercolnameae']);
+$originalConfigs = [];
+// Result grids use the first question's labels; candidate lists and print use their own question.
+foreach (array_unique([$configUrl, "/candi/config?voteID=$vote&questionID=1&hl=zh-TW"]) as $url) {
+    $originalConfigs[$url] = $readFields($url, ['formcandiconfig-showfieldsort', 'formcandiconfig-othercolnamea', 'formcandiconfig-othercolnameae']);
+}
 $candidateOriginal = null;
 try {
-    $fields = json_decode($originalConfig['formcandiconfig-showfieldsort'], true);
-    foreach (['otherColA', 'otherColB'] as $field) {
-        if (!in_array($field, array_column($fields, 'id'))) {
-            $fields[] = ['id' => $field, 'children' => []];
+    foreach ($originalConfigs as $url => $originalConfig) {
+        $fields = json_decode($originalConfig['formcandiconfig-showfieldsort'], true);
+        foreach (['otherColA', 'otherColB'] as $field) {
+            if (!in_array($field, array_column($fields, 'id'))) {
+                $fields[] = ['id' => $field, 'children' => []];
+            }
         }
+        $saveFields($url, [
+            'formcandiconfig-showfieldsort' => json_encode($fields),
+            'formcandiconfig-othercolnamea' => 'P16LabelZh<br><b>R&D</b>',
+            'formcandiconfig-othercolnameae' => 'P16LabelEn<br><b>R&D</b>',
+        ]);
     }
-    $saveFields($configUrl, [
-        'formcandiconfig-showfieldsort' => json_encode($fields),
-        'formcandiconfig-othercolnamea' => 'P16LabelZh<br><b>R&D</b>',
-        'formcandiconfig-othercolnameae' => 'P16LabelEn<br><b>R&D</b>',
-    ]);
     $candidateOriginal = $readFields($manualUrl, ['formcandidata-othercola', 'formcandidata-othercolae', 'formcandidata-othercolb', 'formcandidata-othercolbe']);
     $saveFields($manualUrl, [
         'formcandidata-othercola' => 'P16Zh<br><b onclick="window.p16attack=1">R&D</b>',
@@ -78,6 +84,9 @@ try {
     foreach (['zh-TW' => 'Zh', 'en-US' => 'En'] as $language => $locale) {
         foreach (['ballot-work/result', 'result/index', 'vote/result', 'vote/vote-detail', 'ballot/edit'] as $page) {
             $extra = $page === 'ballot/edit' ? '&party=0&ballotID=1' : '';
+            if ($page === 'vote/vote-detail') {
+                $extra .= '&questionID='.$questionId;
+            }
             $status = $admin->go('/'.$page.'?voteID='.$vote.$extra.'&hl='.$language);
             $r = $admin->js('(() => {
                 const a = [...document.querySelectorAll("td")].find(e => e.textContent.includes("P16'.$locale.'"));
@@ -124,5 +133,7 @@ try {
         $saveFields($manualUrl, $candidateOriginal);
     }
     $saveFields($resultUrl, $originalResults);
-    $saveFields($configUrl, $originalConfig);
+    foreach ($originalConfigs as $url => $originalConfig) {
+        $saveFields($url, $originalConfig);
+    }
 }
