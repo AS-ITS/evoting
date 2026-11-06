@@ -59,6 +59,6 @@ php tests/e2e/run.php --base=http://localhost:18080
 
 ## 注意事項
 
-- 以測試專用路由 `/index-test.php/test/login?user=<cn>` 登入，僅測試環境可用。
+- 以測試專用路由 `/index-test.php/test/login?user=<cn>` 登入（`tests/_support/TestLoginController.php`，只由 `config/test.php` 掛載），測試伺服器須以 `APP_ENV=testing` 啟動，否則回 404。
 - 點擊對話框內的按鈕前，先用 `Browser::openModal()` 等淡入動畫結束，否則結果不穩定。
 - 只有一、兩個字元的文字檔會被偵測為 `application/octet-stream`，測試檔請用正常長度的內容。

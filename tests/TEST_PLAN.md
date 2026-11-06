@@ -78,7 +78,7 @@ RUN_ACCEPTANCE=1 tests/run-all.sh
 | BallotWorkController | ✅ BallotWorkControllerCest | 中 |
 | **VoteToResult** | ✅ VoteToResultCest (1) | 佳（P4 路徑 1 完整鏈） |
 | MultiRoundVote | ✅ MultiRoundVoteCest (3) | 佳（P4 路徑 2 functional） |
-| TestController | — | 可忽略（非正式功能） |
+| TestLoginController（`tests/_support`，僅測試設定掛載） | ✅ ProductionRuntimeModeTest（隔離與環境限制） | 非正式功能 |
 
 ### 3.2 Unit 模組覆蓋（摘要）
 

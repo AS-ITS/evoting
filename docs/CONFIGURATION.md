@@ -75,7 +75,7 @@ APP_ENV=production
 
 | 功能特性 | `production` (正式) | `testing` (測試) | `development` (開發) |
 | :--- | :--- | :--- | :--- |
-| **YII_DEBUG** | 強制關閉 (安全性) | 預設關閉 | 由 `.env` 決定 (預設開啟) |
+| **YII_DEBUG／YII_ENV** | 必須 `YII_DEBUG=false`、`YII_ENV=prod`（或未設定），否則拒絕啟動 | 預設關閉 | 由 `.env` 決定 (預設開啟) |
 | **Debug/Gii 工具** | **強行禁用** | **關閉** | 允許載入 (需 Debug 開啟) |
 | **資料庫 (DB)** | 使用 `DB_DSN` 系列 | 使用 **`TEST_DB_`** 系列變數 | 使用 `DB_DSN` 系列 |
 | **資料庫快取** | **開啟** (效能優化) | 關閉 | 關閉 |

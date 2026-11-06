@@ -29,6 +29,8 @@
 
 ### Security
 
+* 測試專用登入路由移出正式程式目錄（`tests/_support/TestLoginController.php`），只由測試設定掛載，且須 Yii 測試模式加上 `APP_ENV=testing`／`test` 才可使用，其他情況回 404
+* **升級注意**：正式環境（`APP_ENV=production`）必須為 `YII_ENV=prod`（或未設定）且 `YII_DEBUG=false`，否則系統拒絕啟動並列出原因；升級前請先檢查正式機 `.env`
 * 投票頁自訂欄位標題、候選名單內容與紙本選票的中英文資料統一淨化原本直接輸出的 HTML；列印分段表頭也套用淨化，保留既有換行與合法排版
 * 重設密碼回應不透露帳號是否存在；token 只存 SHA-256；同帳號／IP 15 分鐘最多 5 次申請
 * 升級 `phpoffice/phpspreadsheet` 至 5.10.0（CVE-2026-108357、CVE-2026-108358、CVE-2026-108359、CVE-2026-108360）
