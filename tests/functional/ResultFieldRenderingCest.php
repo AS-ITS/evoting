@@ -167,4 +167,48 @@ class ResultFieldRenderingCest
             }
         }
     }
+
+    public function testCandidateManagementRendersFieldAOnce(FunctionalTester $I): void
+    {
+        $voteID = 'AnonPartyTest';
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $candidate = CandiData::find()->where(['voteID' => $voteID])->orderBy('id')->one();
+            Assert::assertNotNull($candidate);
+            $config = CandiConfig::findOne(['voteID' => $voteID]);
+            Assert::assertNotNull($config);
+            $config->updateAttributes(['showFieldSort' => json_encode(array_map(
+                fn ($id) => ['id' => $id, 'children' => []],
+                ['Name', 'otherColA', 'otherColB']
+            ))]);
+            $candidate->updateAttributes([
+                'otherColA' => 'MA<br><b onclick="p16attack()">R&D</b>',
+                'otherColB' => 'MB<br>R&D',
+            ]);
+            $I->amOnPage('/candi/data?voteID='.$voteID);
+            $I->seeResponseCodeIs(200);
+            $dom = new DOMDocument();
+            $previous = libxml_use_internal_errors(true);
+            try {
+                $dom->loadHTML('<?xml encoding="UTF-8">'.$I->grabPageSource());
+            } finally {
+                libxml_clear_errors();
+                libxml_use_internal_errors($previous);
+            }
+            $xpath = new DOMXPath($dom);
+            Assert::assertSame(0, $xpath->query('//*[@onclick="p16attack()"]')->length, 'Event handlers are removed');
+            $cells = $xpath->query('//td[contains(., "MA")]');
+            Assert::assertGreaterThan(0, $cells->length, 'Field A is present');
+            Assert::assertGreaterThan(0, $xpath->query('.//br', $cells->item(0))->length, 'Field A has a real break');
+            Assert::assertSame('R&D', $xpath->query('.//b', $cells->item(0))->item(0)->textContent);
+            $plain = $xpath->query('//td[contains(., "MB")]');
+            Assert::assertGreaterThan(0, $plain->length, 'Field B is present');
+            Assert::assertSame(0, $xpath->query('.//br', $plain->item(0))->length, 'Field B stays plain text');
+            Assert::assertSame('MB<br>R&D', trim($plain->item(0)->textContent));
+        } finally {
+            if ($transaction->isActive) {
+                $transaction->rollBack();
+            }
+        }
+    }
 }

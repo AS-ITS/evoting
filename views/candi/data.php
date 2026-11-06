@@ -1,5 +1,6 @@
 <?php
 use yii\helpers\Html;
+use yii\helpers\HtmlPurifier;
 use yii\widgets\Pjax;
 use app\components\Model;
 use app\models\CandiData;
@@ -175,6 +176,12 @@ echo GridView::widget([
         'otherColA' => [
             'header' => Model::i18n($candiConfig->otherColNameAE, $candiConfig->otherColNameA, false),
             'attribute' => 'otherColA',
+            // 自定義欄位 1 允許經淨化的排版（與投票頁、結果頁一致）；欄位 2–6 維持純文字
+            'format' => 'raw',
+            'value' => function ($model, $key, $index, $column)
+            {
+                return HtmlPurifier::process($model->otherColA, Yii::$app->params['HtmlPurifier.config']);
+            },
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center'],
         ],
