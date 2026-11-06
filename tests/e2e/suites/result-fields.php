@@ -2,8 +2,6 @@
 /** Result rendering and export generation, using only fixture data and UI forms. */
 $admin->section('result-fields');
 $vote = 'AnonPartyTest';
-$configUrl = "/candi/config?voteID=$vote&questionID=1&hl=zh-TW";
-$manualUrl = "/candi/manual?voteID=$vote&action=update&id=1&hl=zh-TW";
 $resultUrl = "/count/result?voteID=$vote&hl=zh-TW";
 $readFields = function ($url, $ids) use ($admin) {
     $admin->go($url);
@@ -24,8 +22,22 @@ $saveFields = function ($url, $values) use ($admin) {
         throw new RuntimeException('Form validation failed: '.implode(' | ', $admin->flashes()));
     }
 };
-$originalConfig = $readFields($configUrl, ['formcandiconfig-showfieldsort', 'formcandiconfig-othercolnamea', 'formcandiconfig-othercolnameae']);
 $originalResults = $readFields($resultUrl, ['formresultsconfig-showfieldsort']);
+$count = "[...document.querySelectorAll('button[type=submit]')].find(e => e.innerText.trim() === '開票')";
+if ($admin->js("!!($count)")) {
+    $admin->click($count);
+    $admin->waitLoad();
+}
+$admin->go('/ballot-work/result?voteID='.$vote.'&hl=zh-TW');
+$candidateId = $admin->js('document.querySelector("tbody tr[data-key]")?.getAttribute("data-key")');
+if (!$candidateId) {
+    throw new RuntimeException('No visible result candidate');
+}
+$manualUrl = "/candi/manual?voteID=$vote&action=update&id=$candidateId&hl=zh-TW";
+$admin->go($manualUrl);
+$questionId = $admin->js('document.querySelector("#formcandidata-questionid").value');
+$configUrl = "/candi/config?voteID=$vote&questionID=$questionId&hl=zh-TW";
+$originalConfig = $readFields($configUrl, ['formcandiconfig-showfieldsort', 'formcandiconfig-othercolnamea', 'formcandiconfig-othercolnameae']);
 $candidateOriginal = null;
 try {
     $fields = json_decode($originalConfig['formcandiconfig-showfieldsort'], true);
@@ -46,6 +58,10 @@ try {
         'formcandidata-othercolb' => 'P16TextZh<br>R&D',
         'formcandidata-othercolbe' => 'P16TextEn<br>R&D',
     ]);
+    $saved = $readFields($manualUrl, ['formcandidata-othercola', 'formcandidata-othercolb']);
+    if (!str_starts_with($saved['formcandidata-othercola'], 'P16Zh') || !str_starts_with($saved['formcandidata-othercolb'], 'P16TextZh')) {
+        throw new RuntimeException('Candidate markup was not saved');
+    }
     $resultFields = explode(',', $originalResults['formresultsconfig-showfieldsort']);
     $saveFields($resultUrl, ['formresultsconfig-showfieldsort' => implode(',', array_unique(array_merge($resultFields, ['otherColA', 'otherColB'])))]);
     $admin->go($resultUrl);
@@ -85,7 +101,7 @@ try {
             if (in_array($page, ['ballot-work/result', 'result/index'])) {
                 foreach (['csv' => 'exportTEXT', 'xls' => 'exportEXCEL', 'html' => 'exportHTML'] as $type => $method) {
                     $export = $admin->js('(() => {
-                        const link = document.querySelector("a[data-format='.$type.']");
+                        const link = document.querySelector("a.export-'.$type.'");
                         const plugin = link && jQuery(link).data("gridexport");
                         if (!plugin) throw new Error("Export plugin missing: '.$type.'");
                         let out; const original = plugin.download;
@@ -99,7 +115,7 @@ try {
             }
         }
     }
-    $admin->go('/ballot/print?voteID='.$vote.'&questionID=1&hl=zh-TW');
+    $admin->go('/ballot/print?voteID='.$vote.'&questionID='.$questionId.'&hl=zh-TW');
     $admin->check('Printed ballot keeps both languages and safe breaks', $admin->js('document.body.innerText.includes("P16Zh") && document.body.innerText.includes("P16En") && !document.querySelector("b[onclick*=p16attack]") && !!document.querySelector("td br")'));
     $admin->shot('result-fields-print');
 } finally {
