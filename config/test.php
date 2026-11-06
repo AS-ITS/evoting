@@ -50,6 +50,8 @@ $config = [
 
     'bootstrap' => [
         'lang', 'log',
+        // 與正式設定相同的安全標頭，讓 acceptance／E2E 在相同的 CSP 等標頭下執行
+        \app\components\SecurityHeadersBootstrap::class,
         function($app) {
             unset($GLOBALS['config']);
             unset($GLOBALS['__composer_autoload_files']);
