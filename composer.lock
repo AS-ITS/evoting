@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a084e7f5c69225105ed55d2d58326e71",
+    "content-hash": "6cee5bc25859c2d528d17a17d5252117",
     "packages": [
         {
             "name": "as-its-dev3/yii2-dynamicform",
@@ -7946,5 +7946,8 @@
         "lib-pcre": "*"
     },
     "platform-dev": {},
+    "platform-overrides": {
+        "php": "8.2.0"
+    },
     "plugin-api-version": "2.6.0"
 }

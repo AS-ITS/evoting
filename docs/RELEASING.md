@@ -13,12 +13,15 @@
 
 ```bash
 composer validate --strict
+composer check-platform-reqs
 composer audit
 bash scripts/open-source-prep.sh
 bash tests/run-all.sh
 ```
 
 Acceptance tests 需依 [tests/README.md](../tests/README.md) 啟動測試伺服器，並且只能使用獨立測試資料庫。
+
+依賴解析以 `composer.json` 的 `config.platform.php`（目前 8.2.0）為最低支援平台；`check-platform-reqs` 仍須在實際部署環境執行。升級最低 PHP 版本時，一併檢視 `.github/dependabot.yml` 中暫緩的 Yii2 測試模組主要版本及 QR Code 6.1 以上更新，再分別驗證測試隔離與 TOTP QR 綁定流程。
 
 若環境有安裝 Gitleaks，另執行：
 

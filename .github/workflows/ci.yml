@@ -60,7 +60,9 @@ jobs:
           echo "MASTER_KEY=$MASTER_KEY" >> "$GITHUB_ENV"
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: |
+          composer install --no-interaction --prefer-dist
+          composer check-platform-reqs
 
       - name: Verify vendor patches
         run: php scripts/apply-vendor-patches.php
@@ -89,7 +91,9 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: |
+          composer install --no-interaction --prefer-dist
+          composer check-platform-reqs
 
       - name: License inventory
         run: composer licenses
