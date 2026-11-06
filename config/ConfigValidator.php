@@ -173,7 +173,7 @@ class ConfigValidator
         $errors = [];
 
         if ($yiiEnv !== 'prod') {
-            $errors[] = "正式環境必須使用 YII_ENV=prod（目前為 {$yiiEnv}），請修正 .env 的 YII_ENV 或移除該設定";
+            $errors[] = "正式環境必須使用 YII_ENV=prod（目前為 {$yiiEnv}；YII_ENV 只接受 prod、dev、test，與 APP_ENV 不同），請修正 .env 的 YII_ENV 或移除該設定";
         }
         if ($yiiDebug) {
             $errors[] = '正式環境不得啟用 YII_DEBUG，請在 .env 設定 YII_DEBUG=false';

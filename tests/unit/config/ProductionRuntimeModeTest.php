@@ -34,7 +34,8 @@ class ProductionRuntimeModeTest extends \Codeception\Test\Unit
 
     public function testRejectsNonProdYiiEnv()
     {
-        foreach (['dev', 'test'] as $yiiEnv) {
+        // production 是 APP_ENV 的值，Yii 不視為正式模式
+        foreach (['dev', 'test', 'production'] as $yiiEnv) {
             $errors = ConfigValidator::validateProductionRuntimeMode($yiiEnv, false);
             $this->assertCount(1, $errors, $yiiEnv);
             $this->assertStringContainsString('YII_ENV=prod', $errors[0]);
