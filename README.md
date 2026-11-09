@@ -87,6 +87,8 @@ bash scripts/open-source-prep.sh
 
 單元測試直接呼叫 Model 方法，不需要測試伺服器。Fixture 由各測試自動管理。
 
+> PHP 8.5：若 Codeception 讀不到命令列參數（argv），請改用 `php -d register_argc_argv=On vendor/bin/codecept run …`。
+
 ```bash
 # 步驟 1：清除舊測試資料（確保乾淨起始狀態）
 echo "yes" | php yii fixture/unload "*" --appconfig=config/console-test.php

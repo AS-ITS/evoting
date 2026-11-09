@@ -101,6 +101,8 @@ tests/
 
 建議直接：`bash tests/run-all.sh`（會依完整 fixture 清單 preload）。
 
+> PHP 8.5：若 Codeception 讀不到命令列參數（argv），請改用 `php -d register_argc_argv=On vendor/bin/codecept run …`。
+
 ```bash
 # 執行所有單元測試
 php vendor/bin/codecept run unit
