@@ -6,6 +6,7 @@
  * Usage:
  *   export VOTING_MASTER_KEY=...   # or rely on /etc/voting/master.key
  *   php scripts/encrypt-config-value.php 'plaintext-password'
+ *   printf '%s' "$PASSWORD" | php scripts/encrypt-config-value.php -   # 不留在命令列
  *
  * Prints Base64 ciphertext to stdout (suitable for .env DB_PASSWORD=...).
  */
@@ -20,10 +21,13 @@ use app\components\KeyDerivation;
 use app\components\MasterKeyLoader;
 
 if ($argc < 2) {
-    fwrite(STDERR, "Usage: php scripts/encrypt-config-value.php <plaintext>\n");
+    fwrite(STDERR, "Usage: php scripts/encrypt-config-value.php <plaintext>|-\n");
     exit(1);
 }
-$plain = (string) $argv[1];
+// "-"：從 stdin 讀取，密碼不會出現在 ps 看得到的命令列
+$plain = $argv[1] === '-'
+    ? rtrim((string) stream_get_contents(STDIN), "\r\n")
+    : (string) $argv[1];
 
 try {
     $masterKey = MasterKeyLoader::getInstance()->loadKey();

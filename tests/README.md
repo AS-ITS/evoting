@@ -101,6 +101,8 @@ tests/
 
 建議直接：`bash tests/run-all.sh`（會依完整 fixture 清單 preload）。
 
+> PHP 8.5：CLI 會忽略 `register_argc_argv`，但 Codeception 5.1 仍檢查此設定而報錯 `register_argc_argv must be set to On`。請改用 `composer test unit`（等同 `php -d register_argc_argv=On vendor/bin/codecept run unit`，其他參數照常接在後面）或 `bash tests/run-all.sh`。
+
 ```bash
 # 執行所有單元測試
 php vendor/bin/codecept run unit

@@ -438,6 +438,7 @@ mysql -u voting_test -p voting_test < docs/init_db.sql
 
 ```bash
 TEST_DB_HOST=localhost
+TEST_DB_PORT=3306
 TEST_DB_NAME=voting_test
 TEST_DB_USERNAME=voting_test
 TEST_DB_PASSWORD=test_password

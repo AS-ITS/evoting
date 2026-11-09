@@ -27,4 +27,14 @@ require $basePath . '/config/env-loader.php';
 
 Yii::setAlias('@app', $basePath); // 定義共用項目
 
-(new yii\console\Application(require $basePath . '/config/console.php'))->run();
+// 載入設定時就失敗（例如正式環境 DB_PASSWORD 無法解密）：
+// 不讓例外變成 Fatal error，與 config/validate 驗證失敗一樣輸出 ❌ 並回傳 65
+try {
+    $application = new yii\console\Application(require $basePath . '/config/console.php');
+} catch (yii\base\InvalidConfigException $e) {
+    fwrite(STDERR, "\n❌ 配置驗證失敗\n  " . $e->getMessage() . "\n\n請檢查 .env 檔案。\n");
+    exit(yii\console\ExitCode::DATAERR);
+}
+
+// 回傳指令的 exit code，讓 shell 腳本能判斷成功或失敗
+exit($application->run());

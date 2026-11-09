@@ -42,7 +42,7 @@ php yii fixture/generate "Votes,Parties" --count=10 --appconfig=config/console-t
 
 - **資料庫名稱**: `voting_test`
 - **使用者**: `voting_test`
-- **密碼**: `test_password_123`
+- **密碼**: `.env` 的 `TEST_DB_PASSWORD`
 
 ## 常用 Fixture 組合
 

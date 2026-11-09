@@ -87,6 +87,8 @@ bash scripts/open-source-prep.sh
 
 單元測試直接呼叫 Model 方法，不需要測試伺服器。Fixture 由各測試自動管理。
 
+> PHP 8.5：CLI 會忽略 `register_argc_argv`，但 Codeception 5.1 仍檢查此設定而報錯 `register_argc_argv must be set to On`。請改用 `composer test unit`（等同 `php -d register_argc_argv=On vendor/bin/codecept run unit`，其他參數照常接在後面）或 `bash tests/run-all.sh`。
+
 ```bash
 # 步驟 1：清除舊測試資料（確保乾淨起始狀態）
 echo "yes" | php yii fixture/unload "*" --appconfig=config/console-test.php
@@ -109,7 +111,7 @@ php vendor/bin/codecept run unit --debug
 
 功能測試透過 Codeception Yii2 模組模擬 HTTP 請求，直接測試 Controller 行為，**不需要啟動測試伺服器**。Fixture 由各 Cest 類別的 `_fixtures()` 方法自動管理，每個測試方法執行前會自動載入。
 
-共 **190 個測試**，涵蓋 19 個 Controller/場景（詳見 [tests/TEST_STATUS.md](tests/TEST_STATUS.md)）：
+共 200 多個測試，涵蓋 19 個以上的 Controller/場景（詳見 [tests/TEST_STATUS.md](tests/TEST_STATUS.md)）：
 
 | Cest 檔案 | 測試範圍 |
 |---|---|
