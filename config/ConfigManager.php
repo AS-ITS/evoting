@@ -168,7 +168,11 @@ class ConfigManager
         } else {
             // 如果是需要解密的欄位，進行解密
             if (in_array($key, $this->encryptedKeys) && $value !== '' && $value !== null) {
-                $value = $this->decrypt($value);
+                try {
+                    $value = $this->decrypt($value);
+                } catch (InvalidConfigException $e) {
+                    throw new InvalidConfigException("{$key} " . $e->getMessage(), 0, $e);
+                }
             }
         }
 
