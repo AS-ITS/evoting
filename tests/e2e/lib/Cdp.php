@@ -33,7 +33,8 @@ class Cdp
             $resp .= $c;
         }
         if (strpos($resp, ' 101 ') === false) {
-            throw new RuntimeException("CDP handshake 失敗：$resp");
+            // 不把對端回應內容放進例外訊息（Checkmarx Stored XSS）
+            throw new RuntimeException('CDP handshake 失敗：未收到 101 Switching Protocols');
         }
     }
 
