@@ -13,8 +13,17 @@
 * `php yii` 一律以 exit code 0 結束，`config/validate` 等指令失敗時 shell 腳本收不到；改為回傳指令的 exit code（未知指令回傳 1；載入設定失敗，例如正式環境密碼無法解密，與驗證失敗同樣顯示 ❌ 並回傳 65）
 * `scripts/install.sh` 非互動安裝時，先 `export` 的明文 `DB_PASSWORD` 會蓋過 `.env` 的加密值，讓正式模式的 `config/validate` 誤判失敗；執行 yii 指令時改以 `.env` 為準。另偵測 `php-fpm8.5`
 * `scripts/ubuntu-upgrade-test.sh` 的 `encrypt/test` 補上必要的鍵名參數
+* `install.sh` 結尾的「下一步」不分模式都說主金鑰在 `/etc/voting/master.key`；改依實際來源（金鑰檔、`VOTING_MASTER_KEY` 或開發模式的 `.env`）說明
+* `install.sh` 非 root 安裝時，即使可寫目錄已屬於 PHP 執行身分仍提示 `sudo chown`；改為只列出擁有者不符的目錄
+
+### Security
+
+* `install.sh` 的 admin 密碼與資料庫密碼不再出現在 `ps` 看得到的命令列：`admin/create` 新增 `--password-stdin`，`scripts/encrypt-config-value.php` 接受 `-` 從 stdin 讀取，mysql 改以 0600 暫存設定檔傳密碼，建立資料庫帳號的 SQL 經 stdin 傳入並跳脫引號
 
 ### Changed
+
+* `config/validate` 在設定檢查通過後實際連線資料庫，帳號密碼錯誤即回報失敗（`--db=0` 可略過）。開發模式下 `DB_PASSWORD` 形式像密文卻無法以目前主金鑰解密時（例如別把金鑰加密的值），會一併提示
+* 測試說明：README 功能測試數量改為概數；SETUP.md 測試資料庫設定補上 `TEST_DB_PORT`
 
 * PHP 8.5 的 CLI 忽略 `register_argc_argv`，Codeception 5.1 因檢查此設定而拒絕執行；新增 `composer test`，`tests/run-all.sh` 也一併加上 `-d register_argc_argv=On`（Codeception 5.3.4 起已修正，但升級需先處理 `yii2-dynamicform` 對 `symfony/css-selector` 4.x 的限制）
 

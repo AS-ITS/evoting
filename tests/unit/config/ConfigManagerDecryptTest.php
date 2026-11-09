@@ -59,6 +59,24 @@ class ConfigManagerDecryptTest extends \Codeception\Test\Unit
     public function testDevelopmentKeepsNonBase64Plaintext()
     {
         $this->assertSame('dev-secret!', $this->readDbPassword('testing', 'dev-secret!'));
+        $this->assertSame([], ConfigManager::getInstance()->getUndecryptedKeys());
+    }
+
+    public function testDevelopmentFlagsCiphertextFromAnotherKey()
+    {
+        // 以另一把主金鑰加密
+        $this->setEnv('APP_ENV', 'development');
+        $this->setEnv('VOTING_MASTER_KEY', str_repeat('fedcba9876543210', 4));
+        ConfigManager::reset();
+        $foreign = ConfigManager::getInstance()->encrypt('Voting2026');
+
+        $this->setEnv('VOTING_MASTER_KEY', str_repeat('0123456789abcdef', 4));
+        $this->assertSame($foreign, $this->readDbPassword('development', $foreign));
+        $this->assertSame(['DB_PASSWORD'], ConfigManager::getInstance()->getUndecryptedKeys());
+
+        // 純英數明文不列入
+        $this->readDbPassword('development', 'Voting2026');
+        $this->assertSame([], ConfigManager::getInstance()->getUndecryptedKeys());
     }
 
     public function testEncryptedValueIsDecrypted()

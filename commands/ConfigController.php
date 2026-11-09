@@ -25,13 +25,18 @@ class ConfigController extends Controller
     public $verbose = false;
 
     /**
+     * @var bool config/validate 是否實際連線資料庫（--db=0 略過）
+     */
+    public $db = true;
+
+    /**
      * {@inheritdoc}
      */
     public function options($actionID)
     {
         return array_merge(
             parent::options($actionID),
-            ['verbose']
+            $actionID === 'validate' ? ['verbose', 'db'] : ['verbose']
         );
     }
 
@@ -59,6 +64,9 @@ class ConfigController extends Controller
         try {
             $cm = ConfigManager::getInstance();
             $errors = $cm->validate(['strict' => false]);
+            if (empty($errors) && $this->db) {
+                $errors = $this->checkDbConnection($cm);
+            }
 
             if (empty($errors)) {
                 $this->stdout("\n✅ 配置驗證通過\n", Console::FG_GREEN);
@@ -85,6 +93,27 @@ class ConfigController extends Controller
             }
 
             return ExitCode::UNSPECIFIED_ERROR;
+        }
+    }
+
+    /**
+     * 以目前設定實際連線資料庫，確認帳號密碼（含解密後的 DB_PASSWORD）可用
+     *
+     * @param ConfigManager $cm
+     * @return string[] 錯誤訊息
+     */
+    private function checkDbConnection(ConfigManager $cm): array
+    {
+        try {
+            Yii::$app->db->open();
+            return [];
+        } catch (\Throwable $e) {
+            $msg = '無法連線資料庫：' . $e->getMessage();
+            if (in_array('DB_PASSWORD', $cm->getUndecryptedKeys(), true)) {
+                $msg .= "\n     DB_PASSWORD 形式上像密文，但無法以目前主金鑰解密，已當成明文使用；"
+                    . '請確認是否為其他主金鑰加密的值';
+            }
+            return [$msg];
         }
     }
 

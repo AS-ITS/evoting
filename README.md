@@ -111,7 +111,7 @@ php vendor/bin/codecept run unit --debug
 
 功能測試透過 Codeception Yii2 模組模擬 HTTP 請求，直接測試 Controller 行為，**不需要啟動測試伺服器**。Fixture 由各 Cest 類別的 `_fixtures()` 方法自動管理，每個測試方法執行前會自動載入。
 
-共 **190 個測試**，涵蓋 19 個 Controller/場景（詳見 [tests/TEST_STATUS.md](tests/TEST_STATUS.md)）：
+共 200 多個測試，涵蓋 19 個以上的 Controller/場景（詳見 [tests/TEST_STATUS.md](tests/TEST_STATUS.md)）：
 
 | Cest 檔案 | 測試範圍 |
 |---|---|

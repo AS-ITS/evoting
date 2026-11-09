@@ -76,6 +76,26 @@ class ConfigManager
     ];
 
     /**
+     * @var bool 最近一次 decrypt() 是否把形式像密文的值當成明文沿用
+     */
+    private $lastDecryptFellBack = false;
+
+    /**
+     * @var array<string, true> 形式像密文但無法以目前主金鑰解密、已沿用原值的鍵名
+     */
+    private $undecryptedKeys = [];
+
+    /**
+     * 取得形式像密文但無法以目前主金鑰解密的鍵名（僅非正式環境會沿用原值）
+     *
+     * @return string[]
+     */
+    public function getUndecryptedKeys(): array
+    {
+        return array_keys($this->undecryptedKeys);
+    }
+
+    /**
      * 私有建構函數（單例模式）
      */
     private function __construct()
@@ -169,7 +189,11 @@ class ConfigManager
             // 如果是需要解密的欄位，進行解密
             if (in_array($key, $this->encryptedKeys) && $value !== '' && $value !== null) {
                 try {
+                    $this->lastDecryptFellBack = false;
                     $value = $this->decrypt($value);
+                    if ($this->lastDecryptFellBack) {
+                        $this->undecryptedKeys[$key] = true;
+                    }
                 } catch (InvalidConfigException $e) {
                     throw new InvalidConfigException("{$key} " . $e->getMessage(), 0, $e);
                 }
@@ -224,6 +248,10 @@ class ConfigManager
 
         // 開發／測試環境允許明文；正式環境必須是目前主金鑰加密的值
         if (!$this->isProduction()) {
+            if ($raw !== false && $raw !== '' && strlen($raw) % 16 === 0) {
+                // 形式上像密文卻解不開：可能是別把主金鑰加密的值，留給 config/validate 提示
+                $this->lastDecryptFellBack = true;
+            }
             return $encryptedValue;
         }
 

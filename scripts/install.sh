@@ -251,8 +251,28 @@ detect_php_user() {
   echo "${u:-www-data}"
 }
 
+# 以 0600 暫存 option file 傳密碼給 mysql，避免密碼出現在 ps 看得到的命令列
+mysql_pw() {
+  local pw="$1" cnf rc=0
+  shift
+  cnf="$(mktemp)"
+  chmod 600 "$cnf"
+  pw="${pw//\\/\\\\}"
+  pw="${pw//\"/\\\"}"
+  printf '[client]\npassword="%s"\n' "$pw" > "$cnf"
+  mysql --defaults-extra-file="$cnf" "$@" || rc=$?
+  rm -f "$cnf"
+  return "$rc"
+}
+
+# SQL 字串常值跳脫（反斜線與單引號）
+sql_quote() {
+  local s="${1//\\/\\\\}"
+  printf '%s' "${s//\'/\'\'}"
+}
+
 mysql_cmd() {
-  mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" -p"$DB_PASSWORD" "$@"
+  mysql_pw "$DB_PASSWORD" -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" "$@"
 }
 
 # 執行 yii 指令時以 .env 為準：安裝時 export 的明文密碼不可蓋過 .env 的加密值
@@ -262,7 +282,7 @@ yii_cmd() {
 
 mysql_root_cmd() {
   if [[ -n "${DB_ROOT_PASSWORD-}" ]]; then
-    mysql -h "$DB_HOST" -P "$DB_PORT" -u root -p"$DB_ROOT_PASSWORD" "$@"
+    mysql_pw "$DB_ROOT_PASSWORD" -h "$DB_HOST" -P "$DB_PORT" -u root "$@"
   else
     mysql -u root "$@"
   fi
@@ -375,7 +395,7 @@ preflight_checks() {
     log "mysql client: ${ver_raw:-unknown}"
     ver=""
     if [[ -n "${DB_PASSWORD-}" ]]; then
-      ver="$(mysql -h "${DB_HOST:-127.0.0.1}" -P "${DB_PORT:-3306}" -u "${DB_USERNAME:-voting}" -p"${DB_PASSWORD}" -N -e 'SELECT VERSION();' 2>/dev/null || true)"
+      ver="$(mysql_pw "$DB_PASSWORD" -h "${DB_HOST:-127.0.0.1}" -P "${DB_PORT:-3306}" -u "${DB_USERNAME:-voting}" -N -e 'SELECT VERSION();' 2>/dev/null || true)"
     fi
     if [[ -z "$ver" && "$(id -u)" -eq 0 ]]; then
       ver="$(mysql -N -e 'SELECT VERSION();' 2>/dev/null || true)"
@@ -581,7 +601,16 @@ if [[ "$(id -u)" -eq 0 ]]; then
   chown -R "${PHP_USER}:${PHP_USER}" runtime web/assets "$APP_PATH_UPLOADS" || true
   chmod -R 775 runtime web/assets || true
 else
-  log "非 root：請稍後執行: sudo chown -R ${PHP_USER}:${PHP_USER} runtime web/assets ${APP_PATH_UPLOADS}"
+  not_owned=()
+  for d in runtime web/assets "$APP_PATH_UPLOADS"; do
+    [[ -e "$d" ]] || continue
+    [[ "$(stat -c %U "$d" 2>/dev/null)" == "$PHP_USER" ]] || not_owned+=("$d")
+  done
+  if [[ ${#not_owned[@]} -gt 0 ]]; then
+    log "非 root：請稍後執行: sudo chown -R ${PHP_USER}:${PHP_USER} ${not_owned[*]}"
+  else
+    log "可寫目錄已屬於 PHP_USER=$PHP_USER"
+  fi
 fi
 
 # ---------- .env ----------
@@ -667,7 +696,7 @@ if [[ "$USE_EXTERNAL_KEY" -eq 1 ]]; then
   else
     log "以目前主金鑰加密安裝時輸入的 DB_PASSWORD 寫入 .env"
     [[ -f scripts/encrypt-config-value.php ]] || die "缺少 scripts/encrypt-config-value.php"
-    ENC_DB_PASSWORD="$(php scripts/encrypt-config-value.php "$DB_PASSWORD")" \
+    ENC_DB_PASSWORD="$(printf '%s' "$DB_PASSWORD" | php scripts/encrypt-config-value.php -)" \
       || die "加密 DB_PASSWORD 失敗（請確認 VOTING_MASTER_KEY／$MASTER_KEY_FILE）"
     [[ -n "$ENC_DB_PASSWORD" ]] || die "加密結果為空"
     set_env_key DB_PASSWORD "$ENC_DB_PASSWORD"
@@ -697,8 +726,11 @@ if [[ "$WITH_DB" -eq 1 ]]; then
   command -v mysql >/dev/null || die "需要 mysql 客戶端"
   mysql_root_cmd -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
   # 既有使用者不 ALTER 密碼，避免覆蓋 DBA 設定
-  mysql_root_cmd -e "CREATE USER IF NOT EXISTS '${DB_USERNAME}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';" \
-    || mysql_root_cmd -e "CREATE USER '${DB_USERNAME}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';" || true
+  # 密碼經 stdin 傳入，不放在 -e 參數
+  _db_pw_sql="$(sql_quote "$DB_PASSWORD")"
+  printf "CREATE USER IF NOT EXISTS '%s'@'localhost' IDENTIFIED BY '%s';\n" "$DB_USERNAME" "$_db_pw_sql" | mysql_root_cmd \
+    || printf "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';\n" "$DB_USERNAME" "$_db_pw_sql" | mysql_root_cmd || true
+  unset _db_pw_sql
   mysql_root_cmd -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USERNAME}'@'localhost'; FLUSH PRIVILEGES;"
 fi
 
@@ -720,7 +752,7 @@ fi
 # ---------- admin ----------
 if [[ "$CREATE_ADMIN" -eq 1 ]]; then
   log "建立 admin"
-  if yii_cmd admin/create --password="$ADMIN_PASSWORD"; then
+  if printf '%s\n' "$ADMIN_PASSWORD" | yii_cmd admin/create --password-stdin; then
     :
   else
     warn "admin/create 失敗或帳號已存在 — 略過（若為新裝請檢查密碼規則／資料庫）"
@@ -740,13 +772,23 @@ _validate_rc=$?
 set -e
 [[ "$_validate_rc" -eq 0 ]] || die "config/validate 失敗 (exit=${_validate_rc})"
 
+if [[ "$USE_EXTERNAL_KEY" -eq 1 ]]; then
+  if [[ -f "$MASTER_KEY_FILE" ]]; then
+    KEY_NOTE="主金鑰在 ${MASTER_KEY_FILE}；確認 PHP-FPM 執行身分可讀"
+  else
+    KEY_NOTE="主金鑰只來自環境變數 VOTING_MASTER_KEY；確認 PHP-FPM 也設定同一值"
+  fi
+else
+  KEY_NOTE="開發模式：主金鑰寫在 .env 的 MASTER_KEY，僅供開發／測試；正式環境請改用 ${MASTER_KEY_FILE} 或 VOTING_MASTER_KEY"
+fi
+
 log "安裝完成"
 cat <<EOF
 
 下一步：
   1. 確認 Web Server Document Root 指向: ${APP_BASE_PATH}/web
   2. 瀏覽器開啟網站並以 admin 登入
-  3. 正式環境主金鑰已寫入 /etc/voting/master.key（或 VOTING_MASTER_KEY）；確認 PHP-FPM 可讀
+  3. ${KEY_NOTE}
 
 升級／更新既有系統：勿再執行本腳本的 --init-db；見 SETUP.md「從舊版升級」。
 EOF
