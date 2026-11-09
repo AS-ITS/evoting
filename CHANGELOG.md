@@ -16,7 +16,7 @@
 
 ### Changed
 
-* 測試說明補充 PHP 8.5 執行 Codeception 時的 `register_argc_argv` 設定
+* PHP 8.5 的 CLI 忽略 `register_argc_argv`，Codeception 5.1 因檢查此設定而拒絕執行；新增 `composer test`，`tests/run-all.sh` 也一併加上 `-d register_argc_argv=On`（Codeception 5.3.4 起已修正，但升級需先處理 `yii2-dynamicform` 對 `symfony/css-selector` 4.x 的限制）
 
 ## [1.1.0] - 2026-11-09
 

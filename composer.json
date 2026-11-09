@@ -87,6 +87,10 @@
         }
     },
     "scripts": {
+        "test": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php -d register_argc_argv=On vendor/bin/codecept run"
+        ],
         "post-install-cmd": [
             "@php scripts/apply-vendor-patches.php",
             "bash scripts/ensure-writable-dirs.sh"

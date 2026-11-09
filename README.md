@@ -87,7 +87,7 @@ bash scripts/open-source-prep.sh
 
 單元測試直接呼叫 Model 方法，不需要測試伺服器。Fixture 由各測試自動管理。
 
-> PHP 8.5：若 Codeception 讀不到命令列參數（argv），請改用 `php -d register_argc_argv=On vendor/bin/codecept run …`。
+> PHP 8.5：CLI 會忽略 `register_argc_argv`，但 Codeception 5.1 仍檢查此設定而報錯 `register_argc_argv must be set to On`。請改用 `composer test unit`（等同 `php -d register_argc_argv=On vendor/bin/codecept run unit`，其他參數照常接在後面）或 `bash tests/run-all.sh`。
 
 ```bash
 # 步驟 1：清除舊測試資料（確保乾淨起始狀態）
