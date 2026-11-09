@@ -8,7 +8,7 @@
 # 3. 驗證測試資料庫
 #
 # 可用環境變數：
-#   DB_HOST、DB_USER（預設 root）、DB_PASS（未設定則提示輸入）
+#   DB_HOST、DB_PORT（預設 3306）、DB_USER（預設 root）、DB_PASS（未設定則提示輸入）
 #   SOURCE_DB（預設 voting）、TEST_DB（預設 voting_test）
 #   TEST_USER（預設 voting_test）、TEST_DB_PASSWORD（未設定則提示輸入）
 #
@@ -23,6 +23,7 @@ echo "======================================"
 
 # 配置參數
 DB_HOST="${DB_HOST:-localhost}"
+DB_PORT="${DB_PORT:-3306}"
 DB_USER="${DB_USER:-root}"
 DB_PASS="${DB_PASS-}"
 SOURCE_DB="${SOURCE_DB:-voting}"
@@ -44,6 +45,7 @@ fi
 CNF_FILES=()
 cleanup() { [ ${#CNF_FILES[@]} -eq 0 ] || rm -f "${CNF_FILES[@]}"; }
 trap cleanup EXIT
+trap 'exit 130' INT TERM
 
 make_cnf() {
     local pw="$1" cnf
@@ -52,7 +54,6 @@ make_cnf() {
     pw="${pw//\\/\\\\}"
     pw="${pw//\"/\\\"}"
     printf '[client]\npassword="%s"\n' "$pw" > "$cnf"
-    CNF_FILES+=("$cnf")
     printf '%s' "$cnf"
 }
 
@@ -62,12 +63,13 @@ sql_quote() {
     printf '%s' "${s//\'/\'\'}"
 }
 
-ROOT_CNF="$(make_cnf "$DB_PASS")"
-TEST_CNF="$(make_cnf "$TEST_PASS")"
+# make_cnf 在 $(...) 子 shell 執行，暫存檔須在主程式登記才會被 cleanup 刪除
+ROOT_CNF="$(make_cnf "$DB_PASS")";  CNF_FILES+=("$ROOT_CNF")
+TEST_CNF="$(make_cnf "$TEST_PASS")"; CNF_FILES+=("$TEST_CNF")
 
 echo ""
 echo "步驟 1/3: 建立測試資料庫和使用者..."
-mysql --defaults-extra-file="$ROOT_CNF" -h"$DB_HOST" -u"$DB_USER" <<EOF
+mysql --defaults-extra-file="$ROOT_CNF" -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USER" <<EOF
 -- 建立測試資料庫
 CREATE DATABASE IF NOT EXISTS \`$TEST_DB\`
   DEFAULT CHARACTER SET utf8mb4
@@ -87,18 +89,18 @@ echo "✓ 測試資料庫和使用者建立完成"
 
 echo ""
 echo "步驟 2/3: 複製資料庫結構（不含數據）..."
-mysqldump --defaults-extra-file="$ROOT_CNF" -h"$DB_HOST" -u"$DB_USER" \
+mysqldump --defaults-extra-file="$ROOT_CNF" -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USER" \
   --no-data \
   --routines \
   --triggers \
   "$SOURCE_DB" | \
-  mysql --defaults-extra-file="$TEST_CNF" -h"$DB_HOST" -u"$TEST_USER" "$TEST_DB"
+  mysql --defaults-extra-file="$TEST_CNF" -h"$DB_HOST" -P"$DB_PORT" -u"$TEST_USER" "$TEST_DB"
 
 echo "✓ 資料庫結構複製完成"
 
 echo ""
 echo "步驟 3/3: 驗證測試資料庫..."
-TABLES="$(mysql --defaults-extra-file="$TEST_CNF" -h"$DB_HOST" -u"$TEST_USER" -N "$TEST_DB" -e "SHOW TABLES;" | wc -l)"
+TABLES="$(mysql --defaults-extra-file="$TEST_CNF" -h"$DB_HOST" -P"$DB_PORT" -u"$TEST_USER" -N "$TEST_DB" -e "SHOW TABLES;" | wc -l)"
 echo "資料表數量: $TABLES"
 
 echo ""
@@ -107,7 +109,7 @@ echo "✓ 測試資料庫初始化完成！"
 echo "======================================"
 echo ""
 echo "資料庫資訊："
-echo "  - 主機: $DB_HOST"
+echo "  - 主機: $DB_HOST:$DB_PORT"
 echo "  - 資料庫名稱: $TEST_DB"
 echo "  - 使用者: $TEST_USER"
 echo ""
