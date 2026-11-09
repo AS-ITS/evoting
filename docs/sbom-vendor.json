@@ -1,15 +1,15 @@
 {
     "bomFormat": "CycloneDX",
     "specVersion": "1.5",
-    "serialNumber": "urn:uuid:d86f7623-8d14-4076-84fe-baea3d95adcc",
+    "serialNumber": "urn:uuid:f863fe48-e5d0-4e6c-911a-d0705168bf6c",
     "version": 1,
     "metadata": {
-        "timestamp": "2026-09-03T09:48:54+08:00",
+        "timestamp": "2026-11-09T02:24:24+00:00",
         "component": {
             "type": "application",
-            "bom-ref": "pkg:composer/voting-system@1.0.0",
+            "bom-ref": "pkg:composer/voting-system@1.1.0",
             "name": "voting/app",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "description": "Electronic voting platform (Yii2), MIT licensed. Dialogs use kartik-v/yii2-dialog and Bootstrap 5 Modal"
         },
         "tools": [
@@ -78,10 +78,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/bower-asset/inputmask@5.0.9",
+            "bom-ref": "pkg:composer/bower-asset/inputmask@5.0.10",
             "name": "bower-asset/inputmask",
-            "version": "5.0.9",
-            "purl": "pkg:composer/bower-asset/inputmask@5.0.9",
+            "version": "5.0.10",
+            "purl": "pkg:composer/bower-asset/inputmask@5.0.10",
             "licenses": [
                 {
                     "license": {
@@ -98,10 +98,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/bower-asset/jquery@3.6.4",
+            "bom-ref": "pkg:composer/bower-asset/jquery@3.7.1",
             "name": "bower-asset/jquery",
-            "version": "3.6.4",
-            "purl": "pkg:composer/bower-asset/jquery@3.6.4",
+            "version": "3.7.1",
+            "purl": "pkg:composer/bower-asset/jquery@3.7.1",
             "licenses": [
                 {
                     "license": {
@@ -112,27 +112,7 @@
             "externalReferences": [
                 {
                     "type": "vcs",
-                    "url": "git@github.com:jquery/jquery-dist.git"
-                }
-            ]
-        },
-        {
-            "type": "library",
-            "bom-ref": "pkg:composer/bower-asset/jquery-ui@1.12.1",
-            "name": "bower-asset/jquery-ui",
-            "version": "1.12.1",
-            "purl": "pkg:composer/bower-asset/jquery-ui@1.12.1",
-            "licenses": [
-                {
-                    "license": {
-                        "id": "MIT"
-                    }
-                }
-            ],
-            "externalReferences": [
-                {
-                    "type": "vcs",
-                    "url": "git@github.com:components/jqueryui.git"
+                    "url": "https://github.com/jquery/jquery-dist.git"
                 }
             ]
         },
@@ -165,7 +145,7 @@
             "externalReferences": [
                 {
                     "type": "vcs",
-                    "url": "git@github.com:yiisoft/jquery-pjax.git"
+                    "url": "https://github.com/yiisoft/jquery-pjax.git"
                 }
             ]
         },
@@ -234,31 +214,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/doctrine/deprecations@1.1.6",
-            "name": "doctrine/deprecations",
-            "version": "1.1.6",
-            "purl": "pkg:composer/doctrine/deprecations@1.1.6",
-            "description": "A small layer on top of trigger_error(E_USER_DEPRECATED) or PSR-3 logging with options to disable all deprecations or selectively for packages.",
-            "licenses": [
-                {
-                    "license": {
-                        "id": "MIT"
-                    }
-                }
-            ],
-            "externalReferences": [
-                {
-                    "type": "vcs",
-                    "url": "https://github.com/doctrine/deprecations.git"
-                }
-            ]
-        },
-        {
-            "type": "library",
-            "bom-ref": "pkg:composer/doctrine/lexer@2.1.1",
+            "bom-ref": "pkg:composer/doctrine/lexer@3.0.3",
             "name": "doctrine/lexer",
-            "version": "2.1.1",
-            "purl": "pkg:composer/doctrine/lexer@2.1.1",
+            "version": "3.0.3",
+            "purl": "pkg:composer/doctrine/lexer@3.0.3",
             "description": "PHP Doctrine Lexer parser library that can be used in Top-Down, Recursive Descent Parsers.",
             "licenses": [
                 {
@@ -276,10 +235,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/egulias/email-validator@3.2.6",
+            "bom-ref": "pkg:composer/egulias/email-validator@4.0.4",
             "name": "egulias/email-validator",
-            "version": "3.2.6",
-            "purl": "pkg:composer/egulias/email-validator@3.2.6",
+            "version": "4.0.4",
+            "purl": "pkg:composer/egulias/email-validator@4.0.4",
             "description": "A library for validating emails against several RFCs",
             "licenses": [
                 {
@@ -318,10 +277,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/ezyang/htmlpurifier@4.19.0",
+            "bom-ref": "pkg:composer/ezyang/htmlpurifier@4.19.1",
             "name": "ezyang/htmlpurifier",
-            "version": "4.19.0",
-            "purl": "pkg:composer/ezyang/htmlpurifier@4.19.0",
+            "version": "4.19.1",
+            "purl": "pkg:composer/ezyang/htmlpurifier@4.19.1",
             "description": "Standards compliant HTML filter written in PHP",
             "licenses": [
                 {
@@ -622,10 +581,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/masterminds/html5@2.10.1",
+            "bom-ref": "pkg:composer/masterminds/html5@2.11.0",
             "name": "masterminds/html5",
-            "version": "2.10.1",
-            "purl": "pkg:composer/masterminds/html5@2.10.1",
+            "version": "2.11.0",
+            "purl": "pkg:composer/masterminds/html5@2.11.0",
             "description": "An HTML5 parser and serializer.",
             "licenses": [
                 {
@@ -706,10 +665,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/phpoffice/phpspreadsheet@5.9.0",
+            "bom-ref": "pkg:composer/phpoffice/phpspreadsheet@5.10.0",
             "name": "phpoffice/phpspreadsheet",
-            "version": "5.9.0",
-            "purl": "pkg:composer/phpoffice/phpspreadsheet@5.9.0",
+            "version": "5.10.0",
+            "purl": "pkg:composer/phpoffice/phpspreadsheet@5.10.0",
             "description": "PHPSpreadsheet - Read, Create and Write Spreadsheet documents in PHP - Spreadsheet engine",
             "licenses": [
                 {
@@ -958,10 +917,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/dom-crawler@6.4.40",
+            "bom-ref": "pkg:composer/symfony/dom-crawler@6.4.44",
             "name": "symfony/dom-crawler",
-            "version": "6.4.40",
-            "purl": "pkg:composer/symfony/dom-crawler@6.4.40",
+            "version": "6.4.44",
+            "purl": "pkg:composer/symfony/dom-crawler@6.4.44",
             "description": "Eases DOM navigation for HTML and XML documents",
             "licenses": [
                 {
@@ -979,10 +938,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/event-dispatcher@7.4.14",
+            "bom-ref": "pkg:composer/symfony/event-dispatcher@7.4.17",
             "name": "symfony/event-dispatcher",
-            "version": "7.4.14",
-            "purl": "pkg:composer/symfony/event-dispatcher@7.4.14",
+            "version": "7.4.17",
+            "purl": "pkg:composer/symfony/event-dispatcher@7.4.17",
             "description": "Provides tools that allow your application components to communicate with each other by dispatching events and listening to them",
             "licenses": [
                 {
@@ -1021,10 +980,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/mailer@7.4.14",
+            "bom-ref": "pkg:composer/symfony/mailer@7.4.22",
             "name": "symfony/mailer",
-            "version": "7.4.14",
-            "purl": "pkg:composer/symfony/mailer@7.4.14",
+            "version": "7.4.22",
+            "purl": "pkg:composer/symfony/mailer@7.4.22",
             "description": "Helps sending emails",
             "licenses": [
                 {
@@ -1042,10 +1001,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/mime@7.4.13",
+            "bom-ref": "pkg:composer/symfony/mime@7.4.22",
             "name": "symfony/mime",
-            "version": "7.4.13",
-            "purl": "pkg:composer/symfony/mime@7.4.13",
+            "version": "7.4.22",
+            "purl": "pkg:composer/symfony/mime@7.4.22",
             "description": "Allows manipulating MIME messages",
             "licenses": [
                 {
@@ -1084,10 +1043,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/polyfill-intl-idn@1.38.1",
+            "bom-ref": "pkg:composer/symfony/polyfill-intl-idn@1.43.0",
             "name": "symfony/polyfill-intl-idn",
-            "version": "1.38.1",
-            "purl": "pkg:composer/symfony/polyfill-intl-idn@1.38.1",
+            "version": "1.43.0",
+            "purl": "pkg:composer/symfony/polyfill-intl-idn@1.43.0",
             "description": "Symfony polyfill for intl's idn_to_ascii and idn_to_utf8 functions",
             "licenses": [
                 {
@@ -1105,10 +1064,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/polyfill-intl-normalizer@1.38.0",
+            "bom-ref": "pkg:composer/symfony/polyfill-intl-normalizer@1.43.0",
             "name": "symfony/polyfill-intl-normalizer",
-            "version": "1.38.0",
-            "purl": "pkg:composer/symfony/polyfill-intl-normalizer@1.38.0",
+            "version": "1.43.0",
+            "purl": "pkg:composer/symfony/polyfill-intl-normalizer@1.43.0",
             "description": "Symfony polyfill for intl's Normalizer class and related functions",
             "licenses": [
                 {
@@ -1126,10 +1085,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/polyfill-mbstring@1.38.2",
+            "bom-ref": "pkg:composer/symfony/polyfill-mbstring@1.43.3",
             "name": "symfony/polyfill-mbstring",
-            "version": "1.38.2",
-            "purl": "pkg:composer/symfony/polyfill-mbstring@1.38.2",
+            "version": "1.43.3",
+            "purl": "pkg:composer/symfony/polyfill-mbstring@1.43.3",
             "description": "Symfony polyfill for the Mbstring extension",
             "licenses": [
                 {
@@ -1147,10 +1106,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/polyfill-php80@1.37.0",
+            "bom-ref": "pkg:composer/symfony/polyfill-php80@1.43.0",
             "name": "symfony/polyfill-php80",
-            "version": "1.37.0",
-            "purl": "pkg:composer/symfony/polyfill-php80@1.37.0",
+            "version": "1.43.0",
+            "purl": "pkg:composer/symfony/polyfill-php80@1.43.0",
             "description": "Symfony polyfill backporting some PHP 8.0+ features to lower PHP versions",
             "licenses": [
                 {
@@ -1168,10 +1127,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/service-contracts@3.7.1",
+            "bom-ref": "pkg:composer/symfony/service-contracts@3.7.3",
             "name": "symfony/service-contracts",
-            "version": "3.7.1",
-            "purl": "pkg:composer/symfony/service-contracts@3.7.1",
+            "version": "3.7.3",
+            "purl": "pkg:composer/symfony/service-contracts@3.7.3",
             "description": "Generic abstractions related to writing services",
             "licenses": [
                 {
@@ -1273,31 +1232,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/yiisoft/yii2-jui@2.0.7",
-            "name": "yiisoft/yii2-jui",
-            "version": "2.0.7",
-            "purl": "pkg:composer/yiisoft/yii2-jui@2.0.7",
-            "description": "The Jquery UI extension for the Yii framework",
-            "licenses": [
-                {
-                    "license": {
-                        "id": "BSD-3-Clause"
-                    }
-                }
-            ],
-            "externalReferences": [
-                {
-                    "type": "vcs",
-                    "url": "https://github.com/yiisoft/yii2-jui.git"
-                }
-            ]
-        },
-        {
-            "type": "library",
-            "bom-ref": "pkg:composer/yiisoft/yii2-symfonymailer@3.0.0",
+            "bom-ref": "pkg:composer/yiisoft/yii2-symfonymailer@4.0.0",
             "name": "yiisoft/yii2-symfonymailer",
-            "version": "3.0.0",
-            "purl": "pkg:composer/yiisoft/yii2-symfonymailer@3.0.0",
+            "version": "4.0.0",
+            "purl": "pkg:composer/yiisoft/yii2-symfonymailer@4.0.0",
             "description": "The SymfonyMailer integration for the Yii framework",
             "licenses": [
                 {
@@ -1315,10 +1253,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/behat/gherkin@4.16.1",
+            "bom-ref": "pkg:composer/behat/gherkin@4.18.0",
             "name": "behat/gherkin",
-            "version": "4.16.1",
-            "purl": "pkg:composer/behat/gherkin@4.16.1",
+            "version": "4.18.0",
+            "purl": "pkg:composer/behat/gherkin@4.18.0",
             "description": "Gherkin DSL parser for PHP",
             "licenses": [
                 {
@@ -1462,10 +1400,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/codeception/module-phpbrowser@3.0.2",
+            "bom-ref": "pkg:composer/codeception/module-phpbrowser@4.1.0",
             "name": "codeception/module-phpbrowser",
-            "version": "3.0.2",
-            "purl": "pkg:composer/codeception/module-phpbrowser@3.0.2",
+            "version": "4.1.0",
+            "purl": "pkg:composer/codeception/module-phpbrowser@4.1.0",
             "description": "Codeception module for testing web application over HTTP",
             "licenses": [
                 {
@@ -1504,10 +1442,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/codeception/stub@4.2.1",
+            "bom-ref": "pkg:composer/codeception/stub@4.3.0",
             "name": "codeception/stub",
-            "version": "4.2.1",
-            "purl": "pkg:composer/codeception/stub@4.2.1",
+            "version": "4.3.0",
+            "purl": "pkg:composer/codeception/stub@4.3.0",
             "description": "Flexible Stub wrapper for PHPUnit's Mock Builder",
             "licenses": [
                 {
@@ -1588,10 +1526,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/guzzlehttp/guzzle@7.15.1",
+            "bom-ref": "pkg:composer/guzzlehttp/guzzle@7.16.0",
             "name": "guzzlehttp/guzzle",
-            "version": "7.15.1",
-            "purl": "pkg:composer/guzzlehttp/guzzle@7.15.1",
+            "version": "7.16.0",
+            "purl": "pkg:composer/guzzlehttp/guzzle@7.16.0",
             "description": "Guzzle is a PHP HTTP client library",
             "licenses": [
                 {
@@ -1609,10 +1547,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/guzzlehttp/promises@2.5.1",
+            "bom-ref": "pkg:composer/guzzlehttp/promises@2.6.0",
             "name": "guzzlehttp/promises",
-            "version": "2.5.1",
-            "purl": "pkg:composer/guzzlehttp/promises@2.5.1",
+            "version": "2.6.0",
+            "purl": "pkg:composer/guzzlehttp/promises@2.6.0",
             "description": "Guzzle promises library",
             "licenses": [
                 {
@@ -1630,10 +1568,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/guzzlehttp/psr7@2.13.0",
+            "bom-ref": "pkg:composer/guzzlehttp/psr7@2.13.2",
             "name": "guzzlehttp/psr7",
-            "version": "2.13.0",
-            "purl": "pkg:composer/guzzlehttp/psr7@2.13.0",
+            "version": "2.13.2",
+            "purl": "pkg:composer/guzzlehttp/psr7@2.13.2",
             "description": "PSR-7 message implementation that also provides common utility methods",
             "licenses": [
                 {
@@ -1651,10 +1589,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/myclabs/deep-copy@1.13.4",
+            "bom-ref": "pkg:composer/myclabs/deep-copy@1.14.0",
             "name": "myclabs/deep-copy",
-            "version": "1.13.4",
-            "purl": "pkg:composer/myclabs/deep-copy@1.13.4",
+            "version": "1.14.0",
+            "purl": "pkg:composer/myclabs/deep-copy@1.14.0",
             "description": "Create deep copies (clones) of your objects",
             "licenses": [
                 {
@@ -1672,10 +1610,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/nikic/php-parser@5.8.0",
+            "bom-ref": "pkg:composer/nikic/php-parser@5.9.0",
             "name": "nikic/php-parser",
-            "version": "5.8.0",
-            "purl": "pkg:composer/nikic/php-parser@5.8.0",
+            "version": "5.9.0",
+            "purl": "pkg:composer/nikic/php-parser@5.9.0",
             "description": "A PHP parser written in PHP",
             "licenses": [
                 {
@@ -1861,10 +1799,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/phpunit/phpunit@9.6.35",
+            "bom-ref": "pkg:composer/phpunit/phpunit@9.6.38",
             "name": "phpunit/phpunit",
-            "version": "9.6.35",
-            "purl": "pkg:composer/phpunit/phpunit@9.6.35",
+            "version": "9.6.38",
+            "purl": "pkg:composer/phpunit/phpunit@9.6.38",
             "description": "The PHP Unit Testing framework.",
             "licenses": [
                 {
@@ -2134,10 +2072,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/sebastian/exporter@4.0.8",
+            "bom-ref": "pkg:composer/sebastian/exporter@4.0.9",
             "name": "sebastian/exporter",
-            "version": "4.0.8",
-            "purl": "pkg:composer/sebastian/exporter@4.0.8",
+            "version": "4.0.9",
+            "purl": "pkg:composer/sebastian/exporter@4.0.9",
             "description": "Provides the functionality to export PHP variables for visualization",
             "licenses": [
                 {
@@ -2239,10 +2177,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/sebastian/recursion-context@4.0.6",
+            "bom-ref": "pkg:composer/sebastian/recursion-context@4.0.7",
             "name": "sebastian/recursion-context",
-            "version": "4.0.6",
-            "purl": "pkg:composer/sebastian/recursion-context@4.0.6",
+            "version": "4.0.7",
+            "purl": "pkg:composer/sebastian/recursion-context@4.0.7",
             "description": "Provides functionality to recursively process PHP variables",
             "licenses": [
                 {
@@ -2323,10 +2261,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/browser-kit@6.4.31",
+            "bom-ref": "pkg:composer/symfony/browser-kit@6.4.48",
             "name": "symfony/browser-kit",
-            "version": "6.4.31",
-            "purl": "pkg:composer/symfony/browser-kit@6.4.31",
+            "version": "6.4.48",
+            "purl": "pkg:composer/symfony/browser-kit@6.4.48",
             "description": "Simulates the behavior of a web browser, allowing you to make requests, click on links and submit forms programmatically",
             "licenses": [
                 {
@@ -2344,10 +2282,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/console@7.4.14",
+            "bom-ref": "pkg:composer/symfony/console@7.4.22",
             "name": "symfony/console",
-            "version": "7.4.14",
-            "purl": "pkg:composer/symfony/console@7.4.14",
+            "version": "7.4.22",
+            "purl": "pkg:composer/symfony/console@7.4.22",
             "description": "Eases the creation of beautiful and testable command line interfaces",
             "licenses": [
                 {
@@ -2365,10 +2303,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/finder@7.4.3",
+            "bom-ref": "pkg:composer/symfony/finder@7.4.20",
             "name": "symfony/finder",
-            "version": "7.4.3",
-            "purl": "pkg:composer/symfony/finder@7.4.3",
+            "version": "7.4.20",
+            "purl": "pkg:composer/symfony/finder@7.4.20",
             "description": "Finds files and directories via an intuitive fluent interface",
             "licenses": [
                 {
@@ -2386,10 +2324,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/polyfill-intl-grapheme@1.38.1",
+            "bom-ref": "pkg:composer/symfony/polyfill-intl-grapheme@1.43.3",
             "name": "symfony/polyfill-intl-grapheme",
-            "version": "1.38.1",
-            "purl": "pkg:composer/symfony/polyfill-intl-grapheme@1.38.1",
+            "version": "1.43.3",
+            "purl": "pkg:composer/symfony/polyfill-intl-grapheme@1.43.3",
             "description": "Symfony polyfill for intl's grapheme_* functions",
             "licenses": [
                 {
@@ -2407,10 +2345,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/string@7.4.13",
+            "bom-ref": "pkg:composer/symfony/string@7.4.22",
             "name": "symfony/string",
-            "version": "7.4.13",
-            "purl": "pkg:composer/symfony/string@7.4.13",
+            "version": "7.4.22",
+            "purl": "pkg:composer/symfony/string@7.4.22",
             "description": "Provides an object-oriented API to strings and deals with bytes, UTF-8 code points and grapheme clusters in a unified way",
             "licenses": [
                 {
@@ -2428,10 +2366,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/var-dumper@7.4.14",
+            "bom-ref": "pkg:composer/symfony/var-dumper@7.4.21",
             "name": "symfony/var-dumper",
-            "version": "7.4.14",
-            "purl": "pkg:composer/symfony/var-dumper@7.4.14",
+            "version": "7.4.21",
+            "purl": "pkg:composer/symfony/var-dumper@7.4.21",
             "description": "Provides mechanisms for walking through any arbitrary PHP variable",
             "licenses": [
                 {
@@ -2449,10 +2387,10 @@
         },
         {
             "type": "library",
-            "bom-ref": "pkg:composer/symfony/yaml@7.4.14",
+            "bom-ref": "pkg:composer/symfony/yaml@7.4.23",
             "name": "symfony/yaml",
-            "version": "7.4.14",
-            "purl": "pkg:composer/symfony/yaml@7.4.14",
+            "version": "7.4.23",
+            "purl": "pkg:composer/symfony/yaml@7.4.23",
             "description": "Loads and dumps YAML files",
             "licenses": [
                 {

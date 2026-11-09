@@ -336,9 +336,26 @@ preflight_checks() {
     php -m 2>/dev/null | grep -qi "^${ext}$" || missing+=("$ext")
   done
   if [[ ${#missing[@]} -gt 0 ]]; then
-    die "缺少 PHP 擴展: ${missing[*]}（見 SETUP.md）"
+    die "缺少 PHP 擴展: ${missing[*]}。RHEL/Rocky: dnf install php-gd php-mysqlnd php-mbstring；Debian/Ubuntu: apt install php8.2-gd php8.2-mysql php8.2-mbstring；安裝後重新啟動 php-fpm 或 Web 伺服器（見 SETUP.md）"
   fi
   log "必要 PHP 擴展 OK"
+
+  # Web 端（php-fpm）可能載入與 CLI 不同的設定，一併檢查
+  local fpm_bin="" fpm_missing=()
+  for fpm_bin in php-fpm php-fpm8.2 php-fpm8.3 php-fpm8.4 /usr/sbin/php-fpm; do
+    command -v "$fpm_bin" >/dev/null 2>&1 && break
+    fpm_bin=""
+  done
+  if [[ -n "$fpm_bin" ]]; then
+    for ext in pdo_mysql openssl mbstring gd curl json; do
+      "$fpm_bin" -m 2>/dev/null | grep -qi "^${ext}$" || fpm_missing+=("$ext")
+    done
+    if [[ ${#fpm_missing[@]} -gt 0 ]]; then
+      warn "php-fpm（${fpm_bin}）缺少擴展: ${fpm_missing[*]}；若 Web 使用 php-fpm，請安裝後重新啟動 php-fpm"
+    else
+      log "php-fpm 必要擴展 OK"
+    fi
+  fi
 
   missing=()
   for ext in ctype dom fileinfo iconv simplexml xml zip zlib; do

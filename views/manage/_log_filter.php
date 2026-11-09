@@ -1,47 +1,26 @@
 <?php
 
 use yii\helpers\Html;
-use yii\jui\DatePicker;
 use yii\bootstrap5\ActiveForm;
 
 /**
- * 官方提供的日期區間範例
- * @see https://jqueryui.com/datepicker/#date-range
+ * 日期區間：使用瀏覽器內建日期欄位（值為 yyyy-mm-dd），起日不可晚於迄日
  */
 $this->registerJs(<<<JS
-    $(function() {
-        let dateFormat = "yy-mm-dd",
-        from = $("#from")
-            .datepicker({
-                defaultDate: "+1w",
-                changeMonth: true,
-                changeYear: true,
-                dateFormat: dateFormat
-            })
-            .on("change", function() {
-                to.datepicker("option", "minDate", getDate(this));
-            }),
-        to = $("#to").datepicker({
-            defaultDate: "+1w",
-            changeMonth: true,
-            changeYear: true,
-            dateFormat: dateFormat
-        })
-        .on("change", function() {
-            from.datepicker("option", "maxDate", getDate(this));
-        });
-    
-        function getDate(element) {
-            let date;
-            try {
-                date = $.datepicker.parseDate(dateFormat, element.value);
-            } catch(error) {
-                date = null;
-            }
-        
-            return date;
+    (function () {
+        const from = document.getElementById('from');
+        const to = document.getElementById('to');
+        if (!from || !to) {
+            return;
         }
-    });
+        const sync = function () {
+            to.min = from.value;
+            from.max = to.value;
+        };
+        from.addEventListener('change', sync);
+        to.addEventListener('change', sync);
+        sync();
+    })();
 JS
 , $this::POS_END);
 
@@ -54,31 +33,13 @@ JS
     ]); ?>
     <div class="row">
         <div class="col-6">
-            <?= $form->field($model, 'createdFrom')->widget(DatePicker::className(), [
-                'dateFormat' => 'yyyy-MM-dd',
-                'options' => [
-                    'id' => 'from',
-                    'class' => 'form-control', 
-                ],
-                'clientOptions' => [
-                    'autoclose' => true,
-                ]
-            ]); ?>
+            <?= $form->field($model, 'createdFrom')->input('date', ['id' => 'from']) ?>
         </div>
-        
+
         <div class="col-6">
-            <?= $form->field($model, 'createdTo')->widget(DatePicker::className(), [
-                'dateFormat' => 'yyyy-MM-dd',
-                'options' => [
-                    'id' => 'to',
-                    'class' => 'form-control', 
-                ],
-                'clientOptions' => [
-                    'autoclose' => true,
-                ]
-            ]); ?>
+            <?= $form->field($model, 'createdTo')->input('date', ['id' => 'to']) ?>
         </div>
-        
+
     </div>
     <div class="mb3 text-end">
         <?= Html::submitButton('查詢', ['class' => 'btn btn-primary']) ?>

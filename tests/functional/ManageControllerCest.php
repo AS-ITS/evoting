@@ -65,6 +65,20 @@ class ManageControllerCest
     }
 
     /**
+     * 日誌篩選的日期欄位改用瀏覽器內建日期輸入，不再載入 jQuery UI
+     */
+    public function testLogFilterUsesNativeDateInputs(FunctionalTester $I)
+    {
+        $I->amOnPage('/manage/log?Logs[createdFrom]=2026-01-01&Logs[createdTo]=2026-12-31');
+        $I->seeResponseCodeIs(200);
+        // 查詢後保留剛才輸入的日期
+        $I->seeElement('input#from', ['type' => 'date', 'name' => 'Logs[createdFrom]', 'value' => '2026-01-01']);
+        $I->seeElement('input#to', ['type' => 'date', 'name' => 'Logs[createdTo]', 'value' => '2026-12-31']);
+        $I->dontSeeInSource('jquery-ui');
+        $I->dontSeeInSource('.datepicker(');
+    }
+
+    /**
      * 測試匿名登入狀態頁
      */
     public function testLoginsPage(FunctionalTester $I)

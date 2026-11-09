@@ -55,6 +55,8 @@ class Logs extends \yii\db\ActiveRecord implements LogInterface
             [['user'], 'string', 'max' => 30],
             [['ip'], 'string', 'max' => 15],
             [['browser'], 'string', 'max' => 20],
+            // 操作紀錄的日期篩選（搜尋用，非資料表欄位）
+            [['createdFrom', 'createdTo'], 'date', 'format' => 'php:Y-m-d'],
         ];
     }
 
@@ -90,18 +92,36 @@ class Logs extends \yii\db\ActiveRecord implements LogInterface
         // 行內搜尋
         $this->load($params);
 
-        // 取得日期範圍參數，避免 undefined array key 錯誤
-        $formName = $this->formName();
-        $createdFrom = $params[$formName]['createdFrom'] ?? null;
-        $createdTo = $params[$formName]['createdTo'] ?? null;
+        // 日期區間（yyyy-mm-dd）；格式不符者忽略並清空，避免回填到表單
+        $this->createdFrom = self::parseFilterDate($this->createdFrom);
+        $this->createdTo = self::parseFilterDate($this->createdTo);
 
         $query->andFilterWhere(['=', 'type', $this->type])
             ->andFilterWhere(['=', 'user', $this->user])
             ->andFilterWhere(['=', 'ip', $this->ip])
-            ->andFilterWhere(['>=', 'created_at', $createdFrom])
-            ->andFilterWhere(['<=', 'created_at', $createdTo]);
+            ->andFilterWhere(['>=', 'created_at', $this->createdFrom])
+            // 迄日含當天整天
+            ->andFilterWhere(['<', 'created_at', $this->createdTo === null
+                ? null
+                : (new \DateTimeImmutable($this->createdTo))->modify('+1 day')->format('Y-m-d')]);
 
         return $query;
+    }
+
+    /**
+     * 解析日期篩選值，僅接受 yyyy-mm-dd 的有效日期
+     *
+     * @param mixed $value
+     * @return string|null
+     */
+    private static function parseFilterDate($value): ?string
+    {
+        if (!is_string($value) || $value === '') {
+            return null;
+        }
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+
+        return $date && $date->format('Y-m-d') === $value ? $value : null;
     }
     
     /**

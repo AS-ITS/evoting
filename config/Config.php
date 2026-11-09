@@ -101,32 +101,6 @@ class Config extends \yii\base\BaseObject implements ConfigInterface
     }
 
     /**
-     * 取得 PROXY IP
-     *
-     * @return string
-     */
-    public function getProxyIp()
-    {
-        switch($this->_envRmt)
-        {
-            case ConfigInterface::ENV_PRODUCTION:
-                $value = ConfigInterface::PROXY_IP_PROD;
-                break;
-            case ConfigInterface::ENV_TESTING:
-                $value = ConfigInterface::PROXY_IP_TEST;
-                break;
-            case ConfigInterface::ENV_DEVELOPMENT:
-                $value = ConfigInterface::PROXY_IP_DEV;
-                break;
-            default:
-                header('content-Type: text/plain; charset=utf-8');
-                throw new \Exception('請確認有設定環境參數。');
-                break;
-        }
-        return $value;
-    }
-
-    /**
      * 刪除資產連結、Yii2記錄
      *
      * @param boolean $assets 是否刪除所有資產連結

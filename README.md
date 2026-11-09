@@ -239,13 +239,13 @@ cmd2: offset(100)，執行php ./vendor/bin/codecept run acceptance AnonVoteCest.
 **執行方式**:
 ```bash
 # 產生所有 S-BOM (後端與前端)
-php docs/generate_sbom.php all
+php docs/generate_sbom.php all 1.1.0
 
 # 僅產生後端 S-BOM
-php docs/generate_sbom.php vendor
+php docs/generate_sbom.php vendor 1.1.0
 
 # 僅產生前端 S-BOM
-php docs/generate_sbom.php frontend
+php docs/generate_sbom.php frontend 1.1.0
 ```
 
 ---
