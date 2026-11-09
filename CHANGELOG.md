@@ -29,6 +29,7 @@
 * `scripts/encrypt-config-value.php`、`scripts/rebuild-yii-extensions.php`（正式密文與 extensions.php 修復）
 * `scripts/ensure-writable-dirs.sh`；composer post-install 自動建立 `runtime/sessions` 等目錄
 * 瀏覽器 E2E 測試 `tests/e2e/`：以 PHP 透過 CDP 操作 Headless Chrome（不需 Node.js），涵蓋全畫面巡檢、對話框、附件、照片、投票流程
+* E2E 新增 `groups` 組（群組成員新增、重複新增、修改、刪除）；`anon` 組加上短網址、已投票密碼重新登入的已投票頁、清除登入狀態後重新登入
 
 ### Security
 

@@ -9,12 +9,17 @@
  * @var string $base
  * @var string $outDir
  * @var Browser[] $browsers
+ * @var Browser $admin
  */
 $voter = new Browser($cdpUrl, $base, $outDir, true);
 $browsers[] = $voter;
 $voter->section('anon');
 $vote = 'AnonNoPartyTest';
 $passwd = 'testdef'.random_int(60, 100);
+
+// 短網址（fixture shortUrl=test2）導向投票說明頁
+$voter->go('/test2');
+$voter->check('短網址導向投票說明頁', strpos($voter->js('location.pathname'), 'vote/vote-detail') !== false && strpos($voter->js('location.search'), "voteID=$vote") !== false, $voter->js('location.pathname + location.search'));
 
 // 登入
 PageCheck::run($voter, '投票密碼頁', "/site/password?voteID=$vote");
@@ -62,4 +67,52 @@ $voter->shot('anon-finish');
 // 同一密碼不可再投
 $voter->go("/vote/start-vote?voteID=$vote");
 $voter->check('已投票後再進投票畫面會被導開', strpos($voter->js('location.pathname'), 'start-vote') === false, $voter->js('location.pathname'));
+
+/**
+ * 以投票密碼登入，回傳是否離開密碼頁
+ */
+$anonLogin = function (Browser $b, $password) use ($vote) {
+    $b->go("/site/password?voteID=$vote");
+    $b->js('document.querySelector("#passwd").value = '.json_encode($password));
+    $b->click("[...document.querySelectorAll('button[type=submit]')].find(e => e.innerText.includes('登入'))");
+    $b->waitLoad();
+    return strpos($b->js('location.pathname'), 'site/password') === false;
+};
+
+// 已投過的密碼在另一個瀏覽器重新登入：可登入，但進投票畫面顯示「已完成投票」
+$again = new Browser($cdpUrl, $base, $outDir, true);
+$browsers[] = $again;
+$again->group = 'anon';
+$voter->check("已投票密碼 $passwd 可重新登入", $anonLogin($again, $passwd), implode(' | ', $again->flashes()));
+$again->go("/vote/start-vote?voteID=$vote");
+$votedPath = $again->js('location.pathname');
+$voter->check('已投票密碼進投票畫面導向已投票頁', strpos($votedPath, 'vote-voted') !== false, $votedPath);
+$voter->check('已投票頁顯示「此密碼已完成投票」', $again->js("document.body.innerText.includes('此密碼已完成投票')"));
+$problems = PageCheck::inspect($again);
+$voter->check('已投票頁共用檢查', !$problems, implode(' / ', $problems));
+$again->shot('anon-voted');
+
+// 清除登入狀態：另一組密碼登入後未投票，管理者清除後須重新登入，且可再次登入（不會被「已在其他裝置登入中」擋住）
+$pending = new Browser($cdpUrl, $base, $outDir, true);
+$browsers[] = $pending;
+$pending->group = 'anon';
+$pendingPasswd = 'testdef'.random_int(41, 59);
+$voter->check("以 $pendingPasswd 登入（不投票）", $anonLogin($pending, $pendingPasswd), implode(' | ', $pending->flashes()));
+
+$admin->go('/manage/logins');
+$hasVote = $admin->js("[...document.querySelectorAll('#voteID option')].some(o => o.value === '$vote')");
+$voter->check('清除登入狀態頁列出登入中的投票場次', $hasVote);
+if ($hasVote) {
+    // 只設定值，不觸發 change：組別／標記清單的 AJAX 網址固定為 https，http 測試環境會失敗
+    $admin->js("document.querySelector('#voteID').value = '$vote'");
+    $admin->click("[...document.querySelectorAll('#login-form button[type=submit]')].find(e => e.innerText.includes('清除'))");
+    $admin->waitLoad();
+    $voter->check('清除 session 成功', (bool) array_filter($admin->flashes(), function ($m) { return mb_strpos($m, '清除session完成') !== false; }), implode(' | ', $admin->flashes()));
+    $admin->shot('anon-clear-logins');
+
+    $pending->go("/vote/start-vote?voteID=$vote");
+    $pendingPath = $pending->js('location.pathname');
+    $voter->check('被清除的投票者需重新登入', strpos($pendingPath, 'site/password') !== false, $pendingPath);
+    $voter->check("清除後 $pendingPasswd 可再次登入", $anonLogin($pending, $pendingPasswd), implode(' | ', $pending->flashes()));
+}
 
