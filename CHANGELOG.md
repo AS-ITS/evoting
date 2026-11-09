@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-11-10
+
 ### Fixed
 
 * 開發／測試環境的 `DB_PASSWORD`、`TEST_DB_PASSWORD`、`SMTP_PASSWORD` 若是純英數明文，會被誤判為密文而解密失敗，`admin/create` 與 `config/validate` 都會出錯；改為解密不成功時在非正式環境沿用明文，正式環境仍必須是目前主金鑰加密的值
@@ -25,7 +27,7 @@
 
 * `config/validate` 在設定檢查通過後實際連線資料庫，帳號密碼錯誤即回報失敗（`--db=0` 可略過）。開發模式下 `DB_PASSWORD` 形式像密文卻無法以目前主金鑰解密時（例如別把金鑰加密的值），會一併提示
 * 測試說明：README 功能測試數量改為概數；SETUP.md 測試資料庫設定補上 `TEST_DB_PORT`
-
+* 安裝說明改為 clone `v1.1.1`；SBOM 以 1.1.1 重新產生（依賴未變更）
 * PHP 8.5 的 CLI 忽略 `register_argc_argv`，Codeception 5.1 因檢查此設定而拒絕執行；新增 `composer test`，`tests/run-all.sh` 也一併加上 `-d register_argc_argv=On`（Codeception 5.3.4 起已修正，但升級需先處理 `yii2-dynamicform` 對 `symfony/css-selector` 4.x 的限制）
 
 ## [1.1.0] - 2026-11-09
@@ -116,6 +118,7 @@
 * Yii basic 模板殘件：`post-create-project-cmd`、`generateCookieValidationKey`、指向 Yii 官方的 `support`／placeholder `homepage`
 * 移除未參與產品安裝或執行的 vendored 前端建置 lockfile；執行期資產維持預先建置版本
 
-[Unreleased]: https://github.com/AS-ITS/evoting/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/AS-ITS/evoting/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/AS-ITS/evoting/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/AS-ITS/evoting/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/AS-ITS/evoting/releases/tag/v1.0.0

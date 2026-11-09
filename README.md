@@ -12,7 +12,7 @@ Electronic voting platform (general-purpose; originally a reference implementati
 
 **Quick start:**
 
-1. Clone the latest release (`v1.1.0` or later, includes `install.sh`): `git clone --branch v1.1.0 --depth 1 https://github.com/AS-ITS/evoting.git`  
+1. Clone the latest release (`v1.1.0` or later, includes `install.sh`): `git clone --branch v1.1.1 --depth 1 https://github.com/AS-ITS/evoting.git`  
    `main` is the development branch. Do **not** use `v1.0.0` for fresh install (no install script). Do **not** use `composer create-project`.
 2. **Recommended (fresh install):** one-liner in [SETUP.md](SETUP.md) (`git clone … && cd … && sudo bash scripts/install.sh`). For upgrades — do **not** re-run `init_db.sql`.
 3. Or manually: `composer install --prefer-dist`, then `bash scripts/ensure-writable-dirs.sh`, copy `.env.example` → `.env`, import [`docs/init_db.sql`](docs/init_db.sql), `php yii admin/create`, point Document Root to `web/`
@@ -32,7 +32,7 @@ Vote types: open ballot (no auth) and anonymous (one-time passwords). Maintenanc
 
 ## 快速開始
 
-1. 請 clone 最新正式版（`v1.1.0` 以後，含 `install.sh`）：`git clone --branch v1.1.0 --depth 1 https://github.com/AS-ITS/evoting.git`  
+1. 請 clone 最新正式版（`v1.1.0` 以後，含 `install.sh`）：`git clone --branch v1.1.1 --depth 1 https://github.com/AS-ITS/evoting.git`  
    `main` 為開發中版本。**勿用 `v1.0.0` 新裝**。**不要**使用 `composer create-project`
 2. **建議新裝**：見 [SETUP.md](SETUP.md) 一行指令（`git clone … && cd … && sudo bash scripts/install.sh`）。**升級勿再跑 init_db**
 3. 或手動：`composer install --prefer-dist` → `bash scripts/ensure-writable-dirs.sh` → 設定 `.env` → 匯入 [`docs/init_db.sql`](docs/init_db.sql) → `php yii admin/create` → Document Root 指向 `web/`
@@ -241,13 +241,13 @@ cmd2: offset(100)，執行php ./vendor/bin/codecept run acceptance AnonVoteCest.
 **執行方式**:
 ```bash
 # 產生所有 S-BOM (後端與前端)
-php docs/generate_sbom.php all 1.1.0
+php docs/generate_sbom.php all 1.1.1
 
 # 僅產生後端 S-BOM
-php docs/generate_sbom.php vendor 1.1.0
+php docs/generate_sbom.php vendor 1.1.1
 
 # 僅產生前端 S-BOM
-php docs/generate_sbom.php frontend 1.1.0
+php docs/generate_sbom.php frontend 1.1.1
 ```
 
 ---
