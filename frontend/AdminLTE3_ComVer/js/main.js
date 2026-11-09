@@ -65,63 +65,6 @@ jQuery(function ($)
 /* 共用的 function */
 
 /**
- * 從網址更新區塊
- *
- * 範例:
- *
- * ```js
- * changeBlock( '#example', 'https://www.example.com/');
- * ```
- *
- * @param {string} Id  更換區塊的ID
- * @param {string} Url 由網址內容更新區塊
- * @param {string|null} LoadingText 更新區塊前，加載的文字
- * @param {bool} aSync 是否使用異步
- */
-function changeBlock( Id, Url, LoadingText=null, aSync=true)
-{
-    if(!LoadingText)
-    {
-        LoadingText = '<div class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>';
-    }
-    $.ajax({
-        type: 'get',
-        url: Url,
-        async: aSync,
-        dataType: 'html',
-        beforeSend: function() {
-            // setting a timeout
-            $(Id).html(LoadingText);
-        },
-        success: function(newPartialView) {
-            $(Id).html(newPartialView);
-            $('[data-toggle="tooltip"]').tooltip();
-        },
-        error: function (jqXHR, exception) {
-            let msg = '';
-            if (jqXHR.status === 0) {
-                msg = 'Not connect.<br>Verify Network.';
-            } else if (jqXHR.status == 404) {
-                msg = 'Requested page not found. [404]';
-            } else if (jqXHR.status == 500) {
-                msg = 'Internal Server Error [500].';
-            } else if (exception === 'parsererror') {
-                msg = 'Requested JSON parse failed.';
-            } else if (exception === 'timeout') {
-                msg = 'Time out error.';
-            } else if (exception === 'abort') {
-                msg = 'Ajax request aborted.';
-            } else {
-                msg = 'Uncaught Error.<br>' + jqXHR.responseText;
-            }
-            let msgAlert = '<div class="alert alert-danger" role="alert">'+msg+'</div>';
-            let msgDiv = '<div class="d-flex justify-content-center">'+msgAlert+'</div>';
-            $(Id).html(msgDiv);
-        },
-    });
-}
-
-/**
  * 等待多少毫秒(千分之一秒)
  *
  * 範例:
