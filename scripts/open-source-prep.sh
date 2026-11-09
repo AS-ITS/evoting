@@ -67,7 +67,8 @@ else
     ok "no webix_* directories under assets/frontend/web"
 fi
 if git rev-parse --is-inside-work-tree &>/dev/null; then
-    tracked=$(git ls-files | grep -i webix || true)
+    # 排除檢查 Webix 已移除的測試本身
+    tracked=$(git ls-files | grep -i webix | grep -v -x 'tests/unit/WebixRemovedTest.php' || true)
     if [[ -n "$tracked" ]]; then
         fail "Webix still git-tracked:"
         echo "$tracked"
