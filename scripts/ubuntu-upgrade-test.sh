@@ -167,7 +167,7 @@ fi
 log "--- [5] Yii 健檢與密碼 crypto backfill ---"
 export APP_ENV
 run "php '$APP_ROOT/yii' config/validate"
-run "php '$APP_ROOT/yii' encrypt/test"
+run "php '$APP_ROOT/yii' encrypt/test DB_PASSWORD"
 
 if has_column "passwords" "crypto_version"; then
   run "php '$APP_ROOT/yii' migrate-passwords/verify"

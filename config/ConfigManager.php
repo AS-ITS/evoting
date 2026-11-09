@@ -206,26 +206,26 @@ class ConfigManager
             return $encryptedValue;
         }
 
-        try {
+        // 純英數的明文密碼也符合上面的格式；AES-CBC 密文解碼後必為 16 bytes 的倍數
+        $raw = base64_decode($encryptedValue, true);
+        $decrypted = false;
+        if ($raw !== false && $raw !== '' && strlen($raw) % 16 === 0) {
             // 使用封裝的解密方法，避免靜態分析追蹤
-            $decrypted = @KeyContextProvider::decryptData(
-                base64_decode($encryptedValue),
-                $secret,
-                $iv
-            );
-
-            if ($decrypted === false) {
-                throw new InvalidConfigException(
-                    "解密失敗：請確認資料是否使用當前 MASTER_KEY 加密"
-                );
-            }
-
-            return $decrypted;
-        } catch (\Exception $e) {
-            throw new InvalidConfigException(
-                "解密錯誤：" . $e->getMessage()
-            );
+            $decrypted = @KeyContextProvider::decryptData($raw, $secret, $iv);
         }
+
+        if ($decrypted !== false) {
+            return $decrypted;
+        }
+
+        // 開發／測試環境允許明文；正式環境必須是目前主金鑰加密的值
+        if (!$this->isProduction()) {
+            return $encryptedValue;
+        }
+
+        throw new InvalidConfigException(
+            "解密失敗：請確認資料是否使用當前 MASTER_KEY 加密"
+        );
     }
 
     /**

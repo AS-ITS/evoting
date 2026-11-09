@@ -255,6 +255,11 @@ mysql_cmd() {
   mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" -p"$DB_PASSWORD" "$@"
 }
 
+# 執行 yii 指令時以 .env 為準：安裝時 export 的明文密碼不可蓋過 .env 的加密值
+yii_cmd() {
+  env -u DB_PASSWORD -u SMTP_PASSWORD -u TEST_DB_PASSWORD -u ADMIN_PASSWORD php yii "$@"
+}
+
 mysql_root_cmd() {
   if [[ -n "${DB_ROOT_PASSWORD-}" ]]; then
     mysql -h "$DB_HOST" -P "$DB_PORT" -u root -p"$DB_ROOT_PASSWORD" "$@"
@@ -342,7 +347,7 @@ preflight_checks() {
 
   # Web 端（php-fpm）可能載入與 CLI 不同的設定，一併檢查
   local fpm_bin="" fpm_missing=()
-  for fpm_bin in php-fpm php-fpm8.2 php-fpm8.3 php-fpm8.4 /usr/sbin/php-fpm; do
+  for fpm_bin in php-fpm php-fpm8.2 php-fpm8.3 php-fpm8.4 php-fpm8.5 /usr/sbin/php-fpm; do
     command -v "$fpm_bin" >/dev/null 2>&1 && break
     fpm_bin=""
   done
@@ -715,7 +720,7 @@ fi
 # ---------- admin ----------
 if [[ "$CREATE_ADMIN" -eq 1 ]]; then
   log "建立 admin"
-  if php yii admin/create --password="$ADMIN_PASSWORD"; then
+  if yii_cmd admin/create --password="$ADMIN_PASSWORD"; then
     :
   else
     warn "admin/create 失敗或帳號已存在 — 略過（若為新裝請檢查密碼規則／資料庫）"
@@ -730,7 +735,7 @@ if [[ -z "${VOTING_MASTER_KEY-}" && -f "${MASTER_KEY_FILE:-/etc/voting/master.ke
   export VOTING_MASTER_KEY="$(tr -d '\r\n' < "$MASTER_KEY_FILE")"
 fi
 set +e
-php yii config/validate
+yii_cmd config/validate
 _validate_rc=$?
 set -e
 [[ "$_validate_rc" -eq 0 ]] || die "config/validate 失敗 (exit=${_validate_rc})"

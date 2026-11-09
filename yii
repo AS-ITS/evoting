@@ -27,4 +27,5 @@ require $basePath . '/config/env-loader.php';
 
 Yii::setAlias('@app', $basePath); // 定義共用項目
 
-(new yii\console\Application(require $basePath . '/config/console.php'))->run();
+// 回傳指令的 exit code，讓 shell 腳本能判斷成功或失敗
+exit((new yii\console\Application(require $basePath . '/config/console.php'))->run());
