@@ -25,11 +25,11 @@ Codeception 測試框架的 `cleanup: true` 設定會在每次測試後自動清
 cd /var/www/html/voting
 ./tests/_data/init_test_db.sh
 
-# 輸入資料庫 root 密碼後，腳本會自動：
+# 依提示輸入資料庫 root 密碼與測試使用者密碼（也可先 export DB_PASS、TEST_DB_PASSWORD），腳本會自動：
 # 1. 建立 voting_test 資料庫
 # 2. 建立 voting_test 使用者
 # 3. 複製資料庫結構
-# 4. 執行遷移
+# 密碼不會出現在命令列參數，也不會輸出到畫面
 ```
 
 ### 方法 2: 手動設置
@@ -48,7 +48,7 @@ CREATE DATABASE IF NOT EXISTS `voting_test`
   COLLATE utf8mb4_unicode_ci;
 
 CREATE USER IF NOT EXISTS 'voting_test'@'localhost'
-  IDENTIFIED BY 'test_password_123';
+  IDENTIFIED BY '<測試密碼>';
 
 GRANT ALL PRIVILEGES ON `voting_test`.* TO 'voting_test'@'localhost';
 FLUSH PRIVILEGES;
@@ -61,14 +61,17 @@ FLUSH PRIVILEGES;
 mysqldump -u root -p --no-data --routines --triggers voting > /tmp/voting_structure.sql
 
 # 匯入到測試資料庫
-mysql -u voting_test -ptest_password_123 voting_test < /tmp/voting_structure.sql
+mysql -u voting_test -p voting_test < /tmp/voting_structure.sql
 ```
 
-#### 步驟 3: 執行遷移
+#### 步驟 3: 設定 `.env`
 
 ```bash
-cd /var/www/html/voting
-php yii migrate --interactive=0
+TEST_DB_HOST=localhost
+TEST_DB_PORT=3306
+TEST_DB_NAME=voting_test
+TEST_DB_USERNAME=voting_test
+TEST_DB_PASSWORD=<測試密碼>
 ```
 
 ## 執行測試
@@ -76,32 +79,23 @@ php yii migrate --interactive=0
 設置完成後，即可正常執行測試：
 
 ```bash
-# 執行所有單元測試
-php vendor/bin/codecept run unit
+# 執行所有單元測試（PHP 8.5 請用 composer test，見 tests/README.md）
+composer test unit
 
 # 執行特定測試
-php vendor/bin/codecept run unit AnonPartyVoteTest
+composer test unit AnonPartyVoteTest
 
-# 執行 acceptance 測試
-php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig"
-php vendor/bin/codecept run acceptance AnonVoteCest
-php yii fixture/unload "Ballots,BallotsSelected"
+# 執行 acceptance 測試（fixture 務必加 --appconfig，否則會寫入正式資料庫；完整清單見 CLAUDE.md／tests/README.md）
+echo "yes" | php yii fixture/load "Votes,Parties,Round,Questions,CandiData,Passwords,CandiConfig,Config,Users,Rbac,Group,GroupMember,Ballots,BallotsSelected,ResultsConfig" --appconfig=config/console-test.php
+composer test acceptance AnonVoteCest
+# 重設資料請重新 fixture/load；不要用 fixture/unload（會連同相依 fixture 清空）
 ```
 
 ## 配置說明
 
 ### 測試資料庫配置
 
-測試配置位於 [config/test.php](../config/test.php#L105-L112)：
-
-```php
-'db' => $conf::getDbArray([
-    'db_host' => $sens['db_host'] ?? 'localhost',
-    'db_name' => 'voting_test',        // 測試資料庫名稱
-    'db_username' => 'voting_test',    // 測試資料庫使用者
-    'db_password' => 'test_password_123', // 測試資料庫密碼
-]),
-```
+測試配置（[config/test.php](../config/test.php)、[config/console-test.php](../config/console-test.php)）從 `.env` 的 `TEST_DB_HOST`、`TEST_DB_PORT`、`TEST_DB_NAME`、`TEST_DB_USERNAME`、`TEST_DB_PASSWORD` 讀取連線資訊，程式內沒有預設密碼。
 
 ### Cleanup 設定
 
@@ -119,19 +113,9 @@ modules:
 
 ## 安全建議
 
-### 1. 使用環境變數存儲密碼
+### 1. 測試密碼只放在 `.env`
 
-編輯 `config/test.php`：
-
-```php
-'db_password' => getenv('TEST_DB_PASSWORD') ?: 'test_password_123',
-```
-
-然後設置環境變數：
-
-```bash
-export TEST_DB_PASSWORD='your_secure_password'
-```
+`TEST_DB_PASSWORD` 只寫在 `.env`（不進版控），不要寫進程式或文件。
 
 ### 2. 修改預設密碼
 
@@ -163,7 +147,7 @@ FLUSH PRIVILEGES;
 ### 手動清空測試數據
 
 ```bash
-mysql -u voting_test -ptest_password_123 voting_test -e "
+mysql -u voting_test -p voting_test -e "
 SET FOREIGN_KEY_CHECKS=0;
 TRUNCATE TABLE ballots;
 TRUNCATE TABLE ballotsSelected;
@@ -174,7 +158,7 @@ SET FOREIGN_KEY_CHECKS=1;
 ### 查看測試資料庫狀態
 
 ```bash
-mysql -u voting_test -ptest_password_123 voting_test -e "SHOW TABLES;"
+mysql -u voting_test -p voting_test -e "SHOW TABLES;"
 ```
 
 ## 疑難排解
@@ -206,7 +190,7 @@ FLUSH PRIVILEGES;
 
 **檢查項目**:
 1. 確認測試資料庫結構是否最新
-2. 執行遷移：`php yii migrate`
+2. 結構變更見 `docs/migrations/`，需另外套用到 voting_test
 3. 重新初始化測試資料庫
 
 ## 相關文件

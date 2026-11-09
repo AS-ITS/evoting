@@ -11,8 +11,8 @@ CREATE DATABASE IF NOT EXISTS `voting_test`
   COLLATE utf8mb4_unicode_ci;
 
 -- 建立測試資料庫使用者（如果不存在）
--- 注意：請根據實際需求修改密碼
-CREATE USER IF NOT EXISTS 'voting_test'@'localhost' IDENTIFIED BY 'test_password_123';
+-- 執行前請把 CHANGE_ME 改成實際的測試密碼（與 .env 的 TEST_DB_PASSWORD 相同）
+CREATE USER IF NOT EXISTS 'voting_test'@'localhost' IDENTIFIED BY 'CHANGE_ME';
 
 -- 授予測試使用者所有權限
 GRANT ALL PRIVILEGES ON `voting_test`.* TO 'voting_test'@'localhost';

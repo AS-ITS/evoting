@@ -19,6 +19,7 @@
 ### Security
 
 * `install.sh` 的 admin 密碼與資料庫密碼不再出現在 `ps` 看得到的命令列：`admin/create` 新增 `--password-stdin`，`scripts/encrypt-config-value.php` 接受 `-` 從 stdin 讀取，mysql（含安裝開頭的資料庫存在檢查）改以 0600 暫存設定檔傳密碼，建立資料庫帳號的 SQL 經 stdin 傳入並跳脫引號
+* 測試資料庫初始化腳本 `tests/_data/init_test_db.sh` 同樣改以 0600 暫存設定檔傳密碼，測試使用者密碼改由 `TEST_DB_PASSWORD` 或提示輸入（不再寫死、結尾不再印出），並移除會以正式設定執行的 `php yii migrate` 步驟；`tests/README_TEST_DATABASE.md` 等測試文件同步更新，`fixture/load` 範例補上 `--appconfig=config/console-test.php`
 
 ### Changed
 
