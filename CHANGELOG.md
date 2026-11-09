@@ -10,7 +10,7 @@
 ### Fixed
 
 * 開發／測試環境的 `DB_PASSWORD`、`TEST_DB_PASSWORD`、`SMTP_PASSWORD` 若是純英數明文，會被誤判為密文而解密失敗，`admin/create` 與 `config/validate` 都會出錯；改為解密不成功時在非正式環境沿用明文，正式環境仍必須是目前主金鑰加密的值
-* `php yii` 一律以 exit code 0 結束，`config/validate` 等指令失敗時 shell 腳本收不到；改為回傳指令的 exit code（未知指令與例外也會回傳非 0）
+* `php yii` 一律以 exit code 0 結束，`config/validate` 等指令失敗時 shell 腳本收不到；改為回傳指令的 exit code（未知指令回傳 1；載入設定失敗，例如正式環境密碼無法解密，與驗證失敗同樣顯示 ❌ 並回傳 65）
 * `scripts/install.sh` 非互動安裝時，先 `export` 的明文 `DB_PASSWORD` 會蓋過 `.env` 的加密值，讓正式模式的 `config/validate` 誤判失敗；執行 yii 指令時改以 `.env` 為準。另偵測 `php-fpm8.5`
 * `scripts/ubuntu-upgrade-test.sh` 的 `encrypt/test` 補上必要的鍵名參數
 
