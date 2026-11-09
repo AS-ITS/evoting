@@ -18,7 +18,7 @@
 
 ### Security
 
-* `install.sh` 的 admin 密碼與資料庫密碼不再出現在 `ps` 看得到的命令列：`admin/create` 新增 `--password-stdin`，`scripts/encrypt-config-value.php` 接受 `-` 從 stdin 讀取，mysql 改以 0600 暫存設定檔傳密碼，建立資料庫帳號的 SQL 經 stdin 傳入並跳脫引號
+* `install.sh` 的 admin 密碼與資料庫密碼不再出現在 `ps` 看得到的命令列：`admin/create` 新增 `--password-stdin`，`scripts/encrypt-config-value.php` 接受 `-` 從 stdin 讀取，mysql（含安裝開頭的資料庫存在檢查）改以 0600 暫存設定檔傳密碼，建立資料庫帳號的 SQL 經 stdin 傳入並跳脫引號
 
 ### Changed
 

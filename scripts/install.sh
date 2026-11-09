@@ -293,7 +293,7 @@ table_count() {
 }
 
 db_schema_exists() {
-  mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" -p"$DB_PASSWORD" -N -e \
+  mysql_cmd -N -e \
     "SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='${DB_NAME}';" 2>/dev/null \
     | tr -d '[:space:]' || echo "0"
 }
