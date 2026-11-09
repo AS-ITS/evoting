@@ -39,12 +39,12 @@
 ### 1. 複製專案
 
 ```bash
-git clone --branch main --depth 1 \
+git clone --branch v1.1.0 --depth 1 \
   https://github.com/AS-ITS/evoting.git /var/www/html/voting
 cd /var/www/html/voting
 ```
 
-目前請用 **`main`**（含 `scripts/install.sh`）。待打出含安裝精靈的 release（例如 `v1.0.1`）後，可改回 `--branch v1.0.1`。**不要**使用已過期的 `v1.0.0` 做新裝（該 tag 尚無 install 腳本）。**不要**使用 `composer create-project`。`vendor/` 不上版控；`frontend/` 已在 repo，無需 npm。
+請用最新正式版 tag（`v1.1.0` 以後，含 `scripts/install.sh`）；`main` 為開發中版本。**不要**使用已過期的 `v1.0.0` 做新裝（該 tag 尚無 install 腳本）。**不要**使用 `composer create-project`。`vendor/` 不上版控；`frontend/` 已在 repo，無需 npm。
 
 ### 快速安裝（建議新裝）
 
@@ -53,19 +53,19 @@ cd /var/www/html/voting
 **一行（clone + 進入目錄 + 安裝精靈）：**
 
 ```bash
-git clone --branch main --depth 1 https://github.com/AS-ITS/evoting.git /var/www/html/voting && cd /var/www/html/voting && sudo bash scripts/install.sh
+git clone --branch v1.1.0 --depth 1 https://github.com/AS-ITS/evoting.git /var/www/html/voting && cd /var/www/html/voting && sudo bash scripts/install.sh
 ```
 
 分步等同：
 
 ```bash
-git clone --branch main --depth 1 \
+git clone --branch v1.1.0 --depth 1 \
   https://github.com/AS-ITS/evoting.git /var/www/html/voting
 cd /var/www/html/voting
 sudo bash scripts/install.sh
 ```
 
-> 有含安裝精靈的正式 tag（如 `v1.0.1+`）後，將 `main` 換成該 tag。**勿用 `v1.0.0`**（無 `scripts/install.sh`）。
+> 有更新的正式版時，將 `v1.1.0` 換成該 tag。**勿用 `v1.0.0`**（無 `scripts/install.sh`）。
 
 腳本會先做環境檢查（PHP／擴展硬擋；MariaDB／nginx／Apache **版本僅警示**），再互動詢問 DB／網域／admin 密碼等，並自動：`composer install`、建立可寫目錄、寫入 `.env`（正式環境 `DB_PASSWORD` 密文、`/etc/voting/master.key`）、（可選）建庫、匯入 [`docs/init_db.sql`](docs/init_db.sql)、建立 `admin`、執行 `config/validate`。
 

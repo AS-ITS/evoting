@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-09
+
 ### Changed
 
 * Composer 依最低 PHP 8.2.0 解析依賴，CI 另檢查實際平台需求；Dependabot 暫緩需較高 PHP 的 Yii2 測試模組主要版本與 QR Code 6.1 以上更新
@@ -17,6 +19,8 @@
 * 安裝說明標明 `composer install --prefer-dist` 與 `composer check-platform-reqs`
 * 測試文件 fixture 清單對齊 `tests/run-all.sh`（含 Group／Ballots／ResultsConfig）
 * 測試文件：測試伺服器啟動指令加上 `APP_ENV=testing`；說明 `fixture/unload` 會連同相依 Fixture 清除，重設資料改用 `fixture/load`
+* 安裝說明改為 clone 正式版 tag（`v1.1.0` 以後含 `scripts/install.sh`），`main` 為開發中版本
+* 釋出前檢查 `scripts/open-source-prep.sh` 不再把檢查 Webix 已移除的測試本身誤判為 Webix 殘留
 * `scripts/install.sh` 缺少必要 PHP 擴展時提示套件安裝指令，並另外檢查 php-fpm 是否缺少 gd 等擴展
 * SBOM 依目前 lock 檔重新產生；`docs/generate_sbom.php` 改為必須指定版本號，並固定輸出到 `docs/`
 
@@ -91,5 +95,6 @@
 * Yii basic 模板殘件：`post-create-project-cmd`、`generateCookieValidationKey`、指向 Yii 官方的 `support`／placeholder `homepage`
 * 移除未參與產品安裝或執行的 vendored 前端建置 lockfile；執行期資產維持預先建置版本
 
-[Unreleased]: https://github.com/AS-ITS/evoting/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/AS-ITS/evoting/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/AS-ITS/evoting/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/AS-ITS/evoting/releases/tag/v1.0.0
