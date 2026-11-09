@@ -137,25 +137,6 @@ interface ConfigInterface
      **/
     const FISA_API_DEV_PROD = '';
 
-    /********** PROXY服務 **********/
-    // 注意：若環境需要使用 Proxy，請透過環境變數 HTTP_PROXY 設定
-
-    /**
-     * 連出外網的proxy - 正式環境（選用，可透過環境變數 HTTP_PROXY 設定）
-     * @var string
-     **/
-    const PROXY_IP_PROD = '';
-    /**
-     * 連出外網的proxy - 測試環境（選用，可透過環境變數 HTTP_PROXY 設定）
-     * @var string
-     **/
-    const PROXY_IP_TEST = '';
-    /**
-     * 連出外網的proxy - 開發環境（選用，可透過環境變數 HTTP_PROXY 設定）
-     * @var string
-     **/
-    const PROXY_IP_DEV  = '';
-
     /********** 寄信服務 **********/
     // 注意：郵件服務設定建議透過環境變數配置
     // 環境變數：SMTP_HOST, SMTP_PORT, SMTP_ENCRYPTION, SMTP_USERNAME, SMTP_PASSWORD

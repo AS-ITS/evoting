@@ -43,6 +43,8 @@
 * 附件上傳改以副檔名對 MIME 對照表檢查實際內容，偽造副檔名的檔案仍會被擋
 * 附件檔名在後台列表與投票說明頁輸出時跳脫 HTML
 * 刪除投票時，照片與附件目錄須經 `voteDir()` 驗證才移除
+* 移除 jQuery UI 1.12.1（`yiisoft/yii2-jui`、`bower-asset/jquery-ui`；CVE-2021-41182、CVE-2021-41183、CVE-2021-41184）。原本只有操作紀錄的日期篩選使用，改為瀏覽器內建日期欄位，格式同為 `yyyy-mm-dd`，起日不可晚於迄日
+* 移除未使用的 `Config::getProxyIp()` 與 `PROXY_IP_*` 常數
 * 移除 `AdminLTE3_ComVer/js/main.js` 未使用的 `changeBlock()`（以 AJAX 回應直接寫入 DOM）；E2E 工具的 CDP 連線失敗訊息不再帶出對端回應內容（Checkmarx 白箱掃描嚴重／高風險各 1 項）
 
 ### Fixed
