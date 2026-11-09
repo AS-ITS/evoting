@@ -18,7 +18,7 @@ require __DIR__.'/lib/PageCheck.php';
 $opt = getopt('', ['base:', 'cdp:', 'chrome:', 'suite:']);
 $base = $opt['base'] ?? getenv('E2E_BASE_URL') ?: 'http://localhost:8080';
 $cdpUrl = rtrim($opt['cdp'] ?? getenv('E2E_CDP_URL') ?: 'http://127.0.0.1:9222', '/');
-$allSuites = ['pages', 'header', 'modals', 'attachments', 'photos', 'results', 'result-fields', 'voting', 'anon', 'layout'];
+$allSuites = ['pages', 'header', 'modals', 'groups', 'attachments', 'photos', 'results', 'result-fields', 'voting', 'anon', 'layout'];
 $suites = isset($opt['suite']) ? array_intersect(explode(',', $opt['suite']), $allSuites) : $allSuites;
 $outDir = dirname(__DIR__).'/_output/e2e';
 @mkdir($outDir.'/files', 0777, true);
