@@ -202,6 +202,76 @@ class LogsTest extends Unit
     }
 
     /**
+     * 建立一筆指定時間的紀錄，回傳其 id
+     */
+    private function logAt(string $user, string $createdAt): int
+    {
+        $log = new Logs();
+        $log->type = Logs::LOGIN_ADMIN;
+        $log->user = $user;
+        $log->ip = '127.0.0.1';
+        $log->browser = 'Chrome';
+        $log->context = '{}';
+        $this->assertTrue($log->save());
+        Logs::updateAll(['created_at' => $createdAt], ['id' => $log->id]);
+
+        return (int) $log->id;
+    }
+
+    private function searchIds(array $filter): array
+    {
+        $logs = new Logs();
+        $ids = $logs->search(['Logs' => $filter])->select('id')->column();
+
+        return [array_map('intval', $ids), $logs];
+    }
+
+    /**
+     * 日期區間：迄日包含當天整天，起日當天 00:00 起算
+     */
+    public function testSearchDateRangeIncludesWholeEndDay()
+    {
+        $user = 'date_range_ut';
+        $before = $this->logAt($user, '2026-03-09 23:59:59');
+        $onStart = $this->logAt($user, '2026-03-10 00:00:00');
+        $onEnd = $this->logAt($user, '2026-03-20 18:30:00');
+        $after = $this->logAt($user, '2026-03-21 00:00:00');
+
+        [$ids] = $this->searchIds(['user' => $user, 'createdFrom' => '2026-03-10', 'createdTo' => '2026-03-20']);
+
+        $this->assertContains($onStart, $ids);
+        $this->assertContains($onEnd, $ids);
+        $this->assertNotContains($before, $ids);
+        $this->assertNotContains($after, $ids);
+    }
+
+    /**
+     * 查詢後保留日期，供表單回填
+     */
+    public function testSearchKeepsDateFilterOnModel()
+    {
+        [, $logs] = $this->searchIds(['createdFrom' => '2026-03-10', 'createdTo' => '2026-03-20']);
+
+        $this->assertSame('2026-03-10', $logs->createdFrom);
+        $this->assertSame('2026-03-20', $logs->createdTo);
+    }
+
+    /**
+     * 格式不符或無效日期不參與查詢，也不回填
+     */
+    public function testSearchIgnoresInvalidDates()
+    {
+        $user = 'date_invalid_ut';
+        $id = $this->logAt($user, '2026-03-15 12:00:00');
+
+        foreach (['2026/03/16', '2026-02-30', 'x', '2026-03-16 00:00:00'] as $bad) {
+            [$ids, $logs] = $this->searchIds(['user' => $user, 'createdTo' => $bad]);
+            $this->assertContains($id, $ids, $bad);
+            $this->assertNull($logs->createdTo, $bad);
+        }
+    }
+
+    /**
      * 測試密碼失敗等待時間 - 無失敗記錄
      */
     public function testGetPasswordFailWaitNoFailures()

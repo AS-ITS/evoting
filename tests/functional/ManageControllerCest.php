@@ -71,8 +71,9 @@ class ManageControllerCest
     {
         $I->amOnPage('/manage/log?Logs[createdFrom]=2026-01-01&Logs[createdTo]=2026-12-31');
         $I->seeResponseCodeIs(200);
-        $I->seeElement('input#from', ['type' => 'date', 'name' => 'Logs[createdFrom]']);
-        $I->seeElement('input#to', ['type' => 'date', 'name' => 'Logs[createdTo]']);
+        // 查詢後保留剛才輸入的日期
+        $I->seeElement('input#from', ['type' => 'date', 'name' => 'Logs[createdFrom]', 'value' => '2026-01-01']);
+        $I->seeElement('input#to', ['type' => 'date', 'name' => 'Logs[createdTo]', 'value' => '2026-12-31']);
         $I->dontSeeInSource('jquery-ui');
         $I->dontSeeInSource('.datepicker(');
     }

@@ -6,6 +6,7 @@
 
 - 從最新 `main` 建立 release branch。
 - 核准版本號與 [CHANGELOG.md](../CHANGELOG.md)。
+- 以新版本號重新產生 SBOM：`php docs/generate_sbom.php all X.Y.Z`，並一併提交 `docs/sbom-vendor.json`、`docs/sbom-frontend.json`。
 - 確認工作樹乾淨，且沒有 `.env`、金鑰、正式資料、上傳檔或 runtime 內容。
 - 安裝與測試環境符合 [SETUP.md](../SETUP.md)。
 

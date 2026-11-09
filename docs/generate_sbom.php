@@ -65,9 +65,9 @@ function generateVendorSBOM() {
             'timestamp' => date('c'),
             'component' => [
                 'type' => 'application',
-                'bom-ref' => 'pkg:composer/voting-system@1.0.0',
+                'bom-ref' => 'pkg:composer/voting-system@' . SBOM_APP_VERSION,
                 'name' => $composerJson['name'] ?? 'voting-system',
-                'version' => '1.0.0',
+                'version' => SBOM_APP_VERSION,
                 'description' => $composerJson['description'] ?? 'Voting System Backend'
             ],
             'tools' => [
@@ -157,9 +157,9 @@ function generateFrontendSBOM() {
             'timestamp' => date('c'),
             'component' => [
                 'type' => 'application',
-                'bom-ref' => 'pkg:generic/voting-system-frontend@1.0.0',
+                'bom-ref' => 'pkg:generic/voting-system-frontend@' . SBOM_APP_VERSION,
                 'name' => 'voting-system-frontend',
-                'version' => '1.0.0',
+                'version' => SBOM_APP_VERSION,
                 'description' => 'Voting System Frontend Dependencies'
             ],
             'tools' => [
@@ -187,7 +187,14 @@ function generateUUID() {
 }
 
 // Main execution
+// 用法：php docs/generate_sbom.php [all|vendor|frontend] [應用程式版本，如 1.1.0]
 $type = $argv[1] ?? 'all';
+$appVersion = $argv[2] ?? '';
+if (!preg_match('/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/', $appVersion)) {
+    fwrite(STDERR, "請指定應用程式版本，例如：php docs/generate_sbom.php all 1.1.0\n");
+    exit(1);
+}
+define('SBOM_APP_VERSION', $appVersion);
 
 switch ($type) {
     case 'vendor':
@@ -195,7 +202,7 @@ switch ($type) {
         echo "Generating vendor (backend) SBOM...\n";
         $sbom = generateVendorSBOM();
         $filename = 'sbom-vendor.json';
-        file_put_contents($filename, json_encode($sbom, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        file_put_contents(__DIR__ . '/' . $filename, json_encode($sbom, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         echo "✓ Generated: $filename (" . count($sbom['components']) . " components)\n";
         break;
         
@@ -204,7 +211,7 @@ switch ($type) {
         $sbom = generateFrontendSBOM();
         if ($sbom) {
             $filename = 'sbom-frontend.json';
-            file_put_contents($filename, json_encode($sbom, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            file_put_contents(__DIR__ . '/' . $filename, json_encode($sbom, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
             echo "✓ Generated: $filename (" . count($sbom['components']) . " components)\n";
         } else {
             echo "✗ Frontend directory not found.\n";
@@ -216,12 +223,12 @@ switch ($type) {
         echo "Generating both vendor and frontend SBOMs...\n\n";
         
         $vendorSbom = generateVendorSBOM();
-        file_put_contents('sbom-vendor.json', json_encode($vendorSbom, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        file_put_contents(__DIR__ . '/sbom-vendor.json', json_encode($vendorSbom, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         echo "✓ Generated: sbom-vendor.json (" . count($vendorSbom['components']) . " components)\n";
         
         $frontendSbom = generateFrontendSBOM();
         if ($frontendSbom) {
-            file_put_contents('sbom-frontend.json', json_encode($frontendSbom, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            file_put_contents(__DIR__ . '/sbom-frontend.json', json_encode($frontendSbom, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
             echo "✓ Generated: sbom-frontend.json (" . count($frontendSbom['components']) . " components)\n";
         } else {
             echo "✗ Frontend SBOM generation skipped (directory not found).\n";

@@ -17,6 +17,8 @@
 * 安裝說明標明 `composer install --prefer-dist` 與 `composer check-platform-reqs`
 * 測試文件 fixture 清單對齊 `tests/run-all.sh`（含 Group／Ballots／ResultsConfig）
 * 測試文件：測試伺服器啟動指令加上 `APP_ENV=testing`；說明 `fixture/unload` 會連同相依 Fixture 清除，重設資料改用 `fixture/load`
+* `scripts/install.sh` 缺少必要 PHP 擴展時提示套件安裝指令，並另外檢查 php-fpm 是否缺少 gd 等擴展
+* SBOM 依目前 lock 檔重新產生；`docs/generate_sbom.php` 改為必須指定版本號，並固定輸出到 `docs/`
 
 ### Added
 
@@ -50,6 +52,7 @@
 ### Fixed
 
 * 開票結果、投票結果、候選名單與選票編輯表格消除重複 HTML 編碼；自訂標題及欄 A 保留經淨化的換行與排版（管理端候選人管理列表的欄 A 一併適用），欄 B–F 維持純文字，既有 entity 不作資料轉換
+* 操作紀錄日期搜尋：迄日改為包含當天整天（原本只算到當天 00:00，當天的紀錄查不到）；查詢後保留輸入的日期；格式不符的日期不參與查詢
 * 匿名投票未完成即關閉瀏覽器後，殘留的 session 檔會讓同一密碼持續顯示「已在其他裝置登入中」而無法重新登入；改為原裝置超過匿名登入閒置逾時（預設 30 分鐘）即可重新登入，仍在使用中的登入照常阻擋
 * 英文介面的紙本選票自訂文字欄位誤讀多一個 E 的欄名而發生錯誤；保留中英並列與原有數字欄位的語言選擇
 * Yii log 檢視頁的 UrlModal 資產指向未隨 Git 提供的目錄而發生 500；改為追蹤前端腳本，內容載入沿用目前頁面的協定與主機
