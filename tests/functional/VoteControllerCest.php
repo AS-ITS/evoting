@@ -15,6 +15,7 @@ use app\tests\fixtures\PasswordsFixture;
 use app\tests\fixtures\UsersFixture;
 use app\tests\fixtures\BallotsFixture;
 use app\tests\fixtures\BallotsSelectedFixture;
+use app\tests\fixtures\ConfigFixture;
 
 class VoteControllerCest
 {
@@ -24,6 +25,7 @@ class VoteControllerCest
     public function _fixtures()
     {
         return [
+            'config' => ConfigFixture::class,
             'users' => UsersFixture::class,
             'votes' => VotesFixture::class,
             'parties' => PartiesFixture::class,
@@ -77,6 +79,17 @@ class VoteControllerCest
     {
         $I->amOnPage('/vote/result-list');
         $I->seeResponseCodeIs(200);
+    }
+
+    /**
+     * 還原測試中改動的場次設定（fixture 不會在每個測試之間重新載入）
+     */
+    public function _after(FunctionalTester $I)
+    {
+        \app\models\Votes::updateAll(
+            ['skipCheck' => '0', 'themeColor' => ''],
+            ['voteID' => ['NoAuthVoteTest', 'AnonNoPartyTest']]
+        );
     }
 
     /**
