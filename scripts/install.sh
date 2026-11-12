@@ -470,7 +470,14 @@ APP_PATH_UPLOADS="${APP_PATH_UPLOADS:-/var/www/uploads/voting}"
 PHP_USER="${PHP_USER:-$(detect_php_user)}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD-}"
 DB_ROOT_PASSWORD="${DB_ROOT_PASSWORD-}"
-MASTER_KEY_FILE="${MASTER_KEY_FILE:-/etc/voting/master.key}"
+# 應用程式（MasterKeyLoader）只讀這個預設路徑或 VOTING_MASTER_KEY；MASTER_KEY_FILE 只影響本腳本
+DEFAULT_MASTER_KEY_FILE="/etc/voting/master.key"
+MASTER_KEY_FILE="${MASTER_KEY_FILE:-$DEFAULT_MASTER_KEY_FILE}"
+CUSTOM_KEY_FILE=0
+if [[ "$MASTER_KEY_FILE" != "$DEFAULT_MASTER_KEY_FILE" ]]; then
+  CUSTOM_KEY_FILE=1
+  warn "MASTER_KEY_FILE=$MASTER_KEY_FILE 不是預設路徑：應用程式不會讀這個檔，PHP-FPM 與 cron 須另外設定 VOTING_MASTER_KEY"
+fi
 MASTER_KEY_EXISTED=0
 [[ -f "$MASTER_KEY_FILE" ]] && MASTER_KEY_EXISTED=1
 
@@ -761,9 +768,9 @@ fi
 
 # ---------- 驗證 ----------
 log "php yii config/validate"
-# 確保 CLI 能讀到正式主金鑰（與 PHP-FPM 的 key file 路徑一致）
+# 確保 CLI 能讀到主金鑰（自訂 MASTER_KEY_FILE 時應用程式本身讀不到，故以環境變數帶入）
 export VOTING_MASTER_KEY="${VOTING_MASTER_KEY:-${MASTER_KEY-}}"
-if [[ -z "${VOTING_MASTER_KEY-}" && -f "${MASTER_KEY_FILE:-/etc/voting/master.key}" ]]; then
+if [[ -z "${VOTING_MASTER_KEY-}" && -f "$MASTER_KEY_FILE" ]]; then
   export VOTING_MASTER_KEY="$(tr -d '\r\n' < "$MASTER_KEY_FILE")"
 fi
 set +e
@@ -773,13 +780,15 @@ set -e
 [[ "$_validate_rc" -eq 0 ]] || die "config/validate 失敗 (exit=${_validate_rc})"
 
 if [[ "$USE_EXTERNAL_KEY" -eq 1 ]]; then
-  if [[ -f "$MASTER_KEY_FILE" ]]; then
+  if [[ -f "$MASTER_KEY_FILE" && "$CUSTOM_KEY_FILE" -eq 1 ]]; then
+    KEY_NOTE="主金鑰在 ${MASTER_KEY_FILE}，但應用程式只讀 ${DEFAULT_MASTER_KEY_FILE} 或 VOTING_MASTER_KEY；PHP-FPM 與 cron 都要設定 VOTING_MASTER_KEY（內容同此檔），否則 php yii 會 exit 65"
+  elif [[ -f "$MASTER_KEY_FILE" ]]; then
     KEY_NOTE="主金鑰在 ${MASTER_KEY_FILE}；確認 PHP-FPM 執行身分可讀"
   else
     KEY_NOTE="主金鑰只來自環境變數 VOTING_MASTER_KEY；確認 PHP-FPM 也設定同一值"
   fi
 else
-  KEY_NOTE="開發模式：主金鑰寫在 .env 的 MASTER_KEY，僅供開發／測試；正式環境請改用 ${MASTER_KEY_FILE} 或 VOTING_MASTER_KEY"
+  KEY_NOTE="開發模式：主金鑰寫在 .env 的 MASTER_KEY，僅供開發／測試；正式環境請改用 ${DEFAULT_MASTER_KEY_FILE} 或 VOTING_MASTER_KEY"
 fi
 
 log "安裝完成"
