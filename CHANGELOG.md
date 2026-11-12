@@ -7,6 +7,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+* `scripts/install.sh` 以 `MASTER_KEY_FILE` 指定非預設路徑時，安裝驗證會通過，但應用程式只讀 `/etc/voting/master.key` 或 `VOTING_MASTER_KEY`，上線後 PHP-FPM 與 cron 讀不到主金鑰；改為一開始就警告，並在「下一步」提醒 PHP-FPM 與 cron 須設定 `VOTING_MASTER_KEY`
+
 ## [1.1.1] - 2026-11-10
 
 ### Fixed
