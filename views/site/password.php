@@ -107,7 +107,7 @@ $form = ActiveForm::begin([
 <?php
 ActiveForm::end();
 
-$bgColor = !empty($voteInfo->themeColor) ? $voteInfo->themeColor : '#ffffff';
+$bgColor = $voteInfo->getSafeThemeColor();
 $this->registerCss(<<<CSS
     body {
         background-color: $bgColor;

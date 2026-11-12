@@ -78,4 +78,70 @@ class VoteControllerCest
         $I->amOnPage('/vote/result-list');
         $I->seeResponseCodeIs(200);
     }
+
+    /**
+     * 表決投票開啟「略過圈選結果頁」時，完成頁不應取用已移除的 voter 元件
+     */
+    public function testVoteFinishSkipCheckNoAuth(FunctionalTester $I)
+    {
+        \app\models\Votes::updateAll(['skipCheck' => '1'], ['voteID' => 'NoAuthVoteTest']);
+
+        $I->amOnPage('/vote/vote-finish?voteID=NoAuthVoteTest');
+        $I->seeResponseCodeIs(200);
+        $I->see('投票完成');
+        $I->seeInSource('vote\/index"');
+        $I->dontSeeInSource('check-ballot');
+    }
+
+    /**
+     * 匿名投票開啟「略過圈選結果頁」時，完成頁導向 finishPage 設定的頁面
+     */
+    public function testVoteFinishSkipCheckAnon(FunctionalTester $I)
+    {
+        \app\models\Votes::updateAll(['skipCheck' => '1'], ['voteID' => 'AnonNoPartyTest']);
+
+        $I->amOnPage('/vote/vote-finish?voteID=AnonNoPartyTest');
+        $I->seeResponseCodeIs(200);
+        $I->seeInSource('vote\/index"');
+        $I->dontSeeInSource('check-ballot');
+    }
+
+    /**
+     * 未略過圈選結果頁時，完成頁導向圈選結果頁
+     */
+    public function testVoteFinishRedirectsToCheckBallot(FunctionalTester $I)
+    {
+        $I->amOnPage('/vote/vote-finish?voteID=AnonNoPartyTest');
+        $I->seeResponseCodeIs(200);
+        $I->seeInSource('check-ballot?voteID=AnonNoPartyTest"');
+    }
+
+    /**
+     * 主題色格式不符（舊資料）時不得原樣寫入 <style>
+     */
+    public function testUnsafeThemeColorIsNotRendered(FunctionalTester $I)
+    {
+        $payload = '</style><script src=//x.io>';
+        \app\models\Votes::updateAll(['themeColor' => $payload], ['voteID' => 'AnonNoPartyTest']);
+
+        $I->amOnPage('/vote/vote-finish?voteID=AnonNoPartyTest');
+        $I->seeResponseCodeIs(200);
+        $I->dontSeeInSource($payload);
+        $I->seeInSource('background-color: #ffffff');
+
+        $I->amOnPage('/site/password?voteID=AnonNoPartyTest');
+        $I->seeResponseCodeIs(200);
+        $I->dontSeeInSource($payload);
+    }
+
+    /**
+     * 合法的主題色照常套用
+     */
+    public function testValidThemeColorIsRendered(FunctionalTester $I)
+    {
+        \app\models\Votes::updateAll(['themeColor' => '#abcdef'], ['voteID' => 'AnonNoPartyTest']);
+
+        $I->amOnPage('/vote/vote-finish?voteID=AnonNoPartyTest');
+        $I->seeInSource('background-color: #abcdef');
+    }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use yii\helpers\Json;
 use yii\helpers\Url;
 use yii\bootstrap5\Html;
 use kartik\form\ActiveForm;
@@ -46,7 +47,7 @@ echo Html::tag(
 
 ActiveForm::end();
 
-$url = Url::to(['passwd-info']);
+$url = Json::htmlEncode(Url::to(['passwd-info']));
 
 $this->registerJs(<<<JS
     $('#voteID').change(function() {
@@ -56,10 +57,9 @@ $this->registerJs(<<<JS
     function getPasswdInfo(voteID) {
         $.ajax({
             type: "POST",
-            url: '$url',
+            url: $url,
             data: {voteID: voteID},
             success: function(result) {
-                console.log(result);
                 let parties = JSON.parse(result.parties);
                 let marks = JSON.parse(result.marks);
                 $("#party").empty();
@@ -73,8 +73,8 @@ $this->registerJs(<<<JS
                     $("#mark").append(new Option(element.mark, element.mark));
                 })
             }, 
-            error: function(result) {
-                console.log(result);
+            error: function() {
+                $("#party, #mark").empty();
             }
         });
     }

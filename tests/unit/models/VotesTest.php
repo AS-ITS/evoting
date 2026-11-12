@@ -762,4 +762,48 @@ class VotesTest extends \Codeception\Test\Unit
         $result = $vote->getRocDate('2024-13-45 00:00:00');
         $this->assertIsString($result, 'getRocDate with invalid month/day should return string');
     }
+
+    // ==================== themeColor 格式 ====================
+
+    /**
+     * themeColor 只接受色碼、顏色名稱與 rgb()/hsl()
+     */
+    public function testThemeColorFormat()
+    {
+        $valid = ['', '#fff', '#ffffff', '#FFFFFF80', 'red', 'LightGoldenRodYellow', 'rgb(255, 0, 0)', 'rgba(0,0,0,0.5)', 'hsl(120 50% 50% / 0.5)'];
+        foreach ($valid as $color) {
+            $vote = new Votes();
+            $vote->themeColor = $color;
+            $vote->validate(['themeColor']);
+            $this->assertArrayNotHasKey('themeColor', $vote->errors, "themeColor '$color' should pass");
+        }
+
+        $invalid = ['</style><script src=//x.io>', '#ff', '#gggggg', 'red;}body{display:none', 'url(//x.io/a.png)', 'red blue', "red\n", 'expression(alert(1))', '#fff}'];
+        foreach ($invalid as $color) {
+            $vote = new Votes();
+            $vote->themeColor = $color;
+            $vote->validate(['themeColor']);
+            $this->assertArrayHasKey('themeColor', $vote->errors, "themeColor '$color' should fail");
+        }
+    }
+
+    /**
+     * getSafeThemeColor()：格式不符或未設定時回傳預設值
+     */
+    public function testGetSafeThemeColor()
+    {
+        $vote = new Votes();
+
+        $vote->themeColor = '#abcdef';
+        $this->assertSame('#abcdef', $vote->getSafeThemeColor());
+
+        $vote->themeColor = ' rgb(1, 2, 3) ';
+        $this->assertSame('rgb(1, 2, 3)', $vote->getSafeThemeColor());
+
+        foreach ([null, '', '</style><script src=//x.io>', 'red;}body{display:none'] as $color) {
+            $vote->themeColor = $color;
+            $this->assertSame('#ffffff', $vote->getSafeThemeColor());
+            $this->assertSame('#000', $vote->getSafeThemeColor('#000'));
+        }
+    }
 }

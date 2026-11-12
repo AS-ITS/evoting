@@ -1,5 +1,6 @@
 <?php
 
+use yii\helpers\Json;
 use yii\helpers\Url;
 use yii\bootstrap5\Html;
 use kartik\form\ActiveForm;
@@ -16,7 +17,7 @@ $this->params['voteInfo'] = $voteInfo;
 
 echo \app\widgets\Alert::widget();
 
-$url = Url::to(['question/round-import', 'voteID' => $voteID]);
+$url = Json::htmlEncode(Url::to(['question/round-import', 'voteID' => $voteID]));
 echo Html::label('匯入輪次選擇', 'round', ['class' => 'control-label']);
 echo Select2::widget([
     'name' => 'round',
@@ -27,7 +28,7 @@ echo Select2::widget([
     'pluginEvents' => [
         'select2:select' => "function(e) { 
             var data = e.params.data;
-            window.location.href = '$url&round=' + data.id;
+            window.location.href = $url + '&round=' + encodeURIComponent(data.id);
         }"
     ],
 ]);

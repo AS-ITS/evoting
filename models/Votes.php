@@ -57,6 +57,13 @@ use app\components\helper\ArrayHelper;
  */
 class Votes extends \yii\db\ActiveRecord
 {
+    /**
+     * 主題色允許的格式：#色碼、顏色名稱、rgb()/rgba()/hsl()/hsla()
+     *
+     * themeColor 會直接寫入 <style>，不可包含 <、>、;、{、} 等字元。
+     */
+    const THEME_COLOR_PATTERN = '/^(#[0-9a-fA-F]{3,8}|[a-zA-Z]+|(rgb|rgba|hsl|hsla)\([0-9a-z.,%\/ ]+\))$/D';
+
     /** 投票類型-表決投票 */
     const TYPE_NO_AUTH = '0';
     /** 投票類型-匿名投票 */
@@ -98,6 +105,7 @@ class Votes extends \yii\db\ActiveRecord
             [['contact', 'contactE', 'hosted', 'hostedE', 'email'], 'string', 'max' => 64],
             [['voteID', 'session', 'creator'], 'string', 'max' => 20],
             [['themeColor'], 'string', 'max' => 30],
+            [['themeColor'], 'match', 'pattern' => self::THEME_COLOR_PATTERN, 'message' => '主題色格式不正確，請輸入色碼（如 #ffffff）、顏色名稱或 rgb()/hsl()。'],
             [['partyOrNot', 'type', 'isByParty', 'isBindVote', 'active', 'isFinish', 'finishPage', 'candiConfig'], 'string', 'max' => 1],
             [['Name', 'NameE', 'addiCondition', 'tel'], 'string', 'max' => 255],
             [['bindWhichVote'], 'string', 'max' => 128],
@@ -401,6 +409,24 @@ class Votes extends \yii\db\ActiveRecord
         }
 
         return $text;
+    }
+
+    /**
+     * 取得可安全輸出到 CSS 的主題色
+     *
+     * themeColor 會直接寫入 <style>；格式不符（含加入驗證規則前的舊資料）時改用預設值。
+     *
+     * @param string $default 預設顏色
+     * @return string
+     */
+    public function getSafeThemeColor($default = '#ffffff')
+    {
+        $color = trim((string) $this->themeColor);
+        if ($color !== '' && strlen($color) <= 30 && preg_match(self::THEME_COLOR_PATTERN, $color)) {
+            return $color;
+        }
+
+        return $default;
     }
 
     /**
