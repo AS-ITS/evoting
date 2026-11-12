@@ -16,8 +16,8 @@ if (!function_exists('mt_shuffle'))
         $arrLength = count($array);
         // while my array is not empty I select a random position
         while (count($array)) {
-            //mt_rand returns a random number between two values
-            $randPos = mt_rand(0, --$arrLength);
+            // random_int 為密碼學安全的亂數來源
+            $randPos = random_int(0, --$arrLength);
             $randArr[] = $array[$randPos];
 
             /* If number of remaining elements in the array is the same as the

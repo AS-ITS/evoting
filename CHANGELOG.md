@@ -10,6 +10,7 @@
 ### Security
 
 * 投票的「主題色」原本只限制長度，會原樣寫入投票完成頁與投票密碼頁的 `<style>`，投票管理者可藉此對投票者注入樣式或指令碼；改為只接受色碼（`#fff`、`#ffffff`）、顏色名稱與 `rgb()`／`hsl()`，既有資料格式不符時輸出改用預設白色。投票完成頁、清除登入狀態頁與輪次匯入頁寫進 JavaScript 的網址改以 JSON 編碼輸出
+* 產生投票密碼時打亂字元表的 `mt_shuffle()` 改用 `random_int()`（白箱掃描 Use of Non Cryptographic Random）。密碼字元本來就以 `random_int()` 選取，強度不變
 
 ### Fixed
 
