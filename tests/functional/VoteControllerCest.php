@@ -90,6 +90,47 @@ class VoteControllerCest
             ['skipCheck' => '0', 'themeColor' => ''],
             ['voteID' => ['NoAuthVoteTest', 'AnonNoPartyTest']]
         );
+        \Yii::$app->db->createCommand('DELETE FROM logins WHERE voteID = :voteID', [':voteID' => 'AnonNoPartyTest'])->execute();
+    }
+
+    /**
+     * 以 fixture 的投票密碼登入匿名投票
+     */
+    private function anonLogin(FunctionalTester $I, $password)
+    {
+        $I->amOnPage('/site/password?voteID=AnonNoPartyTest');
+        $I->fillField('FormAnon[password]', $password);
+        $I->click('登入');
+        $I->dontSeeInCurrentUrl('site/password');
+    }
+
+    /**
+     * 匿名投票開啟「略過圈選結果頁」時，完成頁會登出投票者
+     */
+    public function testVoteFinishSkipCheckLogsOutAnonVoter(FunctionalTester $I)
+    {
+        \app\models\Votes::updateAll(['skipCheck' => '1'], ['voteID' => 'AnonNoPartyTest']);
+        $this->anonLogin($I, 'testdef71');
+
+        $I->amOnPage('/vote/vote-finish?voteID=AnonNoPartyTest');
+        $I->seeResponseCodeIs(200);
+
+        $I->amOnPage('/vote/start-vote?voteID=AnonNoPartyTest');
+        $I->seeInCurrentUrl('site/password');
+    }
+
+    /**
+     * 未略過圈選結果頁時，完成頁不登出投票者（之後還要看圈選結果）
+     */
+    public function testVoteFinishKeepsAnonVoterLoggedIn(FunctionalTester $I)
+    {
+        $this->anonLogin($I, 'testdef72');
+
+        $I->amOnPage('/vote/vote-finish?voteID=AnonNoPartyTest');
+        $I->seeResponseCodeIs(200);
+
+        $I->amOnPage('/vote/start-vote?voteID=AnonNoPartyTest');
+        $I->dontSeeInCurrentUrl('site/password');
     }
 
     /**
