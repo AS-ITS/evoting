@@ -103,8 +103,10 @@ $admin->go('/manage/logins');
 $hasVote = $admin->js("[...document.querySelectorAll('#voteID option')].some(o => o.value === '$vote')");
 $voter->check('清除登入狀態頁列出登入中的投票場次', $hasVote);
 if ($hasVote) {
-    // 只設定值，不觸發 change：組別／標記清單的 AJAX 網址固定為 https，http 測試環境會失敗
-    $admin->js("document.querySelector('#voteID').value = '$vote'");
+    // 選擇場次會以 AJAX 載入組別／標記清單（網址為相對路徑，http 測試環境也可用）
+    $admin->js("$('#voteID').val('$vote').trigger('change')");
+    $loaded = $admin->waitFor("[...document.querySelectorAll('#party option')].some(o => o.text === '請選擇')");
+    $voter->check('選擇場次後載入組別／標記清單', $loaded, $admin->js("document.querySelector('#party').options.length + ' 個組別選項'"));
     $admin->click("[...document.querySelectorAll('#login-form button[type=submit]')].find(e => e.innerText.includes('清除'))");
     $admin->waitLoad();
     $voter->check('清除 session 成功', (bool) array_filter($admin->flashes(), function ($m) { return mb_strpos($m, '清除session完成') !== false; }), implode(' | ', $admin->flashes()));

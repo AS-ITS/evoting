@@ -16,7 +16,7 @@ $this->params['voteInfo'] = $voteInfo;
 
 echo \app\widgets\Alert::widget();
 
-$url = Url::to(['question/round-import', 'voteID' => $voteID], 'https');
+$url = Url::to(['question/round-import', 'voteID' => $voteID]);
 echo Html::label('匯入輪次選擇', 'round', ['class' => 'control-label']);
 echo Select2::widget([
     'name' => 'round',
