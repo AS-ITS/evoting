@@ -12,7 +12,7 @@ echo $this->render('@views/partials/_navbar');
 ?>
 <header class="header-container">
     <nav class="navbar ps-0">
-        <a href="<?=Url::to(['vote/index'], 'https')?>">
+        <a href="<?=Url::to(['vote/index'])?>">
             <?php if ($logoUrl = \app\components\Branding::logoUrl()): ?>
             <img id="logo" src="<?= \yii\helpers\Html::encode($logoUrl) ?>" alt="logo">
             <?php endif; ?>

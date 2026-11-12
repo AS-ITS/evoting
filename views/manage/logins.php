@@ -46,7 +46,7 @@ echo Html::tag(
 
 ActiveForm::end();
 
-$url = Url::to(['passwd-info'], 'https');
+$url = Url::to(['passwd-info']);
 
 $this->registerJs(<<<JS
     $('#voteID').change(function() {

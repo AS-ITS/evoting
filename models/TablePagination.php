@@ -303,7 +303,7 @@ class TablePagination extends \yii\base\BaseObject
         }
 
         // 發送更新頁數請求
-        $url = sprintf( '%s', Url::to($this->changeAction, 'https') );
+        $url = sprintf( '%s', Url::to($this->changeAction) );
         $onchange = "$.ajax({ type:\"POST\", url: \"$url\", data:{ {$this->setPageGetName}: $(this).val()}, async:false});";
 
         // 取得新表格更新

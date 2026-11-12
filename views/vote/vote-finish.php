@@ -11,10 +11,10 @@ if ($voteInfo->skipCheck == Votes::TYPE_ANON) {
     if (!Yii::$app->$type->isGuest) {
         Yii::$app->$type->identity->logout(false);
     }
-    $redirect = Url::to($model->finishPage, 'https');
+    $redirect = Url::to($model->finishPage);
 }
 else {
-    $redirect = Url::to(['vote/check-ballot', 'voteID' => $voteInfo->voteID], 'https');
+    $redirect = Url::to(['vote/check-ballot', 'voteID' => $voteInfo->voteID]);
 }
 // 導向頁面
 $this->registerJs("
