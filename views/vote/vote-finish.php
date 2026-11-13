@@ -1,15 +1,16 @@
 <?php
 
+use yii\helpers\Json;
 use yii\helpers\Url;
 use app\models\Votes;
 
 $this->title = app\components\Model::i18n($voteInfo->NameE, $voteInfo->Name);
 
 // 如果略過圈選檢查，登出
-if ($voteInfo->skipCheck == Votes::TYPE_ANON) {
-    $type = $voteInfo->type == Votes::TYPE_ANON ? 'anon' : 'voter';
-    if (!Yii::$app->$type->isGuest) {
-        Yii::$app->$type->identity->logout(false);
+if ($voteInfo->skipCheck == '1') {
+    // 只有匿名投票有登入身分；表決投票無須驗證，沒有可登出的身分
+    if ($voteInfo->type == Votes::TYPE_ANON && !Yii::$app->anon->isGuest) {
+        Yii::$app->anon->identity->logout(false);
     }
     $redirect = Url::to($model->finishPage);
 }
@@ -17,14 +18,15 @@ else {
     $redirect = Url::to(['vote/check-ballot', 'voteID' => $voteInfo->voteID]);
 }
 // 導向頁面
+$redirectJs = Json::htmlEncode($redirect);
 $this->registerJs("
     setTimeout(function() {
-        window.location.href = '$redirect';
+        window.location.href = $redirectJs;
     }, 60000); // 60秒後跳轉
 ", $this::POS_READY); 
 
 // 背景色
-$bgColor = !empty($voteInfo->themeColor) ? $voteInfo->themeColor : '#ffffff';
+$bgColor = $voteInfo->getSafeThemeColor();
 $this->registerCss(<<<CSS
     #finish {
         background-color: $bgColor;

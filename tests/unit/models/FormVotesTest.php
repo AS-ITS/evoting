@@ -115,6 +115,30 @@ class FormVotesTest extends \Codeception\Test\Unit
     // ==================== 驗證規則測試 ====================
 
     /**
+     * 測試：create／update scenario 會檢查 themeColor 格式（編輯頁實際使用的表單模型）
+     */
+    public function testThemeColorFormatOnCreateAndUpdate()
+    {
+        foreach (['create', 'update'] as $scenario) {
+            foreach (['', '#ffeecc', 'red', 'rgb(255, 238, 204)'] as $color) {
+                $model = new FormVotes();
+                $model->scenario = $scenario;
+                $model->themeColor = $color;
+                $model->validate(['themeColor']);
+                $this->assertArrayNotHasKey('themeColor', $model->errors, "[$scenario] themeColor '$color' should pass");
+            }
+
+            foreach (['</style><script>', 'red;}body{display:none', 'url(//x)'] as $color) {
+                $model = new FormVotes();
+                $model->scenario = $scenario;
+                $model->themeColor = $color;
+                $model->validate(['themeColor']);
+                $this->assertArrayHasKey('themeColor', $model->errors, "[$scenario] themeColor '$color' should fail");
+            }
+        }
+    }
+
+    /**
      * 測試：search scenario 允許所有欄位
      */
     public function testSearchScenarioAllowsAllFields()

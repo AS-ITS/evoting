@@ -41,6 +41,7 @@ php tests/e2e/run.php --base=http://localhost:18080
 | 組別 | 內容 |
 |---|---|
 | `result-fields` | 中英文結果頁、名單與選票編輯的安全換行及純文字；攔截 GridView 產生的 CSV／Excel／HTML 匯出內容，檢查編碼與淨化，並檢查紙本選票。測試資料與欄位設定於 finally 還原；不包含 LibreOffice 開檔驗證 |
+| `interactions` | 管理端會送出請求或換頁的控制項：輪次匯入切換輪次、表格每頁筆數變更後保留 |
 | `pages` | 全畫面巡檢（投票者 6 頁、管理介面 56 頁），每頁檢查：HTTP 狀態、未被導向登入、無 PHP 錯誤訊息、無未捕捉的 JS 例外、無 Bootstrap 4 殘留 class、徽章看得見（非白字透明底）、無破圖，並截圖 |
 | `header` | 頁首輪次／投票狀態徽章、捲動後的投票名稱徽章 |
 | `modals` | 對話框 × 位置、Esc／點背景不關閉（static）、× 可關閉；重新載入 8 次確認遮罩不會蓋住對話框；新增群組成員對話框 |

@@ -314,7 +314,6 @@ class TablePagination extends \yii\base\BaseObject
         // $url2 = "'{$url2}'";
         $onchange .= "var usp = new URLSearchParams(window.location.search);"; // 由 JS 實作
         $onchange .= "usp.set('_pjax', '#{$id}');";
-        $onchange .= "console.log(window.location.origin+window.location.pathname+'?'+usp.toString());";
         $url2 = "window.location.origin+window.location.pathname+'?'+usp.toString()+window.location.hash";
 
         // 組合語法

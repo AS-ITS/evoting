@@ -61,6 +61,7 @@ class FormVotes extends Votes
             ['type', 'in', 'range' => [self::TYPE_NO_AUTH, self::TYPE_ANON], 'on' => ['create', 'update']],
             [['pattern', 'loginLayout'], 'string', 'max' => 10, 'on'=>['create', 'update']],
             [['themeColor'], 'string', 'max' => 30, 'on'=>['create', 'update']],
+            [['themeColor'], 'match', 'pattern' => self::THEME_COLOR_PATTERN, 'message' => '主題色格式不正確，請輸入色碼（如 #ffffff）、顏色名稱或 rgb()/hsl()。', 'on'=>['create', 'update']],
             [['contact', 'contactE', 'hosted', 'hostedE', 'email'], 'string', 'max' => 64, 'on'=>['create','update']],
             [['bindWhichVote'], 'string', 'max' => 128, 'on'=>['create','update']],
             [['shortUrl'], 'string', 'max' => 8, 'min' => 8, 'on' => ['create']],
