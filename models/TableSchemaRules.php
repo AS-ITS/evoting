@@ -301,8 +301,8 @@ class TableSchemaRules extends BaseObject
                 {
                     unset($refs[0]);
                     $attributes = join("', '", array_keys($refs));
-                    $rulesStr[] = "[['$attributes'], 'validateExist', 'skipOnError' => true, 'current'=>['table' => $refTable, 'targetAttribute' => [$targetAttributes]]$onStr]";
-                    $rulesAry[] = [array_keys($refs), 'validateExist', 'skipOnError' => true, 'current'=>['table' => $refTable, 'targetAttribute' => $refs]];
+                    $rulesStr[] = "[['$attributes'], 'validateExist', 'skipOnError' => true, 'params' => ['table' => '$refTable', 'targetAttribute' => [$targetAttributes]]$onStr]";
+                    $rulesAry[] = [array_keys($refs), 'validateExist', 'skipOnError' => true, 'params' => ['table' => $refTable, 'targetAttribute' => $refs]];
                 }
                 else
                 {

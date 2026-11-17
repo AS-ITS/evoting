@@ -54,17 +54,8 @@ class UniversalActiveRecord extends \yii\db\ActiveRecord
      */
     public static function setDb($name)
     {
-        if(is_null($name))
-        {
-            // TODO: 建立自定義連線
-            // $connection = new \yii\db\Connection([
-            //     'dsn' => $dsn,
-            //     'username' => $username,
-            //     'password' => $password,
-            // ]);
-            // $connection->open();
-        }
-        else
+        // 未指定時沿用目前連線；只接受已設定的 Yii DB 元件，不從參數建立自訂連線
+        if(!is_null($name))
         {
             if(!Yii::$app->has($name))
             {
@@ -200,30 +191,44 @@ class UniversalActiveRecord extends \yii\db\ActiveRecord
     }
 
     /**
-     * Validates the password.
-     * This method serves as the inline validation for password.
+     * 外鍵存在檢查（萬用資料表沒有對應的 ActiveRecord 類別，無法使用 exist 驗證器的 targetClass）
      *
-     * @param string $attribute the attribute currently being validated
-     * @param array $params the additional name-value pairs given in the rule
+     * 規則由 TableSchemaRules 以 universalForeignKeyExist 產生：
+     * `[['欄位'], 'validateExist', 'params' => ['table' => 參照表, 'targetAttribute' => ['本表欄位' => '參照欄位']]]`
+     * 任一外鍵欄位為空時不檢查（交由 required 規則處理）。
+     *
+     * @param string $attribute 驗證中的欄位
+     * @param array|null $params 規則的 params
      */
-    public function validateExist($attribute, $params, $validator, $current, $view)
+    public function validateExist($attribute, $params)
     {
-        // TODO: 處理關聯規則，還不知道這個為何不作用？？？
-        header('content-Type: text/plain; charset=utf-8');
-        \yii\helpers\VarDumper::dump('validateExist', $depth=10, $highlight=false);echo "\n";
-        \yii\helpers\VarDumper::dump($attribute, $depth=10, $highlight=false);echo "\n";
-        \yii\helpers\VarDumper::dump($params, $depth=10, $highlight=false);echo "\n";
-        \yii\helpers\VarDumper::dump($validator, $depth=10, $highlight=false);echo "\n";
-        \yii\helpers\VarDumper::dump($current, $depth=10, $highlight=false);echo "\n";
-        \yii\helpers\VarDumper::dump($view, $depth=10, $highlight=false);echo "\n";
-        exit();
-        if (!$this->hasErrors())
+        $table = $params['table'] ?? null;
+        $targetAttribute = $params['targetAttribute'] ?? [];
+        if (!is_string($table) || $table === '' || !is_array($targetAttribute) || $targetAttribute === [])
         {
-            $user = $this->getUser();
+            return;
+        }
 
-            if (!$user || !$user->validatePassword($this->password)) {
-                $this->addError($attribute, 'Incorrect username or password.');
+        $condition = [];
+        foreach ($targetAttribute as $localAttribute => $refAttribute)
+        {
+            $value = $this->getAttribute($localAttribute);
+            if ($value === null || $value === '')
+            {
+                return;
             }
+            $condition[$refAttribute] = $value;
+        }
+
+        $exists = (new \yii\db\Query())
+            ->from($table)
+            ->where($condition)
+            ->exists(static::getDb());
+        if (!$exists)
+        {
+            $this->addError($attribute, Yii::t('yii', '{attribute} is invalid.', [
+                'attribute' => $this->getAttributeLabel($attribute),
+            ]));
         }
     }
 

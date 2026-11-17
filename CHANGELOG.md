@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-11-17
+
 ### Security
 
 * 投票的「主題色」原本只限制長度，會原樣寫入投票完成頁與投票密碼頁的 `<style>`，投票管理者可藉此對投票者注入樣式或指令碼；改為只接受色碼（`#fff`、`#ffffff`）、顏色名稱與 `rgb()`／`hsl()`，既有資料格式不符時輸出改用預設白色。投票完成頁、清除登入狀態頁與輪次匯入頁寫進 JavaScript 的網址改以 JSON 編碼輸出
@@ -15,9 +17,18 @@
 ### Fixed
 
 * 表決投票開啟「略過圈選結果頁」時，投票完成頁會因取用已移除的記名投票元件而顯示 500 錯誤
-
+* SA 資料表編輯器（`SA_DB_TOOLS_WRITABLE=true`，僅非正式環境）新增或修改有外鍵的資料表時，外鍵驗證仍是未完成的除錯程式碼，參數數目不符而發生錯誤；改為實際查詢參照表確認值存在
 * `scripts/install.sh` 以 `MASTER_KEY_FILE` 指定非預設路徑時，安裝驗證會通過，但應用程式只讀 `/etc/voting/master.key` 或 `VOTING_MASTER_KEY`，上線後 PHP-FPM 與 cron 讀不到主金鑰；改為一開始就警告，並在「下一步」提醒 PHP-FPM 與 cron 須設定 `VOTING_MASTER_KEY`
 * 6 處網址固定為 https（投票完成後的導向、投票者頁首 logo 連結、清除登入狀態頁的組別／標記清單、輪次匯入切換、表格每頁筆數），在 http 環境會失效；改為相對網址。投票編輯頁顯示的短網址與匯出密碼單上的連結是要交給投票者的，仍維持 https 絕對網址
+
+### Changed
+
+* 升級 `phpoffice/phpspreadsheet` 至 5.11.0，新增必要相依 `phpoffice/wmf` 0.2.1。此版加強加密 Xlsx 讀取時的 XXE 防護；本系統只讀取 CSV，不受影響
+* 升級 `yiisoft/yii2-bootstrap5` 至 2.0.52，連帶升級 `twbs/bootstrap` 至 5.3.9（tooltip／popover 改為保留 data 屬性文字原樣）
+* 升級 `spomky-labs/otphp` 至 11.5.1、`paragonie/constant_time_encoding` 至 3.1.4；Symfony contracts 3.8.1、`symfony/console` 7.4.23 等開發／間接相依隨之更新
+* 安裝說明改為 clone `v1.1.2`；SBOM 以 1.1.2 重新產生
+* 威脅模型文件：`FileLoader` 路徑限制（C3）標為 v1.1.0 已落地並列出現行檢查；CSP（C2）改寫為現行 enforce 狀態
+* 移除程式中已過時的 TODO 註記，改寫為現行行為說明
 
 ## [1.1.1] - 2026-11-10
 
@@ -130,7 +141,8 @@
 * Yii basic 模板殘件：`post-create-project-cmd`、`generateCookieValidationKey`、指向 Yii 官方的 `support`／placeholder `homepage`
 * 移除未參與產品安裝或執行的 vendored 前端建置 lockfile；執行期資產維持預先建置版本
 
-[Unreleased]: https://github.com/AS-ITS/evoting/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/AS-ITS/evoting/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/AS-ITS/evoting/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/AS-ITS/evoting/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/AS-ITS/evoting/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/AS-ITS/evoting/releases/tag/v1.0.0

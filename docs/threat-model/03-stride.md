@@ -43,7 +43,7 @@
 | I4 | 發放名冊寫進系統／`mark` 填姓名 | 實務：名冊場外、系統只用 `sn` | 兩職合一或名冊匯入才破 A2 | Medium（程序） |
 | I5 | IP＋時間指紋 | 有權才看選票列表 | 小樣本＋場外「誰何時到場」可推論（04） | Medium |
 | I6 | XSS 讀管理員 session | CSRF；CSP 預設 enforce（`compat`），仍允許 `unsafe-inline`，已移除 `unsafe-eval` | XSS 幾乎不算被 CSP 擋住（C2） | High |
-| I7 | filePool 直連／路徑 | 目錄在 docroot 外；下載／看照片入口另有 basename＋目錄限制 | helper 本身可 `../` 出池；HTTP 入口測不到（C3，2026-09-18） | Low |
+| I7 | filePool 直連／路徑 | 目錄在 docroot 外；`FileLoader::voteDir()`／`safePath()` 限制在該場次目錄，helper 經 `realpath` 檢查不出子目錄（C3，v1.1.0） | `removeImage()` 依 DB `photo` 只限 `candidatePic` 內，改 DB 才可能指到他場次 | Low |
 | I8 | 除錯頁／`.env` | 正式 `YII_DEBUG=false`；gitignore；open-source-prep | 部署錯誤 | High（若發生） |
 
 ## Denial of service（阻斷）
