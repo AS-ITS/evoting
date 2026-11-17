@@ -91,7 +91,6 @@ class CountController extends \app\components\Controller
 
     /**
      * 計票單
-     * TODO: 新增問題
      */
     public function actionIndex($voteID, $questionID=null)
     {

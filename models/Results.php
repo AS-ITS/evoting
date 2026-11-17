@@ -74,7 +74,9 @@ class Results extends \yii\db\ActiveRecord
     
     /**
      * 刪除投票結果
-     * TODO: 結果多輪次
+     *
+     * results 表沒有 round 欄位，只保存目前輪次的開票結果，因此依 voteID（及 party）整批刪除；
+     * $round 僅為與其他 deleteAll 介面一致而保留。
      */
     public function deleteResultsAll($voteID, $round, $party = null)
     {

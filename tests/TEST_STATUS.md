@@ -1,6 +1,6 @@
 # 測試狀態
 
-> 最後公開驗證：2026-10-07（開源前全套全綠）
+> 最後公開驗證：2026-11-17（v1.1.2 發布前全套全綠，PHP 8.2）
 > 規劃文件：見 [TEST_PLAN.md](TEST_PLAN.md)
 > 執行方式：見 [README.md](README.md)
 
@@ -8,12 +8,13 @@
 
 | 套件 | 結果 | Assertions |
 |------|------|------------|
-| Unit | 1174 通過 | 6659 |
-| Functional | 190 通過 | 395 |
-| Acceptance | 120 通過 | 254 |
-| **合計** | **1484 通過** | **7308** |
+| Unit | 1264 通過 | 7223 |
+| Functional | 221 通過 | 1507 |
+| Acceptance | 129 通過 | 379 |
+| **合計** | **1614 通過** | **9109** |
+| 瀏覽器 E2E（`tests/e2e/`） | 212 項檢查通過 | — |
 
-GitHub CI 執行 unit + functional。Acceptance 需本機測試伺服器，見 [README.md](README.md)。
+GitHub CI 執行 unit + functional。Acceptance 與瀏覽器 E2E 需本機測試伺服器，見 [README.md](README.md) 與 [e2e/README.md](e2e/README.md)。
 
 ## 快速執行
 

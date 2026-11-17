@@ -47,8 +47,7 @@ echo GridView::widget([
             'attribute' => 'process',
             'value' => function ($model, $key, $index, $column)
             {
-                // TODO: 完成投票
-                $toDate = strtotime(date('Y-m-d H:i:s')); // strtotime(date('Y-m-d H:i:s'))
+                $toDate = time();
                 switch(true)
                 {
                     // case $model->active == Votes::STATUS_TERMINATE: // 狀態中止

@@ -59,16 +59,14 @@ class Controller extends \yii\web\Controller
     {
         parent::init();
 
-        // 初始化 Share.instAry 和 Share.payTitle (如果尚未設置)
+        // Share.instAry（機構）與 Share.payTitle（職稱）原由院內系統載入，供選票與 CSV 匯入的代碼轉換。
+        // 開源版沒有此資料來源，預設為空陣列（避免 array_column 錯誤）：CSV 匯入的單位代碼一律存為 '00'、
+        // 職稱代碼為空，英文單位名稱無對照。部署端如需代碼對照，可在登入流程寫入同名 session。
         if (!Yii::$app->session->has('Share.instAry')) {
-            // TODO: 這裡應該從資料庫或 API 載入實際的機構資料
-            // 目前使用空陣列作為預設值以避免 array_column 錯誤
             Yii::$app->session->set('Share.instAry', []);
         }
 
         if (!Yii::$app->session->has('Share.payTitle')) {
-            // TODO: 這裡應該從資料庫或 API 載入實際的職稱資料
-            // 目前使用空陣列作為預設值以避免 array_column 錯誤
             Yii::$app->session->set('Share.payTitle', []);
         }
     }

@@ -4,7 +4,7 @@ namespace app\models;
 
 use Yii;
 use app\components\helper\ArrayHelper;
-// TODO: 整理程式碼，$ballotList, $ballotCountAry, $parties, $passwordList可以用property
+
 class FormManageCount extends \yii\base\BaseObject implements \app\interfaces\CountInterface
 {
     /**

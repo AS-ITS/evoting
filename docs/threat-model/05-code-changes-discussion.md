@@ -65,29 +65,29 @@ return filter_var(getenv('SENSITIVE_REAUTH') ?: 'true', FILTER_VALIDATE_BOOLEAN)
 - 匯出含「代為輸入」
 - 選票匯入＝兩場合併計票，保留來源標記，不是代投入口
 
+### C3. `FileLoader` 路徑限制 — **已落地（v1.1.0）**
+
+2026-09-18 實測發現 helper 本身沒有「解析後仍須在 filePool 內」檢查（`$file` 含 `../` 可解析到池外），當時 HTTP 讀檔入口另有 `basename`／目錄限制，測不到對外讀池外，列為防禦縱深。v1.1.0 改為在 helper 層強制：
+
+| 位置 | 檢查 |
+|------|------|
+| `FileLoader::voteDir()` | 只接受 `candidatePic`／`candidateFile`；voteID 以資料庫值組路徑，解析後必須是該子目錄的直接下一層 |
+| `FileLoader::safePath()` | 檔名只取 `basename`（去除 `../`、`..\`、絕對路徑），拒絕 NUL byte；`realpath` 後須為基底目錄內的一般檔案（擋 symlink 出界、同字首兄弟目錄） |
+| `FileLoader` 實例方法（`imageData`／`downloadFile`／`removeImage`） | 經 `resolve()`：`realpath` 後須在 filePool 指定子目錄內 |
+| HTTP 入口 | `candi/view-photo`、`vote/download-file`、`elect/upload-file`、`elect/delete-file` 皆以 `voteDir()` + `safePath()` 解析；照片存檔另以 `isSafeSegment()` 檢查檔名 |
+| 刪除投票 | 照片與附件目錄須經 `voteDir()` 驗證才移除 |
+
+測試：`tests/unit/components/FileLoaderTest.php`（穿越、symlink、同字首、未知場次、未知子目錄、無寫入權限）。
+
+剩餘：`removeImage()` 以 DB 的 `photo` 組路徑，`resolve()` 只限制在 `candidatePic` 內、不限同場次；`photo` 欄位只由上傳流程以亂數檔名寫入，需能直接改 DB 才可能指到他場次照片，屬 DBA 權限（06 A6）。
+
 ---
 
 ## 仍可討論
 
-### C2. CSP 從 report-only 收斂
+### C2. CSP 收斂到不允許 inline
 
-工期大，另開前端專案。本輪不動。
-
-### C3. `FileLoader` 路徑限制 — **已測（2026-09-18）**
-
-隔離目錄實測（與 `realpath(filePool + dir + file)` 相同拼接；`imageData` 真的 `file_get_contents`）：
-
-| 情境 | 結果 |
-|------|------|
-| 正常 `fileDir` + 檔名 | 留在 pool 內 |
-| `$file` 含 `../` 指向 pool 外 canary | **helper 解析到池外**；`imageData` 在層數對得上時會讀到 canary |
-| `VoteController::actionDownloadFile`：`scandir` 索引 → `basename` 再交給 helper | **無法**用參數讀出池外 |
-| `CandiController::actionViewPhoto`：`basename` + 路徑必須在該場次 `candidatePic` 下 | 池外 **DENY**（且不走 FileLoader） |
-| 上傳照片檔名 | `generateRandomString(6)+副檔名`，不是使用者路徑 |
-
-結論：helper **本身**沒有「解析後仍須在 filePool 內」檢查，惡意 `$file`／`$fileDir` 可以出池。**現有 HTTP 讀檔入口有另做消毒，測不到對外讀池外。** `imageData()` 目前無 view 呼叫。`removeImage()` 用 DB 的 `photo`；若欄位被寫成 `../...` 才可能出池（正常上傳不會）。
-
-程式是否加 prefix check：防禦縱深，**非選舉前必須**。要做再另開。
+v1.1.0 起預設 `CSP_MODE=enforce`（`compat` 政策，已移除 `'unsafe-eval'`，仍允許 inline script／style）；`CSP_POLICY=strict` 僅供測試環境搭配 E2E 盤點違規。移除 `'unsafe-inline'` 需改寫前端 inline script，工期大，另開前端專案。
 
 ### C4. `passwords.mark` 誤當身分欄
 
@@ -130,4 +130,4 @@ return filter_var(getenv('SENSITIVE_REAUTH') ?: 'true', FILTER_VALIDATE_BOOLEAN)
 
 1. A4 部署檢查（其餘 A 已接受，見 06）。
 2. C7 失敗登入原因分類（若現有 501 不夠分析；**不記明文**）。
-3. C5 顯式 `false` 硬擋／C3 prefix（可選）。
+3. C5 顯式 `false` 硬擋（可選）。C3 已於 v1.1.0 落地。
