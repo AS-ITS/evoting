@@ -21,6 +21,9 @@ $cancelBtn = $dialogBtn('取消|Cancel');
 
 /** 點擊後應出現確認對話框；$answer 為 true 按確定、false 按取消。回傳是否出現對話框 */
 $confirmClick = function ($triggerJs, $answer) use ($admin, $okBtn, $cancelBtn) {
+    if (!$admin->js("!!($triggerJs)")) {
+        return false;
+    }
     $admin->click($triggerJs);
     if (!$admin->waitFor("!!($okBtn) && !!($cancelBtn)", 4000)) {
         return false;
