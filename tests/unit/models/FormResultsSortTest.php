@@ -37,9 +37,10 @@ class FormResultsSortTest extends \Codeception\Test\Unit
             'numBallots' => 4, 'leastNumBallots' => 0, 'maxElect' => 1, 'numOfKeep' => 0,
         ]);
 
-        // id 順序 W、D、L、Y；姓名首字筆劃 一(1) < 丁(2) < 王(4) < 林(8)；orderNum 與 id 順序相反
+        // id 順序 W、D、L、Y；姓名首字筆劃 一(1) < 丁(2) < 王(4) < 林(8)；orderNum D(1) < Y(2) < L(3) < W(4)
+        // 同票的 丁(D)、一(Y)：依筆劃 Y 在前，依 orderNum 與 id 都是 D 在前
         $rows = require codecept_root_dir() . 'tests/fixtures/data/candiData.php';
-        foreach (['W' => ['王', 4], 'D' => ['丁', 3], 'L' => ['林', 2], 'Y' => ['一', 1]] as $key => [$name, $order]) {
+        foreach (['W' => ['王', 4], 'D' => ['丁', 1], 'L' => ['林', 3], 'Y' => ['一', 2]] as $key => [$name, $order]) {
             $this->c[$key] = $this->insert('candiData', array_merge($rows['candiData730'], [
                 'voteID' => self::VOTE, 'party' => 'def', 'questionID' => $q, 'Name' => $name, 'orderNum' => $order,
             ]));
@@ -62,8 +63,8 @@ class FormResultsSortTest extends \Codeception\Test\Unit
     public function testSortByBallotsBreaksTiesByCustomListOrder()
     {
         $this->setNumbering('C');
-        // 林 第 1；丁、一 同為第 2，依 orderNum：一(1) 先於 丁(3)；王 第 3
-        $this->assertSame(['L', 'Y', 'D', 'W'], $this->order('N'));
+        // 林 第 1；丁、一 同為第 2，依 orderNum：丁(1) 先於 一(2)（依筆劃會是 一 在前）；王 第 3
+        $this->assertSame(['L', 'D', 'Y', 'W'], $this->order('N'));
     }
 
     public function testSortByBallotsBreaksTiesByIdWhenAutoNumbered()
@@ -76,7 +77,7 @@ class FormResultsSortTest extends \Codeception\Test\Unit
     public function testSortByListUsesCustomOrder()
     {
         $this->setNumbering('C');
-        $this->assertSame(['Y', 'L', 'D', 'W'], $this->order('I'));
+        $this->assertSame(['D', 'Y', 'L', 'W'], $this->order('I'));
     }
 
     public function testSortByListUsesIdWhenAutoNumbered()
