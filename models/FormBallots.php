@@ -731,6 +731,15 @@ class FormBallots extends Ballots
                     ],
                 ]);
 
+                // 圈選的候選人（依 orderNum）或題目在本場次找不到對應 → 整批不匯入
+                foreach ($ballotsSelected as $selected) {
+                    if ($selected['id'] === null || $selected['questionID'] === null) {
+                        Yii::$app->session->addFlash('error', '匯入失敗：場次 ' . \yii\helpers\Html::encode($sessionA) . ' 的候選人或題目在本場次找不到對應，未匯入任何選票');
+                        $transaction->rollBack();
+                        return 0;
+                    }
+                }
+
                 $status = (new FormBallotsSelected)->createBallotSelected(
                     $sessionB, $newBallot->ballotID, $ballotsSelected
                 );
