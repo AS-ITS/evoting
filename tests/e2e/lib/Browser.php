@@ -91,6 +91,48 @@ class Browser
         return $this->afterLoad();
     }
 
+    /**
+     * 從目前頁面以表單 POST 送出並等待載入完成（帶頁面的 CSRF token；Referer 為目前頁面）
+     *
+     * 刪除、切換等只接受 POST 的 action 用這個呼叫，不可用 go()（GET 會回 405）。
+     *
+     * @return int|null 最終頁面的 HTTP 狀態碼
+     */
+    public function post($path, array $params = [])
+    {
+        $this->harvestCsp();
+        $this->cdp->clearEvents();
+        $this->js("(() => {
+  const f = document.createElement('form');
+  f.method = 'POST';
+  f.action = ".json_encode($this->url($path)).";
+  const add = (n, v) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = n; i.value = v; f.appendChild(i); };
+  const p = document.querySelector('meta[name=csrf-param]'), t = document.querySelector('meta[name=csrf-token]');
+  if (p && t) add(p.content, t.content);
+  for (const [k, v] of Object.entries(".json_encode((object) $params, JSON_UNESCAPED_UNICODE).")) add(k, v);
+  document.body.appendChild(f);
+  f.submit();
+})()");
+        return $this->afterLoad();
+    }
+
+    /**
+     * 以 fetch 送出請求，回傳 HTTP 狀態碼（不跟隨導向；POST 會帶頁面的 CSRF token）
+     */
+    public function status($path, $method = 'GET')
+    {
+        return $this->js("(() => {
+  const opt = {method: ".json_encode($method).", redirect: 'manual', credentials: 'same-origin'};
+  if (opt.method === 'POST') {
+    const p = document.querySelector('meta[name=csrf-param]'), t = document.querySelector('meta[name=csrf-token]');
+    const fd = new FormData();
+    if (p && t) fd.append(p.content, t.content);
+    opt.body = fd;
+  }
+  return fetch(".json_encode($this->url($path)).", opt).then(r => r.status);
+})()");
+    }
+
     /** 等待因點擊等動作造成的頁面載入 */
     public function waitLoad()
     {
