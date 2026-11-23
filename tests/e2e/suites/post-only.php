@@ -69,8 +69,36 @@ if ($ids) {
     if ($admin->js("!!($btn)")) {
         $admin->check('選票修改頁刪除：出現確認對話框', $confirmClick($btn, false));
         $admin->check('選票修改頁刪除：按取消後選票仍在', in_array($ids[0], $ballotIds(), true));
+        // 按確定：連結位於選票表單內，以 data-form 的獨立表單送出（不送出、不驗證選票表單）
+        $admin->go("/ballot/edit?voteID=$vote&party=N&ballotID={$ids[0]}");
+        $admin->check('選票修改頁刪除：按確定（對話框）', $confirmClick($btn, true));
+        $admin->check('選票修改頁刪除：按確定後選票已刪除', !in_array($ids[0], $ballotIds(), true), implode(' | ', $admin->flashes()));
     }
 }
+
+// ===== 刪除全部選票、刪除投票密碼（下拉選單）：只測取消 =====
+$openDropdown = function ($toggleText) use ($admin) {
+    $admin->click("[...document.querySelectorAll('[data-bs-toggle=dropdown]')].find(e => e.innerText.includes(".json_encode($toggleText)."))");
+    $admin->sleep(400);
+};
+$before = count($ballotIds());
+$openDropdown('刪除全部選票');
+$item = "[...document.querySelectorAll('.dropdown-menu.show a')].find(a => a.innerText.trim() === '所有分組')";
+$admin->check('刪除全部選票（下拉）：以 POST 送出', (bool) $admin->js("!!($item) && ($item).dataset.method === 'post'"));
+$admin->check('刪除全部選票（下拉）：出現確認對話框', $confirmClick($item, false));
+$admin->check('刪除全部選票（下拉）：按取消後選票數不變', count($ballotIds()) === $before);
+
+$admin->go("/passwd/index?voteID=$vote");
+$passwdCount = function () use ($admin, $vote) {
+    $admin->go("/passwd/index?voteID=$vote");
+    return $admin->js("(() => { const s = document.querySelector('.summary'); return s ? s.innerText : null; })()");
+};
+$pwBefore = $passwdCount();
+$openDropdown('刪除密碼');
+$pwItem = "[...document.querySelectorAll('.dropdown-menu.show a')].find(a => a.innerText.trim() === '所有分組')";
+$admin->check('刪除投票密碼（下拉）：以 POST 送出', (bool) $admin->js("!!($pwItem) && ($pwItem).dataset.method === 'post'"));
+$admin->check('刪除投票密碼（下拉）：出現確認對話框', $confirmClick($pwItem, false));
+$admin->check('刪除投票密碼（下拉）：按取消後密碼數不變', $pwBefore !== null && $passwdCount() === $pwBefore, (string) $pwBefore);
 
 // ===== 重啟投票（會刪除全部選票與開票結果）：只測取消 =====
 $before = count($ballotIds());
@@ -91,11 +119,23 @@ if ($candId) {
     $admin->check('刪除候選人：出現確認對話框', $confirmClick($del, false));
     $admin->check('刪除候選人：按取消後候選人仍在', $admin->go("/candi/manual?voteID=$candVote&action=update&id=$candId") === 200
         && $admin->js("!!document.querySelector('#formcandidata-name')"));
+    // 按確定：連結位於候選人表單內，以 data-form 的獨立表單送出
+    $admin->check('刪除候選人：按確定（對話框）', $confirmClick($del, true));
+    $admin->go("/candi/data?voteID=$candVote");
+    $admin->check('刪除候選人：按確定後已刪除', !$admin->js("[...document.querySelectorAll('a[href*=\"candi/manual\"]')].some(a => new URL(a.href).searchParams.get('id') === ".json_encode($candId).")"), implode(' | ', $admin->flashes()));
 }
 
 // ===== 輪次：建立鈕為 POST；切換需確認，確定後切換並還原 =====
 $admin->go("/round/index?voteID=$candVote");
 $admin->check('建立新一輪按鈕以 POST 送出', (bool) $admin->js("[...document.querySelectorAll('a')].some(a => a.innerText.includes('建立新一輪投票') && a.dataset.method === 'post')"));
+// 實際點擊：最新一輪尚未投票時不建立，顯示「尚未投票」（以 POST 送達，不是 405）
+$roundRows = $admin->js("document.querySelectorAll('table tbody tr').length");
+$admin->click("[...document.querySelectorAll('a')].find(a => a.innerText.includes('建立新一輪投票'))");
+$admin->waitLoad();
+$admin->check('建立新一輪：點擊後送達（未投票時提示，不建立）', !$admin->js("document.body.innerText.includes('Method Not Allowed')")
+    && (bool) array_filter($admin->flashes(), function ($m) { return mb_strpos($m, '尚未投票') !== false; }), implode(' | ', $admin->flashes()));
+$admin->go("/round/index?voteID=$candVote");
+$admin->check('建立新一輪：輪次數不變', $admin->js("document.querySelectorAll('table tbody tr').length") === $roundRows);
 $status = $admin->status("/round/switch?voteID=$candVote&round=2");
 $admin->check('GET 切換輪次網址回 405', $status === 405, "HTTP $status");
 
@@ -136,3 +176,18 @@ foreach ([
     $status = $admin->status($u);
     $admin->check("GET 回 405：$u", $status === 405, "HTTP $status");
 }
+
+// ===== 管理員登出（頁首選單，只接受 POST）：實際點擊，最後重新登入 =====
+$logout = "[...document.querySelectorAll('a.js-csrf-sync-logout')].find(a => a.innerText.includes('管理員登出'))";
+$admin->go('/elect/index');
+$admin->js("(() => { const a = $logout; if (a && a.offsetParent === null) { const t = a.closest('.dropdown, .nav-item') && a.closest('.dropdown, .nav-item').querySelector('[data-bs-toggle=dropdown]'); if (t) t.click(); } })()");
+$admin->sleep(400);
+if ($admin->js("!!($logout)")) {
+    $admin->click($logout);
+    $admin->waitLoad();
+    $admin->go('/elect/index');
+    $admin->check('管理員登出：點擊後已登出（再進管理頁導向登入）', strpos((string) $admin->js('location.pathname'), 'auth/login') !== false, (string) $admin->js('location.pathname'));
+} else {
+    $admin->check('管理員登出：找到頁首登出連結', false);
+}
+$admin->login('test_admin');

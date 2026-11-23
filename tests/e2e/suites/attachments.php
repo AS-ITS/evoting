@@ -110,8 +110,18 @@ $admin->check('攻擊後附件數量不變（3 個）', count($admin->js($listJs
 // ---- 刪除 ----
 $hrefs = $admin->js($deleteLinksJs);
 $admin->check('刪除連結帶檔名（非序號）', $hrefs && !array_filter($hrefs, function ($h) { return preg_match('/[?&]file=\d+(&|$)/', $h); }));
-$admin->post($hrefs[0]);
-$admin->check('刪除單一附件成功', $has($admin->flashes(), '檔案刪除成功'));
+// 實際點擊上傳視窗內的刪除連結（位於上傳表單內，以 data-form 的獨立表單 POST 送出）：先確認，按「確定」後刪除
+$admin->go($edit);
+$admin->openModal($uploadBtn, '#fileUpload');
+$fileOk = "[...document.querySelectorAll('.modal.show button')].find(e => /^(確定|OK|Ok)$/i.test(e.innerText.trim()) && e.offsetParent !== null)";
+$admin->click("document.querySelector('#fileUpload a#delete-file')");
+$admin->check('刪除附件：出現確認對話框', $admin->waitFor("!!($fileOk)", 4000));
+$admin->sleep(400);
+$admin->click($fileOk);
+$admin->waitLoad();
+$admin->check('刪除單一附件成功', $has($admin->flashes(), '檔案刪除成功'), implode(' | ', $admin->flashes()));
+$admin->go($edit);
+$admin->check('刪除單一附件後剩 2 個', count($admin->js($listJs)) === 2);
 $clearAll();
 $admin->go($edit);
 $admin->check('附件全部刪光', count($admin->js($listJs)) === 0);
