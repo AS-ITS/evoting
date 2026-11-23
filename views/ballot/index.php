@@ -92,9 +92,13 @@ foreach($parties as $party => $division)
     ];
 }
 
-if($voteInfo->type == Votes::TYPE_ANON) {
-    $creatorURL = 'select-passwd';
-}
+// 後台建立選票需選擇投票者（匿名：投票密碼）；表決投票沒有投票者身分，不提供
+$createBtn = ($voteInfo->type == Votes::TYPE_ANON)
+    ? Html::tag( 'div',
+        Html::a('建立選票', ['select-passwd', 'voteID'=>$voteInfo->voteID], ['class' => 'btn btn-primary me-2'])
+        , ['class' => 'btn-group d-inline-block']
+    )
+    : '';
 
 $unlockBtn = ($voteInfo->type == Votes::TYPE_ANON && $reauthRequired && !$plaintextUnlocked)
     ? Html::a('顯示明文', '#collapseUnlockPlaintext', [
@@ -108,10 +112,7 @@ $unlockBtn = ($voteInfo->type == Votes::TYPE_ANON && $reauthRequired && !$plaint
 // 功能按鈕
 echo Html::tag('div',
     $unlockBtn.
-    Html::tag( 'div',
-        Html::a('建立選票', [$creatorURL, 'voteID'=>$voteInfo->voteID], ['class' => 'btn btn-primary me-2'])
-        , ['class' => 'btn-group d-inline-block']
-    ).
+    $createBtn.
     Html::tag('div',
         Html::a('匯入選票', ['import', 'voteID'=>$voteInfo->voteID], ['class' => 'btn btn-primary me-2'])
         , ['class' => 'btn-group']
@@ -301,13 +302,16 @@ echo GridView::widget([
         [
             'label' => '投票者',
             'attribute' => 'creator',
-            'value' => function ($model, $key, $index, $column) use ($sysidList)
+            'value' => function ($model, $key, $index, $column) use ($sysidList, $voteInfo)
             {
+                // 表決投票的 creator 是隨機選票識別碼，不代表投票者
+                if ($voteInfo->type == Votes::TYPE_NO_AUTH)
+                    return '—';
                 if(is_null($sysidList))
                     return $model->creator;
-                return $sysidList[$model->creator];
+                return $sysidList[$model->creator] ?? $model->creator;
             },
-            'filter' => ArrayHelper::addSpace($sysidList),
+            'filter' => ($voteInfo->type == Votes::TYPE_NO_AUTH) ? false : ArrayHelper::addSpace($sysidList),
             'headerOptions'  => ['class' => 'align-middle text-center'],
             'contentOptions' => ['class' => 'align-middle text-center text-nowrap'],
         ],

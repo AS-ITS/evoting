@@ -292,6 +292,7 @@ class BallotController extends \app\components\Controller
             }
             else {
                 Logs::add(Logs::VOTE_BALLOT_CREATE_FAIL, Json::encode($FormBallots->errors, 336));
+                Yii::$app->session->setFlash('error', '選票新增失敗！請確認圈選的候選人屬於該組別與輪次。');
             }
             return $this->redirect(['edit', 'voteID' => $voteID, 'party' => $FormBallots->party, 'ballotID' => $FormBallots->ballotID]);
         }
@@ -342,6 +343,7 @@ class BallotController extends \app\components\Controller
             }
             else {
                 Logs::add(Logs::VOTE_BALLOT_EDIT_FAIL, Json::encode(compact('voteID')+$FormBallots->errors, 336));
+                Yii::$app->session->setFlash('error', '選票修改失敗！請確認圈選的候選人屬於該組別與輪次。');
             }
             return $this->redirect(['edit', 'voteID'=>$voteID, 'party'=>$party, 'ballotID'=>$ballotID]);
         }

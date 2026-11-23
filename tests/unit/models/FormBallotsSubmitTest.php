@@ -157,6 +157,18 @@ class FormBallotsSubmitTest extends \Codeception\Test\Unit
         $this->assertSame(0, (int) BallotsSelected::find()->where(['voteID' => self::NO_AUTH])->count());
     }
 
+    public function testNoAuthBallotChangerHidesRandomCreator()
+    {
+        $model = new FormBallots;
+        $this->assertTrue($model->creatorBallot(self::NO_AUTH, ['selection' => [$this->c['a1']]]));
+
+        // 後台選票修改頁以此清單渲染「投票者／修改者」下拉選單，不可為 null
+        $changer = (new FormManageVote(self::NO_AUTH))->getNewBallotChanger([$model->creator, 'test_admin']);
+        $this->assertIsArray($changer);
+        $this->assertSame('—', $changer[$model->creator]);
+        $this->assertArrayHasKey('test_admin', $changer);
+    }
+
     public function testNoAuthCountAndResults()
     {
         $votes = [

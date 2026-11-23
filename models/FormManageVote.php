@@ -418,6 +418,17 @@ class FormManageVote extends \yii\base\BaseObject
             $FormPasswords = new FormPasswords;
             return $FormPasswords->getNewBallotChanger($sysIds, $decryptPlaintext);
         }
+        if($voteInfo->type == Votes::TYPE_NO_AUTH) // 表決投票：creator 為隨機選票識別碼，不代表投票者
+        {
+            $ary = ['' => '無'];
+            if (!empty($sysIds[0])) {
+                $ary[(string) $sysIds[0]] = '—';
+            }
+            return ArrayHelper::merge(
+                $ary,
+                ArrayHelper::map(Users::find()->where(['cn' => $sysIds])->asArray()->all(), 'cn', 'name')
+            );
+        }
         return null;
     }
 
