@@ -264,16 +264,18 @@ class FormManageCount extends \yii\base\BaseObject implements \app\interfaces\Co
             $femaleNum = 0; // 女性已保留人數
 
             // 女性保留名額統計
-            if ($this->_voteInfo->addiCondition == 'female') {
+            // 沒有女性候選人得票時，$sexBallotCount[0] 不存在
+            if ($this->_voteInfo->addiCondition == 'female' && !empty($sexBallotCount[0])) {
                 $femaleKeepNum = $this ->_questions[$questionID]->numFemaleKeep;// 女性保留人數設定
                 foreach ($sexBallotCount[0] as $selCandiID => $candiData) {
-                    // 若女性已保留人數小於設定值且女性有票候選人數量大於0
-                    if ($femaleNum < $femaleKeepNum && count($sexBallotCount[0]) > 0) {
+                    // 若女性已保留人數小於設定值
+                    if ($femaleNum < $femaleKeepNum) {
+                        $countNum = $candiData['count'];
                         // 組合表格所需 array 格式 (有票的候選人)
                         $r[$questionID]['ranking'][] = $this->getStoreRanking(
-                            $selCandiID, (($lastNum == $countNum && $lastNum != 0) ? $rankNum : ++$rankNum), $candiData['count'], true, $candiData
+                            $selCandiID, (($lastNum == $countNum && $lastNum != 0) ? $rankNum : ++$rankNum), $countNum, true, $candiData
                         );
-        
+
                         // 紀錄當前數量，給下一次迴圈判斷使用
                         $lastNum = $countNum;
                         ++$femaleNum;
@@ -298,6 +300,8 @@ class FormManageCount extends \yii\base\BaseObject implements \app\interfaces\Co
                 // 紀錄當前數量，給下一次迴圈判斷使用
                 $lastNum = $countNum;
             }
+            // 解除參考，避免下一題的女性迴圈寫入 $candiData 時改到 $getCandiList
+            unset($candiData);
             // 沒有票的候選人名次
             $r[$questionID]['rankingNext'] = ++$rankNum;
         }
@@ -407,8 +411,9 @@ class FormManageCount extends \yii\base\BaseObject implements \app\interfaces\Co
                 }
                 else
                 {
+                    // 同票超出剩餘當選名額的人數，佔用遞補名額（先扣再歸零；不可扣成負數）
+                    $keepNum = max(0, $keepNum - ($cRA - $electNum));
                     $electNum = 0;
-                    $keepNum -= $cRA - $electNum; // 處理待當選與遞補交集 * 可能需記錄或下次重算
                     $electStatus = 'CE';// 待當選
                 }
             }

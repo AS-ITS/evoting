@@ -35,7 +35,7 @@ class FormBallots extends Ballots
             [['party'], 'string', 'max' => 12, 'on' => ['search', 'update', 'creator']],
             [['isAdminAdd'], 'string', 'max' => 1, 'on' => ['search', 'update', 'creator']],
             [['ip'], 'string', 'max' => 128, 'on' => ['search', 'update', 'creator']],
-            [['creator', 'modifier'], 'string', 'max' => 8, 'on' => ['search', 'update', 'creator']],
+            [['creator', 'modifier'], 'string', 'max' => 50, 'on' => ['search', 'update', 'creator']],
             [[
                 'voteID','insTime', 'updTime', 'party', 'ballotID', 'isAdminAdd',
                 'ip', 'creator', 'modifier', 'insTime', 'updTime', 'selectNum'
@@ -198,6 +198,9 @@ class FormBallots extends Ballots
         // 取投票資訊
         $FormVotes = new FormVotes;
         $voteInfo = $FormVotes->getVoteInfo($voteID);
+        if (is_null($voteInfo)) {
+            return false;
+        }
 
         $db = Yii::$app->db;
         $transaction = $db->beginTransaction();
@@ -210,6 +213,10 @@ class FormBallots extends Ballots
                 $this->load($postData);
                 $this->voteID = $voteID;
                 $this->isAdminAdd = '1';
+                if ($voteInfo->type == FormVotes::TYPE_NO_AUTH) {
+                    $this->party = Parties::DEF_PARTY;
+                    $this->creator = self::newNoAuthCreator();
+                }
             }
             else
             {
@@ -219,6 +226,7 @@ class FormBallots extends Ballots
                 {
                     $loginData = Yii::$app->anon->identity->getAuthData();
                     if($loginData['voteID'] != $voteID && $loginData['voteID'] != $voteInfo->bindWhichVote) {
+                        $transaction->rollBack();
                         return false;
                     }
                     $this->voteID = $voteID;
@@ -227,16 +235,28 @@ class FormBallots extends Ballots
                 }
                 else if($voteInfo->type == FormVotes::TYPE_NO_AUTH)   // 表決投票
                 {
+                    // 表決投票不分組（FormVotes 驗證規則），也沒有投票者身分
                     $this->voteID = $voteID;
-                    $this->party = $voteInfo->partyOrNot ? $loginData['party'] : Parties::DEF_PARTY;
-                    $this->creator = "";
+                    $this->party = Parties::DEF_PARTY;
+                    $this->creator = self::newNoAuthCreator();
                 }
                 else
                 {
+                    $transaction->rollBack();
                     return false;
                 }
             }
             $this->round = $voteInfo->round; // 輪次
+
+            // 圈選的候選人須屬於本場次、本輪次，且為投票者組別或共同投票的問題
+            $candiData = $this->filterAllowedCandidates(
+                $this->voteID, $this->round, $this->party, ArrayHelper::getValue($postData, 'selection', [])
+            );
+            if (is_null($candiData)) {
+                $transaction->rollBack();
+                return false;
+            }
+
             $this->insTime = date('Y-m-d H:i:s');
             $this->ip = Yii::$app->getRequest()->getUserIP();
             // 新增尚未修改：不寫入修改者／修改時間（僅 updateBallot 才寫入）
@@ -248,26 +268,14 @@ class FormBallots extends Ballots
                 $transaction->rollBack();
                 return false;
             }
-            
-            $status = true;
-            if(ArrayHelper::keyExists('selection', $postData, false))
+
+            if($candiData !== [])
             {
-                $candiData = ArrayHelper::map(
-                    (new FormCandiData)->getMultipleCandiData(
-                        $this->voteID,
-                        array_values($postData['selection'])
-                    ) ?: [],
-                    'id', 'attributes'
-                );
                 // 更新選票所有選擇的候選人
                 $ballotsSelected = new FormBallotsSelected;
                 if($adminAdd)
                     $ballotsSelected->deleteBallot($this->voteID, $this->ballotID);// 清除該選票所有選擇的候選人
-                $status = $ballotsSelected->createBallotSelected(
-                    $this->voteID, $this->ballotID, $candiData
-                );
-
-                if (!$status) {
+                if (!$ballotsSelected->createBallotSelected($this->voteID, $this->ballotID, $candiData)) {
                     $transaction->rollBack();
                     return false;
                 }
@@ -281,7 +289,7 @@ class FormBallots extends Ballots
 
             $transaction->commit();
             return true;
-        } catch(\Exception $e) {
+        } catch(\Throwable $e) {
             $transaction->rollBack();
             Yii::error(
                 \yii\helpers\VarDumper::dumpAsString(
@@ -290,51 +298,113 @@ class FormBallots extends Ballots
                 __METHOD__
             );
             return false;
-        } 
+        }
+    }
+
+    /**
+     * 表決投票的選票識別碼：每張選票不重複，與投票者無關聯
+     */
+    public static function newNoAuthCreator(): string
+    {
+        return 'n' . bin2hex(random_bytes(12));
+    }
+
+    /**
+     * 檢查圈選的候選人，並回傳寫入 ballotsSelected 所需的候選人資料
+     *
+     * 每一個 id 都必須是本場次的候選人，且其問題屬於指定輪次、指定組別或共同投票（N）。
+     *
+     * @param string $voteID
+     * @param int|string $round
+     * @param string $party 投票者組別
+     * @param mixed $selection 送出的候選人 id 清單
+     * @return array|null 以候選人 id 為 key 的資料；任一筆不符時回傳 null
+     */
+    public function filterAllowedCandidates($voteID, $round, $party, $selection): ?array
+    {
+        if (!is_array($selection)) {
+            return null;
+        }
+        $ids = [];
+        foreach ($selection as $id) {
+            if (!is_scalar($id) || !ctype_digit((string) $id)) {
+                Yii::warning("ballot {$voteID}: invalid candidate id", __METHOD__);
+                return null;
+            }
+            $ids[(int) $id] = (int) $id;
+        }
+        if ($ids === []) {
+            return [];
+        }
+
+        $candiData = ArrayHelper::map(
+            (new FormCandiData)->getMultipleCandiData($voteID, array_values($ids)) ?: [],
+            'id', 'attributes'
+        );
+        $allowedQuestions = array_map('intval', Questions::find()
+            ->select('questionID')
+            ->where(['voteID' => $voteID, 'round' => $round, 'party' => [$party, Questions::ALL_PARTY_CODE]])
+            ->column());
+
+        foreach ($ids as $id) {
+            if (!isset($candiData[$id]) || !in_array((int) $candiData[$id]['questionID'], $allowedQuestions, true)) {
+                Yii::warning("ballot {$voteID}: candidate {$id} is not allowed for round {$round} party {$party}", __METHOD__);
+                return null;
+            }
+        }
+        return $candiData;
     }
 
     /**
      * 更新選票
+     *
+     * @return bool|null 選票不存在回傳 null；圈選不合法或寫入失敗回傳 false（不變更任何資料）
      */
     public function updateBallot($voteID,$ballotID,$postData)
     {
         // 取得選票當事者的設定
         $ballotData = parent::findOne(compact('voteID', 'ballotID'));
         if(is_null($ballotData)) return null;
-        $this->setScenario('update');
-        $ballotData->modifier = Yii::$app->user->identity->getId();
-        $ballotData->updTime = date('Y-m-d H:i:s');
-        $ballotStatus = $ballotData->save();
 
-        $status = true;
-        if(ArrayHelper::keyExists('selection', $postData, false))
-        {
-            $addSelCandiId = array_values($postData['selection']);
-            $candiData = ArrayHelper::map(
-                (new FormCandiData)->getMultipleCandiData($voteID,$addSelCandiId) ?: [],
-                'id', 'attributes'
-            );
-            // 更新選票所有選擇的候選人
-            $ballotsSelected = new FormBallotsSelected;
-            $ballotsSelected->deleteBallot($voteID, $ballotID);// 清除該選票所有選擇的候選人
-            $status = $ballotsSelected->createBallotSelected($voteID, $ballotID, $candiData);
-        }
-        else {
-            // 無勾選任何選票，清除該選票所有之前選擇的候選人
-            $ballotsSelected = new FormBallotsSelected;
-            $ballotsSelected->deleteBallot($voteID, $ballotID); 
-        }
-        
-        // 取投票資訊
-        $FormVotes = new FormVotes;
-        $voteInfo = $FormVotes->getVoteInfo($voteID);
-        if($voteInfo->type == Votes::TYPE_ANON) // 匿名投票
-        {
-            $FormPasswords = new FormPasswords;
-            $FormPasswords->setVote($ballotData->creator); // 修改投票密碼狀態
+        // 圈選的候選人須屬於該選票的輪次與組別
+        $candiData = $this->filterAllowedCandidates(
+            $voteID, $ballotData->round, $ballotData->party, ArrayHelper::getValue($postData, 'selection', [])
+        );
+        if (is_null($candiData)) {
+            return false;
         }
 
-        return $ballotStatus && $status;
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $ballotData->modifier = Yii::$app->user->identity->getId();
+            $ballotData->updTime = date('Y-m-d H:i:s');
+            if (!$ballotData->save()) {
+                throw new \RuntimeException(json_encode($ballotData->errors, JSON_UNESCAPED_UNICODE));
+            }
+
+            // 清除該選票之前選擇的候選人，再寫入新的圈選
+            $ballotsSelected = new FormBallotsSelected;
+            $ballotsSelected->deleteBallot($voteID, $ballotID);
+            if ($candiData !== [] && !$ballotsSelected->createBallotSelected($voteID, $ballotID, $candiData, $ballotData->round)) {
+                throw new \RuntimeException('ballotsSelected write failed');
+            }
+
+            // 取投票資訊
+            $FormVotes = new FormVotes;
+            $voteInfo = $FormVotes->getVoteInfo($voteID);
+            if($voteInfo->type == Votes::TYPE_ANON) // 匿名投票
+            {
+                $FormPasswords = new FormPasswords;
+                $FormPasswords->setVote($ballotData->creator); // 修改投票密碼狀態
+            }
+
+            $transaction->commit();
+            return true;
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            Yii::error("ballot {$voteID}/{$ballotID} update failed: " . $e->getMessage(), __METHOD__);
+            return false;
+        }
     }
 
     /**
@@ -660,6 +730,15 @@ class FormBallots extends Ballots
                         'jobLctn'
                     ],
                 ]);
+
+                // 圈選的候選人（依 orderNum）或題目在本場次找不到對應 → 整批不匯入
+                foreach ($ballotsSelected as $selected) {
+                    if ($selected['id'] === null || $selected['questionID'] === null) {
+                        Yii::$app->session->addFlash('error', '匯入失敗：場次 ' . \yii\helpers\Html::encode($sessionA) . ' 的候選人或題目在本場次找不到對應，未匯入任何選票');
+                        $transaction->rollBack();
+                        return 0;
+                    }
+                }
 
                 $status = (new FormBallotsSelected)->createBallotSelected(
                     $sessionB, $newBallot->ballotID, $ballotsSelected

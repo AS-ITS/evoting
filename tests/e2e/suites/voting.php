@@ -1,9 +1,15 @@
 <?php
 /**
- * 投票流程畫面：建立候選設定與候選人後，投票者開啟投票說明、投票畫面
+ * 投票流程畫面：建立候選設定與候選人後，投票者開啟投票說明、投票畫面，
+ * 並由兩位投票者實際送出表決選票、驗證竄改的候選人被拒、檢查管理端選票列表與修改頁
  *
  * fixture 的表決投票（NoAuthVoteTest）有問題但沒有候選人，投票畫面會回 400，
- * 因此先以管理介面建立候選人，測完再刪除。
+ * 因此先以管理介面建立候選人，測完刪除本次送出的選票與候選人。
+ *
+ * @var string $cdpUrl
+ * @var string $base
+ * @var string $outDir
+ * @var Browser[] $browsers
  *
  * @var Browser $admin
  * @var Browser $guest
@@ -71,6 +77,89 @@ $admin->check('下一步：確認頁顯示已圈選的候選人姓名（文字�
 $problems = PageCheck::inspect($guest);
 $admin->check('下一步：確認頁共用檢查', !$problems, implode(' / ', $problems));
 $guest->shot('voting-confirm');
+
+// ===== 表決投票：多位投票者實際送出 =====
+
+/** 管理端選票列表上的選票編號（取自刪除連結） */
+$ballotIds = function () use ($admin, $vote) {
+    PageCheck::run($admin, '選票列表（表決）', "/ballot/index?voteID=$vote");
+    return $admin->js("[...new Set([...document.querySelectorAll('a[href*=\"ballot/delete?\"]')].map(a => new URL(a.href).searchParams.get('ballotID')))].filter(Boolean)");
+};
+$before = $ballotIds();
+
+/** 在確認頁送出選票，回傳是否進入投票完成頁 */
+$submit = function (Browser $b) {
+    $b->click("[...document.querySelectorAll('button')].find(e => e.innerText.trim().includes('確認') && e.offsetParent !== null && !e.closest('.modal'))");
+    $b->sleep(1200);
+    $dialog = "[...document.querySelectorAll('.modal.show button, .bootstrap-dialog button')].find(e => /^(投票|確定|確認|送出)$/.test(e.innerText.trim()) && e.offsetParent !== null)";
+    if ($b->waitFor("!!($dialog)", 5000)) {
+        $b->click($dialog);
+    }
+    $b->waitFor("!location.pathname.includes('start-vote')", 15000);
+    $b->sleep(800);
+    return strpos($b->js('location.pathname'), 'vote-finish') !== false;
+};
+
+/** 從投票畫面圈選測試候選人到確認頁 */
+$selectAndNext = function (Browser $b) use ($vote, $name, $okBtn) {
+    PageCheck::run($b, '投票畫面', "/vote/start-vote?voteID=$vote");
+    if ($b->waitFor("!!($okBtn)", 3000)) {
+        $b->click($okBtn);
+        $b->sleep(900);
+    }
+    $b->click("[...document.querySelectorAll('table input[type=checkbox]')].find(e => e.closest('tr') && e.closest('tr').innerText.includes(".json_encode($name)."))");
+    $b->sleep(500);
+    $b->click("[...document.querySelectorAll('button, a')].find(e => e.innerText.includes('下一步') && e.offsetParent !== null)");
+    $b->sleep(1500);
+};
+
+// 投票者 A（沿用上面已到確認頁的 guest）
+$admin->check('表決投票：投票者 A 送出選票進入投票完成頁', $submit($guest), $guest->js('location.pathname'));
+$problems = PageCheck::inspect($guest);
+$admin->check('表決投票：投票完成頁共用檢查', !$problems, implode(' / ', $problems));
+$guest->shot('voting-finish');
+
+// 投票者 B（另一個瀏覽器環境）：修正前第 2 位投票者會被唯一鍵擋下、導回投票畫面
+$voterB = new Browser($cdpUrl, $base, $outDir, true);
+$browsers[] = $voterB;
+$voterB->group = 'voting';
+$selectAndNext($voterB);
+$admin->check('表決投票：投票者 B 也能送出選票', $submit($voterB), $voterB->js('location.pathname'));
+
+// 竄改：送出不屬於本場次的候選人（AnonNoPartyTest 的候選人 57）應被拒絕
+$voterC = new Browser($cdpUrl, $base, $outDir, true);
+$browsers[] = $voterC;
+$voterC->group = 'voting';
+$voterC->go("/vote/start-vote?voteID=$vote");
+$tampered = $voterC->js("(async () => {
+  const form = document.querySelector('form[action*=\"save-vote\"]');
+  if (!form) return 'no-form';
+  const fd = new FormData(form); // 含表單的 CSRF 欄位
+  fd.delete('selection[]');
+  fd.append('selection[]', '57');
+  const r = await fetch(form.action, {method: 'POST', body: fd, credentials: 'same-origin'});
+  return new URL(r.url).pathname;
+})()");
+$admin->check('表決投票：竄改送出他場次候選人被拒（導回投票畫面）', is_string($tampered) && strpos($tampered, 'start-vote') !== false, (string) $tampered);
+
+// 管理端：選票數量 +2、列表與修改頁正常、投票者顯示「—」
+$after = $ballotIds();
+$newIds = array_values(array_diff($after, $before));
+$admin->check('表決投票：管理端選票列表多出 2 張（竄改的不算）', count($newIds) === 2, json_encode(['before' => $before, 'after' => $after]));
+$admin->check('表決投票：選票列表不提供「建立選票」', !$admin->js("[...document.querySelectorAll('a')].some(a => a.innerText.trim() === '建立選票')"));
+$admin->check('表決投票：選票列表投票者顯示「—」', (bool) $admin->js("[...document.querySelectorAll('table tbody td')].some(td => td.innerText.trim() === '—')"));
+$admin->shot('voting-ballot-list');
+if ($newIds) {
+    PageCheck::run($admin, '選票修改（表決）', "/ballot/edit?voteID=$vote&party=def&ballotID={$newIds[0]}");
+    $admin->check('表決投票：選票修改頁投票者顯示「—」', $admin->js("(() => { const s = document.querySelector('#formballots-creator, select[name*=\"[creator]\"]'); const o = s && s.options[s.selectedIndex]; return o ? o.text : null; })()") === '—');
+    $admin->check('表決投票：選票修改頁勾選了測試候選人', (bool) $admin->js("[...document.querySelectorAll('table input[type=checkbox]')].some(e => e.checked && e.closest('tr') && e.closest('tr').innerText.includes(".json_encode($name)."))"));
+}
+
+// 清除本次送出的選票
+foreach ($newIds as $id) {
+    $admin->go("/ballot/delete?voteID=$vote&ballotID=$id");
+}
+$admin->check('表決投票：刪除測試選票', !array_diff($ballotIds(), $before));
 
 // 清除測試候選人
 if ($candId) {

@@ -37,4 +37,28 @@ class UsersLegacyPasswordTest extends Unit
 
         $this->assertFalse($user->validatePassword('anything'));
     }
+
+    /**
+     * 迴歸：ConfigValidator 在 DISABLE_LEGACY_ADMIN_PASSWORD=true 時會呼叫此方法；
+     * 修正前 select 不存在的 username 欄位，查詢直接失敗。
+     */
+    public function testCountLegacyPasswordUsersCountsNonHashPasswords()
+    {
+        $db = Users::getDb();
+        $cn = 'ut_legacy_pw';
+        $db->createCommand()->delete(Users::tableName(), ['cn' => $cn])->execute();
+
+        $before = Users::countLegacyPasswordUsers();
+        try {
+            $db->createCommand()->insert(Users::tableName(), [
+                'cn' => $cn,
+                'name' => 'legacy',
+                'password' => 'base64legacyblob',
+            ])->execute();
+
+            $this->assertSame($before + 1, Users::countLegacyPasswordUsers());
+        } finally {
+            $db->createCommand()->delete(Users::tableName(), ['cn' => $cn])->execute();
+        }
+    }
 }

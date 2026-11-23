@@ -59,6 +59,7 @@ class FormVotes extends Votes
                 'isByParty', 'isBindVote', 'active', 'isFinish', 'finishPage', 'authBeforeDetail', 'skipDetail', 'isShow'
             ], 'string', 'max' => 1, 'on'=>['create', 'update']],
             ['type', 'in', 'range' => [self::TYPE_NO_AUTH, self::TYPE_ANON], 'on' => ['create', 'update']],
+            ['type', 'validateNoAuthOptions', 'on' => ['create', 'update']],
             [['pattern', 'loginLayout'], 'string', 'max' => 10, 'on'=>['create', 'update']],
             [['themeColor'], 'string', 'max' => 30, 'on'=>['create', 'update']],
             [['themeColor'], 'match', 'pattern' => self::THEME_COLOR_PATTERN, 'message' => '主題色格式不正確，請輸入色碼（如 #ffffff）、顏色名稱或 rgb()/hsl()。', 'on'=>['create', 'update']],
@@ -78,6 +79,36 @@ class FormVotes extends Votes
                 return \yii\helpers\HtmlPurifier::process($value, Yii::$app->params['HtmlPurifier.config']);
             }, 'on'=>['create','update']],
         ];
+    }
+
+    /**
+     * 表決投票（無投票者身分）不支援分組、共用投票、保留名額、場次碼及查看投票資訊驗證；
+     * 前端選擇表決時會鎖住這些欄位，此處防止被竄改的請求建立不支援的組合。
+     */
+    public function validateNoAuthOptions($attribute)
+    {
+        if ((string) $this->type !== self::TYPE_NO_AUTH) {
+            return;
+        }
+        $unsupported = [];
+        if ((string) $this->partyOrNot === '1') {
+            $unsupported[] = $this->getAttributeLabel('partyOrNot');
+        }
+        if ((string) $this->isBindVote === '1') {
+            $unsupported[] = $this->getAttributeLabel('isBindVote');
+        }
+        if (!in_array((string) $this->addiCondition, ['', 'n'], true)) {
+            $unsupported[] = $this->getAttributeLabel('addiCondition');
+        }
+        if ((string) $this->session !== '') {
+            $unsupported[] = $this->getAttributeLabel('session');
+        }
+        if ((string) $this->authBeforeDetail === '1') {
+            $unsupported[] = $this->getAttributeLabel('authBeforeDetail');
+        }
+        if ($unsupported !== []) {
+            $this->addError($attribute, '表決投票不支援：' . implode('、', $unsupported));
+        }
     }
 
     /**

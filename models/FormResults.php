@@ -34,35 +34,48 @@ class FormResults extends Results
      */
     public function createResults($voteID)
     {
-        
         $manageCount = new FormManageCount($voteID);
-        $ballotCountSort = $manageCount->getBallotCountSort(true);
+        return $this->saveRankings($voteID, $manageCount->getBallotCountSort(true));
+    }
+
+    /**
+     * 寫入開票結果；任一筆寫入失敗即全部回滾
+     *
+     * @param string $voteID
+     * @param array $ballotCountSort [party => [questionID => ['ranking' => [...]]]]
+     * @return bool
+     */
+    public function saveRankings($voteID, array $ballotCountSort)
+    {
         $transaction = self::getDb()->beginTransaction();
-        
-        // 組別
-        foreach($ballotCountSort as $party => $questions)
-        {
-            // 問題
-            foreach ($questions as $questionID => $questionData) {
-                // 每筆
-                foreach($questionData['ranking'] as $rank)
-                {
-                    $newModel = new self;
-                    $newModel->scenario='create';
-                    $newModel->voteID = "{$voteID}";
-                    $newModel->candID = intval($rank['candi']);
-                    $newModel->party = "{$party}";
-                    $newModel->questionID = "{$questionID}";
-                    $newModel->jobLctn = "0";
-                    $newModel->ballotCounts = intval($rank['count']);
-                    $newModel->elected = "{$rank['elect']}";
-                    $newModel->rank = intval($rank['rank']);
-                    $newModel->comment = $rank['femaleKeep'] ? '女性保留名額' : '';
-                    $newModel->save();
+        try {
+            // 組別
+            foreach($ballotCountSort as $party => $questions)
+            {
+                // 問題
+                foreach ($questions as $questionID => $questionData) {
+                    // 每筆
+                    foreach($questionData['ranking'] as $rank)
+                    {
+                        $newModel = new self;
+                        $newModel->scenario='create';
+                        $newModel->voteID = "{$voteID}";
+                        $newModel->candID = intval($rank['candi']);
+                        $newModel->party = "{$party}";
+                        $newModel->questionID = "{$questionID}";
+                        $newModel->jobLctn = "0";
+                        $newModel->ballotCounts = intval($rank['count']);
+                        $newModel->elected = "{$rank['elect']}";
+                        $newModel->rank = intval($rank['rank']);
+                        $newModel->comment = $rank['femaleKeep'] ? '女性保留名額' : '';
+                        if (!$newModel->save()) {
+                            throw new \RuntimeException(
+                                "candID {$newModel->candID}: " . json_encode($newModel->errors, JSON_UNESCAPED_UNICODE)
+                            );
+                        }
+                    }
                 }
             }
-        }
-        try {
             $transaction->commit();// 批量新增資料
         } catch(\Exception $e) {
             $transaction->rollBack();

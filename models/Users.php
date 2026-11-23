@@ -193,7 +193,7 @@ class Users extends \yii\db\ActiveRecord
     public static function countLegacyPasswordUsers(): int
     {
         $count = 0;
-        foreach (self::find()->select(['username', 'password'])->asArray()->each(100) as $row) {
+        foreach (self::find()->select(['cn', 'password'])->asArray()->each(100) as $row) {
             $pwd = $row['password'] ?? '';
             if ($pwd !== '' && !self::looksLikePasswordHash($pwd)) {
                 $count++;

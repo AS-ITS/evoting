@@ -131,21 +131,28 @@ class FormBallotsSelected extends BallotsSelected
      * @param string $voteID 投票識別碼
      * @param int $ballotID 選票識別碼
      * @param array $addSelCandi 更改的候選人資料
+     * @param int|null $round 選票所屬輪次（null 為場次目前輪次）
+     * @return bool 任一筆寫入失敗即全部回滾並回傳 false
      */
-    public function createBallotSelected($voteID, $ballotID, $addSelCandi = [])
+    public function createBallotSelected($voteID, $ballotID, $addSelCandi = [], $round = null)
     {
         // 將被圈選候選人用問題分類
         $selCandiQuestion = ArrayHelper::index($addSelCandi, null, 'questionID');
         $selCandiQuestionCount = array_map('count', $selCandiQuestion);
-        
+
         // 取問題列表用問題ID分類
-        $formManageCount = new FormManageCount($voteID);
+        $formManageCount = new FormManageCount($voteID, $round);
         $questions = $formManageCount->getVoteQuestions();
 
         // 判斷有效票及廢票
+        $isValiable = [];
         foreach($selCandiQuestion as $questionID => $selCandi)
         {
-            $questionInfo = $questions[$questionID];
+            if (!isset($questions[$questionID])) {
+                // 候選人的問題不在該輪次內（應已由 FormBallots::filterAllowedCandidates 擋下）
+                Yii::error("ballot {$voteID}/{$ballotID}: question {$questionID} is not in the round", __METHOD__);
+                return false;
+            }
             $isValiable[$questionID] = $formManageCount->processNormalRule($questionID, $selCandiQuestionCount, $questions) ? '1' : '0';
         }
 
@@ -162,7 +169,11 @@ class FormBallotsSelected extends BallotsSelected
                 $ballot->questionID = $addSCI['questionID'];
                 $ballot->jobLctn = $addSCI['jobLctn'];
                 $ballot->isValiable = ArrayHelper::getValue($isValiable, $addSCI['questionID'], '0');
-                $ballot->save();
+                if (!$ballot->save()) {
+                    throw new \RuntimeException(
+                        "selCandiID {$addSCI['id']}: " . json_encode($ballot->errors, JSON_UNESCAPED_UNICODE)
+                    );
+                }
             }
             $transaction->commit();// 批量新增資料
         } catch(\Exception $e) {
