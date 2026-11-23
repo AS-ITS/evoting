@@ -575,6 +575,190 @@ class FormManageCountTest extends \Codeception\Test\Unit
         $this->assertEquals('CE', $result[1]['elect']);
     }
 
+    /**
+     * 迴歸：待當選（CE）只應佔用「超出剩餘當選名額」的遞補名額
+     *
+     * 當選 3、遞補 2；第 1 名 1 人當選，剩 2 個當選名額；其後 3 人同票 → CE，
+     * 超出 1 人，遞補剩 1 → 下一人為遞補（W），再下一人落選（LE）。
+     * 修正前先把 electNum 歸零再扣，遞補被扣成 -1，下一人誤判為 CW。
+     */
+    public function testElectedSortCeConsumesOnlyOverflowOfKeepSlots()
+    {
+        $instance = $this->createInstance();
+        $this->setQuestions($instance, [
+            1 => (object)['maxElect' => 3, 'numOfKeep' => 2, 'numFemaleKeep' => 0],
+        ]);
+
+        $ranking = [
+            ['candi' => 101, 'rank' => 1, 'count' => 10, 'femaleKeep' => false],
+            ['candi' => 102, 'rank' => 2, 'count' => 8, 'femaleKeep' => false],
+            ['candi' => 103, 'rank' => 2, 'count' => 8, 'femaleKeep' => false],
+            ['candi' => 104, 'rank' => 2, 'count' => 8, 'femaleKeep' => false],
+            ['candi' => 105, 'rank' => 3, 'count' => 5, 'femaleKeep' => false],
+            ['candi' => 106, 'rank' => 4, 'count' => 2, 'femaleKeep' => false],
+        ];
+
+        $elect = array_column($instance->_electedSort($ranking, 1), 'elect', 'candi');
+
+        $this->assertSame('E', $elect[101]);
+        $this->assertSame('CE', $elect[102]);
+        $this->assertSame('CE', $elect[103]);
+        $this->assertSame('CE', $elect[104]);
+        $this->assertSame('W', $elect[105], '遞補 2 扣掉超出的 1 人，仍剩 1 個遞補名額');
+        $this->assertSame('LE', $elect[106]);
+    }
+
+    /**
+     * 迴歸：CE 超出人數剛好用完遞補名額 → 下一人落選（修正前誤判為 CW）
+     *
+     * 當選 3、遞補 2；第 1 名 2 人當選（剩 1）；其後 3 人同票 → CE 超出 2 人，遞補用完。
+     */
+    public function testElectedSortCeOverflowExactlyUsesKeepSlots()
+    {
+        $instance = $this->createInstance();
+        $this->setQuestions($instance, [
+            1 => (object)['maxElect' => 3, 'numOfKeep' => 2, 'numFemaleKeep' => 0],
+        ]);
+
+        $ranking = [
+            ['candi' => 101, 'rank' => 1, 'count' => 10, 'femaleKeep' => false],
+            ['candi' => 102, 'rank' => 1, 'count' => 10, 'femaleKeep' => false],
+            ['candi' => 103, 'rank' => 2, 'count' => 8, 'femaleKeep' => false],
+            ['candi' => 104, 'rank' => 2, 'count' => 8, 'femaleKeep' => false],
+            ['candi' => 105, 'rank' => 2, 'count' => 8, 'femaleKeep' => false],
+            ['candi' => 106, 'rank' => 3, 'count' => 5, 'femaleKeep' => false],
+        ];
+
+        $elect = array_column($instance->_electedSort($ranking, 1), 'elect', 'candi');
+
+        $this->assertSame('E', $elect[101]);
+        $this->assertSame('E', $elect[102]);
+        $this->assertSame('CE', $elect[103]);
+        $this->assertSame('CE', $elect[105]);
+        $this->assertSame('LE', $elect[106], '遞補名額已被 CE 超出人數用完，應落選');
+    }
+
+    /**
+     * 迴歸：CE 超出人數多於遞補名額時，遞補名額不可變成負數（修正前下一人誤判為 CW）
+     */
+    public function testElectedSortCeOverflowBeyondKeepSlotsClampsToZero()
+    {
+        $instance = $this->createInstance();
+        $this->setQuestions($instance, [
+            1 => (object)['maxElect' => 1, 'numOfKeep' => 1, 'numFemaleKeep' => 0],
+        ]);
+
+        $ranking = [
+            ['candi' => 101, 'rank' => 1, 'count' => 10, 'femaleKeep' => false],
+            ['candi' => 102, 'rank' => 1, 'count' => 10, 'femaleKeep' => false],
+            ['candi' => 103, 'rank' => 1, 'count' => 10, 'femaleKeep' => false],
+            ['candi' => 104, 'rank' => 1, 'count' => 10, 'femaleKeep' => false],
+            ['candi' => 105, 'rank' => 2, 'count' => 5, 'femaleKeep' => false],
+        ];
+
+        $elect = array_column($instance->_electedSort($ranking, 1), 'elect', 'candi');
+
+        foreach ([101, 102, 103, 104] as $id) {
+            $this->assertSame('CE', $elect[$id]);
+        }
+        $this->assertSame('LE', $elect[105]);
+    }
+
+    // ==================== _resultCountSort 女性保留名額測試 ====================
+
+    /**
+     * 設定 _voteInfo 保護屬性（供 _resultCountSort 讀取 addiCondition）
+     */
+    private function setVoteInfo(FormManageCount $instance, string $addiCondition): void
+    {
+        $ref = new \ReflectionClass(FormManageCount::class);
+        $prop = $ref->getProperty('_voteInfo');
+        $prop->setAccessible(true);
+        $prop->setValue($instance, (object)['addiCondition' => $addiCondition]);
+    }
+
+    /**
+     * 迴歸：啟用女性保留名額但沒有女性候選人得票 → 不可丟例外，名次照得票排序
+     */
+    public function testResultCountSortFemaleKeepWithoutFemaleVotes()
+    {
+        $instance = $this->createInstance();
+        $this->setVoteInfo($instance, 'female');
+        $this->setQuestions($instance, [
+            1 => (object)['maxElect' => 1, 'numOfKeep' => 0, 'numFemaleKeep' => 1],
+        ]);
+
+        $candiList = $this->buildCandiList([
+            101 => ['sex' => '1'],
+            102 => ['sex' => '1'],
+            103 => ['sex' => '0'], // 女性候選人，但沒有得票
+        ]);
+        $ballotCount = [1 => [101 => 5, 102 => 3]];
+
+        $result = $this->invokeProtected($instance, '_resultCountSort', [$ballotCount, $candiList]);
+
+        $ranking = $result[1]['ranking'];
+        $this->assertCount(2, $ranking);
+        $this->assertSame([101, 102], array_column($ranking, 'candi'));
+        $this->assertSame([1, 2], array_column($ranking, 'rank'));
+        $this->assertSame([false, false], array_column($ranking, 'femaleKeep'));
+    }
+
+    /**
+     * 迴歸：女性保留名額的名次應依各自得票計算（修正前第 2 位起都拿到同一名次）
+     *
+     * 女 10 票、女 8 票、男 9 票，保留 2 名 → 女 10（1）、女 8（2）、男 9（3）
+     */
+    public function testResultCountSortFemaleKeepRanksByOwnCount()
+    {
+        $instance = $this->createInstance();
+        $this->setVoteInfo($instance, 'female');
+        $this->setQuestions($instance, [
+            1 => (object)['maxElect' => 2, 'numOfKeep' => 0, 'numFemaleKeep' => 2],
+        ]);
+
+        $candiList = $this->buildCandiList([
+            201 => ['sex' => '0'],
+            202 => ['sex' => '0'],
+            203 => ['sex' => '1'],
+        ]);
+        $ballotCount = [1 => [201 => 10, 203 => 9, 202 => 8]];
+
+        $result = $this->invokeProtected($instance, '_resultCountSort', [$ballotCount, $candiList]);
+
+        $ranking = $result[1]['ranking'];
+        $this->assertSame([201, 202, 203], array_column($ranking, 'candi'));
+        $this->assertSame([1, 2, 3], array_column($ranking, 'rank'));
+        $this->assertSame([true, true, false], array_column($ranking, 'femaleKeep'));
+        $this->assertSame(4, $result[1]['rankingNext']);
+    }
+
+    /**
+     * 女性保留當選人與後續男性同票 → 同名次（保留現行語意）
+     */
+    public function testResultCountSortFemaleKeepTieWithNextCandidateSharesRank()
+    {
+        $instance = $this->createInstance();
+        $this->setVoteInfo($instance, 'female');
+        $this->setQuestions($instance, [
+            1 => (object)['maxElect' => 1, 'numOfKeep' => 0, 'numFemaleKeep' => 1],
+        ]);
+
+        $candiList = $this->buildCandiList([
+            301 => ['sex' => '1'],
+            302 => ['sex' => '0'],
+            303 => ['sex' => '1'],
+        ]);
+        $ballotCount = [1 => [301 => 7, 302 => 7, 303 => 4]];
+
+        $result = $this->invokeProtected($instance, '_resultCountSort', [$ballotCount, $candiList]);
+
+        $rank = array_column($result[1]['ranking'], 'rank', 'candi');
+        $this->assertSame(1, $rank[302], '女性保留名額排第一');
+        $this->assertSame(1, $rank[301], '與女性保留當選人同票應同名次');
+        $this->assertSame(2, $rank[303]);
+    }
+
     // ==================== 輔助方法 ====================
 
     /**

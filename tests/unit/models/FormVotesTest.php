@@ -139,6 +139,45 @@ class FormVotesTest extends \Codeception\Test\Unit
     }
 
     /**
+     * 表決投票不支援分組、共用投票、保留名額、場次碼、查看資訊驗證；
+     * 前端會鎖住這些欄位，後端也必須拒絕被竄改的組合。
+     */
+    public function testNoAuthVoteRejectsUnsupportedOptions()
+    {
+        $valid = [
+            'partyOrNot' => '0', 'isBindVote' => '0', 'addiCondition' => 'n',
+            'session' => '', 'authBeforeDetail' => '0',
+        ];
+        $invalid = [
+            'partyOrNot' => '1', 'isBindVote' => '1', 'addiCondition' => 'female',
+            'session' => 'abc', 'authBeforeDetail' => '1',
+        ];
+
+        foreach (['create', 'update'] as $scenario) {
+            $model = new FormVotes();
+            $model->scenario = $scenario;
+            $model->setAttributes(['type' => FormVotes::TYPE_NO_AUTH] + $valid, false);
+            $model->validate(['type']);
+            $this->assertArrayNotHasKey('type', $model->errors, "[$scenario] 合法的表決投票設定應通過");
+
+            foreach ($invalid as $attr => $value) {
+                $model = new FormVotes();
+                $model->scenario = $scenario;
+                $model->setAttributes(['type' => FormVotes::TYPE_NO_AUTH, $attr => $value] + $valid, false);
+                $model->validate(['type']);
+                $this->assertArrayHasKey('type', $model->errors, "[$scenario] 表決投票 $attr=$value 應被拒絕");
+            }
+
+            // 匿名投票不受此限制
+            $model = new FormVotes();
+            $model->scenario = $scenario;
+            $model->setAttributes(['type' => FormVotes::TYPE_ANON] + $invalid, false);
+            $model->validate(['type']);
+            $this->assertArrayNotHasKey('type', $model->errors, "[$scenario] 匿名投票可使用分組等設定");
+        }
+    }
+
+    /**
      * 測試：search scenario 允許所有欄位
      */
     public function testSearchScenarioAllowsAllFields()
