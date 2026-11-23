@@ -15,7 +15,7 @@ $this->params['navbar_left_items'] = [
         'linkOptions' => [
             'class' => 'text-danger',
             'data' => [
-                'bs-confirm' => '請再次確認要刪除該查詢結果？',
+                'confirm' => '請再次確認要刪除該查詢結果？',
                 'method' => 'post',
             ],
         ],

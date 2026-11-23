@@ -66,7 +66,9 @@ class ElectController extends \app\components\Controller
             'verbs' => [
                 'class' => \yii\filters\VerbFilter::className(),
                 'actions' => [
-                    'https' => ['post','get'],
+                    // 會變更資料的操作只接受 POST（Yii 只對 POST 驗證 CSRF token）
+                    'delete-vote' => ['post'],
+                    'delete-file' => ['post'],
                 ],
             ],
         ];

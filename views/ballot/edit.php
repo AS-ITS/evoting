@@ -307,13 +307,16 @@ echo Html::tag( 'div',
         $creator?'':
         Html::a('刪除選票', ['ballot/delete', 'voteID'=>$voteBallot->voteID, 'ballotID'=>$voteBallot->ballotID], [
             'class' => 'btn btn-danger me-2', 'style' => 'width: auto',
-            'data' => ['bs-confirm' => "確定要刪除此選票？\n* 此操作將無法還原！"],
+            // 位於選票表單內：以 data-form 指定獨立表單送出，避免送出（並驗證）整張選票表單
+            'data' => ['confirm' => "確定要刪除此選票？\n* 此操作將無法還原！", 'method' => 'post', 'form' => 'ballot-delete-form'],
         ])
     ).
     Html::a('返回列表', ['ballot/index', 'voteID'=>$model->voteID], ['class' => 'btn btn-secondary', 'style' => 'width: auto'])
     , ['class'=>'row justify-content-center mb-0 mt-3']
 );
 ActiveForm::end();
+// 刪除選票用的獨立表單（action 由連結的 href 帶入）
+echo Html::beginForm('', 'post', ['id' => 'ballot-delete-form', 'class' => 'd-none']) . Html::endForm();
 
 // CSS
 $this->registerCss(<<<CSS

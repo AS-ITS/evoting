@@ -27,7 +27,7 @@ echo Html::submitButton(
     [
         'class' => 'btn btn-danger ',
         'data' => [
-            'bs-confirm' => '確定重啟?'
+            'confirm' => '確定重啟?'
         ]
     ]
 );

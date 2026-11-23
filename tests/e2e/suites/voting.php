@@ -157,13 +157,14 @@ if ($newIds) {
 
 // 清除本次送出的選票
 foreach ($newIds as $id) {
-    $admin->go("/ballot/delete?voteID=$vote&ballotID=$id");
+    $admin->post("/ballot/delete?voteID=$vote&ballotID=$id");
 }
 $admin->check('表決投票：刪除測試選票', !array_diff($ballotIds(), $before));
 
 // 清除測試候選人
 if ($candId) {
-    $admin->go("/candi/delete?voteID=$vote&id=$candId", "/candi/data?voteID=$vote");
+    $admin->go("/candi/data?voteID=$vote");
+    $admin->post("/candi/delete?voteID=$vote&id=$candId");
     $admin->go("/candi/data?voteID=$vote");
     $admin->check('刪除測試候選人', !$admin->js('document.body.innerText.includes('.json_encode($name).')'));
 }

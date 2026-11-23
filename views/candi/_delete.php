@@ -30,7 +30,7 @@ if ($round <= 1) {
                     ->dropDownList($genModeAry, ['prompt' => '全部']) ?>
             </div>
             <div class="col-lg-2 text-center">
-                <?=Html::submitButton('刪除', ['class' => 'btn btn-danger','data' => ['bs-confirm' => "請確認候選人刪除條件？\n* 刪除後資料無法還原！"],]) ?>
+                <?=Html::submitButton('刪除', ['class' => 'btn btn-danger','data' => ['confirm' => "請確認候選人刪除條件？\n* 刪除後資料無法還原！"],]) ?>
             </div>
         </div>
     </div>

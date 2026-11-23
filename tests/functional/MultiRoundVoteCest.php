@@ -86,7 +86,7 @@ class MultiRoundVoteCest
     public function testAdminSwitchRound(FunctionalTester $I)
     {
         $I->amLoggedInAsAdmin('sa');
-        $I->amOnPage('/round/switch?voteID=' . $this->voteID . '&round=2');
+        $I->postPage('/round/switch?voteID=' . $this->voteID . '&round=2');
         $I->seeResponseCodeIsSuccessful();
 
         $vote = Votes::findOne(['voteID' => $this->voteID]);

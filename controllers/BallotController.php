@@ -95,7 +95,9 @@ class BallotController extends \app\components\Controller
                 'class' => \yii\filters\VerbFilter::className(),
                 'actions' => [
                     'export' => ['post'],
-                    'https' => ['post','get'],
+                    // 會變更資料的操作只接受 POST（Yii 只對 POST 驗證 CSRF token）
+                    'delete' => ['post'],
+                    'delete-all' => ['post'],
                 ],
             ],
         ];

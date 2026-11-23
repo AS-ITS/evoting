@@ -44,7 +44,7 @@ Vote types: open ballot (no auth) and anonymous (one-time passwords). Maintenanc
 
 ### 管理員認證
 - **登入**: `/auth/login` 或 `/admin`
-- **登出**: `/auth/logout`
+- **登出**: `/auth/logout`（只接受 POST，由頁首選單送出）
 - **修改密碼**: `/auth/change-password`
 - **忘記密碼**: `/auth/forgot-password`（帳號須先設定信箱；非正式環境信件寫入 `runtime/mail`）
 

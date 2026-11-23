@@ -47,7 +47,7 @@ $has = function (array $messages, ...$needles) {
 $clearAll = function () use ($admin, $edit, $deleteLinksJs) {
     $admin->go($edit);
     foreach ($admin->js($deleteLinksJs) ?: [] as $href) {
-        $admin->go($href, $edit);
+        $admin->post($href);
     }
 };
 
@@ -99,8 +99,10 @@ foreach ([
     ['admin', '/elect/delete-file?voteID=..&file=e2e_doc1.txt'],
 ] as [$who, $u]) {
     $br = $who === 'admin' ? $admin : $guest;
-    $status = $br->js('fetch('.json_encode($br->url($u)).", {redirect: 'manual'}).then(r => r.status)");
-    $admin->check("回 404：$u", $status === 404, "HTTP $status");
+    // 刪除附件只接受 POST：以 POST 送出，確認路徑檢查仍擋下（不是被 405 先擋掉）
+    $method = strpos($u, '/elect/delete-file') === 0 ? 'POST' : 'GET';
+    $status = $br->status($u, $method);
+    $admin->check("回 404：$method $u", $status === 404, "HTTP $status");
 }
 $admin->go($edit);
 $admin->check('攻擊後附件數量不變（3 個）', count($admin->js($listJs)) === 3);
@@ -108,7 +110,7 @@ $admin->check('攻擊後附件數量不變（3 個）', count($admin->js($listJs
 // ---- 刪除 ----
 $hrefs = $admin->js($deleteLinksJs);
 $admin->check('刪除連結帶檔名（非序號）', $hrefs && !array_filter($hrefs, function ($h) { return preg_match('/[?&]file=\d+(&|$)/', $h); }));
-$admin->go($hrefs[0], $edit);
+$admin->post($hrefs[0]);
 $admin->check('刪除單一附件成功', $has($admin->flashes(), '檔案刪除成功'));
 $clearAll();
 $admin->go($edit);

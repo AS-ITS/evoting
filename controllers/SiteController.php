@@ -43,7 +43,6 @@ class SiteController extends \app\components\Controller
             'verbs' => [
                 'class' => \yii\filters\VerbFilter::class,
                 'actions' => [
-                    'https' => ['post','get'],
                     'logout' => ['post'],
                     'csrf-token' => ['get'],
                 ],

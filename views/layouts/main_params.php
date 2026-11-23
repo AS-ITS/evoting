@@ -292,7 +292,7 @@ if(isset($this->params['secNavType']))
                             'linkOptions' => [
                                 'class' => 'text-danger',
                                 'data' => [
-                                    'bs-confirm' => '請再次確認要刪除該筆資料？',
+                                    'confirm' => '請再次確認要刪除該筆資料？',
                                     'method' => 'post',
                                 ],
                             ],

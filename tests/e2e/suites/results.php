@@ -113,7 +113,7 @@ try {
     $admin->go($manual);
     $del = $admin->js("document.querySelector('#delete-photo') && document.querySelector('#delete-photo').href");
     if ($del) {
-        $admin->go($del, $manual);
+        $admin->post($del);
     }
     if (isset($origResultFields)) {
         $saveHidden($resultConfigUrl, 'formresultsconfig-showfieldsort', $origResultFields);

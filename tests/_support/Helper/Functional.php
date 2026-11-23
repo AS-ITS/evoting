@@ -345,6 +345,16 @@ class Functional extends \Codeception\Module
     }
 
     /**
+     * 以 POST 開啟頁面並跟隨導向（如同瀏覽器送出表單）
+     *
+     * 刪除、切換等只接受 POST 的 action 用這個呼叫；sendAjaxPostRequest 不跟隨導向。
+     */
+    public function postPage(string $uri, array $params = [])
+    {
+        $this->getModule('Yii2')->_loadPage('POST', $uri, $params);
+    }
+
+    /**
      * 檢查當前用戶是否已登入
      */
     public function seeAmLoggedIn()

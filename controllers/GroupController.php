@@ -59,7 +59,6 @@ class GroupController extends Controller
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
-                    'https' => ['post','get'],
                 ],
             ],
         ];

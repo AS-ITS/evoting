@@ -55,6 +55,13 @@ class AuthController extends \app\components\Controller
                 ],
                 'denyCallback' => self::denyCallback()
             ],
+            'verbs' => [
+                'class' => \yii\filters\VerbFilter::class,
+                'actions' => [
+                    // 登出連結已以 POST 送出（global.js），GET 不可登出
+                    'logout' => ['post'],
+                ],
+            ],
         ];
     }
     

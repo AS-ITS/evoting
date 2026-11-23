@@ -70,7 +70,7 @@ class PostOnlyActionsCest
         $I->seeResponseCodeIs(405);
         Assert::assertFileExists($target);
 
-        $I->sendAjaxPostRequest('/elect/delete-file?voteID=NoAuthVoteTest&file=post_only_probe.txt');
+        $I->postPage('/elect/delete-file?voteID=NoAuthVoteTest&file=post_only_probe.txt');
         Assert::assertFileDoesNotExist($target);
     }
 
@@ -85,7 +85,7 @@ class PostOnlyActionsCest
         $I->seeResponseCodeIs(405);
         Assert::assertTrue(Ballots::find()->where(['voteID' => 'AnonPartyTest', 'ballotID' => $ballotID])->exists());
 
-        $I->sendAjaxPostRequest("/ballot/delete?voteID=AnonPartyTest&ballotID=$ballotID");
+        $I->postPage("/ballot/delete?voteID=AnonPartyTest&ballotID=$ballotID");
         Assert::assertFalse(Ballots::find()->where(['voteID' => 'AnonPartyTest', 'ballotID' => $ballotID])->exists());
     }
 
@@ -109,7 +109,7 @@ class PostOnlyActionsCest
         $I->seeResponseCodeIs(405);
         Assert::assertTrue(CandiData::find()->where(['id' => $id])->exists());
 
-        $I->sendAjaxPostRequest("/candi/delete?voteID=AnonNoPartyTest&id=$id");
+        $I->postPage("/candi/delete?voteID=AnonNoPartyTest&id=$id");
         Assert::assertFalse(CandiData::find()->where(['id' => $id])->exists());
     }
 
@@ -154,7 +154,7 @@ class PostOnlyActionsCest
         $I->seeResponseCodeIs(405);
         Assert::assertSame(1, (int) Votes::findOne('AnonPartyTest')->round);
 
-        $I->sendAjaxPostRequest('/round/switch?voteID=AnonPartyTest&round=2');
+        $I->postPage('/round/switch?voteID=AnonPartyTest&round=2');
         Assert::assertSame(2, (int) Votes::findOne('AnonPartyTest')->round);
     }
 
@@ -166,7 +166,7 @@ class PostOnlyActionsCest
         $I->seeResponseCodeIs(405);
         Assert::assertNotNull(Users::findOne('test_va2'));
 
-        $I->sendAjaxPostRequest('/users/delete?cn=test_va2');
+        $I->postPage('/users/delete?cn=test_va2');
         Assert::assertNull(Users::findOne('test_va2'));
     }
 
@@ -176,7 +176,7 @@ class PostOnlyActionsCest
         $I->seeResponseCodeIs(405);
         $I->seeAmLoggedIn();
 
-        $I->sendAjaxPostRequest('/auth/logout?type=user');
+        $I->postPage('/auth/logout?type=user');
         $I->seeAmGuest();
     }
 

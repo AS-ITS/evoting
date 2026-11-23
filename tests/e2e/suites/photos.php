@@ -72,8 +72,13 @@ PageCheck::run($guest, '投票說明（含照片欄位）', "/vote/vote-detail?v
 
 // ---- 刪除 ----
 $admin->go($manual);
-$del = $admin->js("document.querySelector('#delete-photo') && document.querySelector('#delete-photo').href");
-$admin->go($del, $manual);
+// 實際點擊（位於候選人表單內，以 data-form 的獨立表單 POST 送出）：先確認，按「確定」後刪除
+$photoOk = "[...document.querySelectorAll('.modal.show button')].find(e => /^(確定|OK|Ok)$/i.test(e.innerText.trim()) && e.offsetParent !== null)";
+$admin->click("document.querySelector('#delete-photo')");
+$admin->check('刪除照片：出現確認對話框', $admin->waitFor("!!($photoOk)", 4000));
+$admin->sleep(400);
+$admin->click($photoOk);
+$admin->waitLoad();
 $admin->check('刪除照片成功', (bool) array_filter($admin->flashes(), function ($m) { return mb_strpos($m, '刪除照片成功') !== false; }));
 $admin->check('無照片時候選名單頁 HTTP 200', $admin->go("/candi/data?voteID=$vote") === 200);
 

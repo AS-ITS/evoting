@@ -67,7 +67,10 @@ JS
                                                 Url::to(['delete-file', 'file' => $file, 'voteID' => $voteID]),
                                                 [
                                                     'id' => 'delete-file',
-                                                    'data-bs-confirm' => Yii::t('yii', 'Are you sure you want to delete this item?'),
+                                                    'data-confirm' => Yii::t('yii', 'Are you sure you want to delete this item?'),
+                                                    'data-method' => 'post',
+                                                    // 位於上傳表單內：以 data-form 指定獨立表單送出
+                                                    'data-form' => 'file-delete-form',
                                                 ])
                                             ?>
                                         </td>
@@ -86,6 +89,8 @@ JS
                 <?=Html::submitButton('上傳', ['class' => 'btn btn-primary'])?>
             </div>
             <?php ActiveForm::end(); ?>
+            <?php // 刪除附件用的獨立表單（action 由連結的 href 帶入）?>
+            <?=Html::beginForm('', 'post', ['id' => 'file-delete-form', 'class' => 'd-none']) . Html::endForm()?>
         </div>
     </div>
 </div>

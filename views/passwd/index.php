@@ -15,7 +15,7 @@ $this->params['title'] = $title;
 $this->params['voteInfo'] = $voteInfo;
 
 $confirm = function($text) {
-    return ['confirm' => "確定要刪除【{$text}】投票密碼？\n* 此操作將無法還原！"];
+    return ['confirm' => "確定要刪除【{$text}】投票密碼？\n* 此操作將無法還原！", 'method' => 'post'];
 };
 $systemConfig = Yii::$app->session->get('System.config');
 $canDeletePassword = $systemConfig['canDeletePassword'] ?? false;

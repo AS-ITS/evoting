@@ -30,7 +30,7 @@ echo \app\widgets\Alert::widget();
 
 $confirm = function($text)
 {
-    return ['confirm' => "確定要刪除【{$text}】選票？\n* 此操作將無法還原！"];
+    return ['confirm' => "確定要刪除【{$text}】選票？\n* 此操作將無法還原！", 'method' => 'post'];
 };
 
 $delBallotItems[] = [
@@ -393,7 +393,7 @@ echo GridView::widget([
                             'ballotID' => $model->ballotID
                         ],[
                             'class' => 'text-danger',
-                            'data' => ['bs-confirm' => "確定要刪除此選票？\n* 此操作將無法還原！"],
+                            'data' => ['confirm' => "確定要刪除此選票？\n* 此操作將無法還原！", 'method' => 'post'],
                         ])
                     ]
                 );

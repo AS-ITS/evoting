@@ -39,6 +39,13 @@ class UsersController extends \app\components\Controller
                 ],
                 'denyCallback' => self::denyCallback()
             ],
+            'verbs' => [
+                'class' => \yii\filters\VerbFilter::class,
+                'actions' => [
+                    // 會變更資料的操作只接受 POST（Yii 只對 POST 驗證 CSRF token）
+                    'delete' => ['post'],
+                ],
+            ],
         ];
     }
     

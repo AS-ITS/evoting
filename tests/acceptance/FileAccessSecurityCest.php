@@ -172,7 +172,7 @@ class FileAccessSecurityCest
 
         $I->amOnPage('/index-test.php/test/login?user=test_admin');
         // 刪除後會導回 referrer，此處只驗證檔案結果
-        $I->amOnPage('/elect/delete-file?voteID='.self::VOTE_ID.'&file=probe_delete.txt');
+        $I->sendAjaxPostRequest('/elect/delete-file?voteID='.self::VOTE_ID.'&file=probe_delete.txt'); // 只接受 POST
         $I->assertFileDoesNotExist($target);
         $I->assertFileExists($pool.'/candidateFile/'.self::VOTE_ID.'/'.self::ATTACH_NAME);
     }
@@ -190,7 +190,7 @@ class FileAccessSecurityCest
             ['voteID' => '..', 'file' => self::SECRET_NAME],
             ['voteID' => self::VOTE_ID, 'file' => '..'],
         ] as $params) {
-            $I->amOnPage('/elect/delete-file?'.http_build_query($params));
+            $I->sendAjaxPostRequest('/elect/delete-file?'.http_build_query($params)); // 只接受 POST：確認路徑檢查仍回 404
             $I->seeResponseCodeIs(404);
         }
         $I->assertFileExists($pool.'/candidateFile/'.self::SECRET_NAME);
