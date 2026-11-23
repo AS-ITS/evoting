@@ -116,6 +116,22 @@ class FormResults extends Results
     }
    
     /**
+     * 候選名單順序：與計票頁（FormManageCount::sortRanking）相同，
+     * 編號顯示為自動編號（A）時依候選人 id，否則依自訂排序（orderNum），再以 id 排定
+     *
+     * @param string $voteID
+     * @return array
+     */
+    protected static function candidateListOrder($voteID): array
+    {
+        $nums = CandiConfig::find()->select('num')->where(['voteID' => $voteID])->column();
+        $autoNumbered = $nums !== [] && !array_diff($nums, ['A']);
+        return $autoNumbered
+            ? ['candiData.id' => SORT_ASC]
+            : ['candiData.orderNum' => SORT_ASC, 'candiData.id' => SORT_ASC];
+    }
+
+    /**
      * 使用voteID取得投票結果資料
      *
      * @param  string $voteID
@@ -152,17 +168,22 @@ class FormResults extends Results
         ]);
         // 依照投票結果排序
         $query->addOrderBy([new \yii\db\Expression('FIELD (elected, "'.implode('","', array_keys(Yii::$app->params['ct.result.electedSortAry'])).'")')]);
-        // 依照得票數排序
+        // 依結果設定排序（ct.result.sortAry）
         switch ($config->sort) {
-            case 'N':
+            case 'N': // 依得票高低；同名次依候選名單順序（與計票頁一致）
                 $query->addOrderBy([
                     Results::tbnField('rank') => SORT_ASC,
                     Results::tbnField('ballotCounts') => SORT_DESC,
                 ]);
-            case 'L':
+                $query->addOrderBy(self::candidateListOrder($voteID));
+                break;
+            case 'L': // 依字首筆劃
                 $query->addOrderBy([
                     'CONVERT(substr(candiData.Name, 1, 1) USING big5)' => SORT_ASC,
                 ]);
+                break;
+            case 'I': // 依候選名單
+                $query->addOrderBy(self::candidateListOrder($voteID));
                 break;
         }
 
