@@ -186,7 +186,9 @@ if ($admin->js("!!($logout)")) {
     $admin->click($logout);
     $admin->waitLoad();
     $admin->go('/elect/index');
-    $admin->check('管理員登出：點擊後已登出（再進管理頁導向登入）', strpos((string) $admin->js('location.pathname'), 'auth/login') !== false, (string) $admin->js('location.pathname'));
+    // 登入頁網址為 auth/login 或其 URL 規則別名 /admin（config/web.php urlManager）
+    $path = (string) $admin->js('location.pathname');
+    $admin->check('管理員登出：點擊後已登出（再進管理頁導向登入）', (bool) preg_match('#(/auth/login|/admin)$#', $path), $path);
 } else {
     $admin->check('管理員登出：找到頁首登出連結', false);
 }
