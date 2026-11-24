@@ -491,7 +491,7 @@ APP_PATH_DB=/custom/path/db
 | 鍵 | 用途 |
 |----|------|
 | `ct.division0Ary` / `0EAry` | 不分組時的「預設」標籤 |
-| `ct.division1Ary` / `1EAry` | 四組制 preset（含英文對照）；亦供機構對照（`select-creator`） |
+| `ct.division1Ary` / `1EAry` | 四組制 preset（含英文對照） |
 | `ct.division3Ary` / `3EAry` | 另一組四組制 preset |
 | `ct.division4Ary` / `4EAry` | 三組制 preset |
 

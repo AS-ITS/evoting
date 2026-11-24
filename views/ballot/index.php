@@ -84,14 +84,6 @@ foreach($questions as $key => $question)
 
 Modal::end();
 
-foreach($parties as $party => $division)
-{
-    $creatorItems[] = [
-        'label' => $division,
-        'url' => ['select-creator', 'voteID' => $voteInfo->voteID, 'party' => $party]
-    ];
-}
-
 // 後台建立選票需選擇投票者（匿名：投票密碼）；表決投票沒有投票者身分，不提供
 $createBtn = ($voteInfo->type == Votes::TYPE_ANON)
     ? Html::tag( 'div',
