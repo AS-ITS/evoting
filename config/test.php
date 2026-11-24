@@ -123,7 +123,9 @@ $config = [
         'request' => [
             'class' => \yii\web\Request::class,
             'cookieValidationKey' => $cm->mustGet('cookieValidationKey'),
-            'enableCsrfValidation' => false,  // 測試環境關閉 CSRF（驗收測試用 PhpBrowser 不依賴手動帶 token）
+            // 測試環境預設關閉 CSRF（驗收測試用 PhpBrowser 不依賴手動帶 token）。
+            // E2E 可用 TEST_CSRF=1 啟動測試伺服器，驗證瀏覽器送出的 POST 確實帶到 token。
+            'enableCsrfValidation' => filter_var(getenv('TEST_CSRF') ?: 'false', FILTER_VALIDATE_BOOLEAN),
             'csrfParam' => $conf->getFlagName('FrontendCSRF', true),
         ],
 

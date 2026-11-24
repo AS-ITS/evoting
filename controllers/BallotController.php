@@ -95,7 +95,9 @@ class BallotController extends \app\components\Controller
                 'class' => \yii\filters\VerbFilter::className(),
                 'actions' => [
                     'export' => ['post'],
-                    'https' => ['post','get'],
+                    // 會變更資料的操作只接受 POST（Yii 只對 POST 驗證 CSRF token）
+                    'delete' => ['post'],
+                    'delete-all' => ['post'],
                 ],
             ],
         ];
@@ -197,73 +199,6 @@ class BallotController extends \app\components\Controller
     public function actionLockPlaintext($voteID)
     {
         return $this->performLockPlaintext($voteID, 'ballot/select-passwd');
-    }
-
-    /**
-     * 建立選票 - 選擇記名選票建立者
-     */
-    public function actionSelectCreator($voteID)
-    {
-        $request = Yii::$app->request;
-
-        $model = new \app\models\FormBallotsCreator;
-
-        // 保存新查詢
-        if ($request->isPost && empty($request->post()[Yii::$app->tablePag->setPageGetName])) {
-            $postData = Yii::$app->request->post();
-            $model->saveInquire($postData);
-            return $this->redirect(['select-creator','voteID'=>$voteID]);
-        }
-
-        // 查詢結果
-        $personUser = Yii::$app->session->get($model::$sessionKey);
-        if (!is_null($personUser)) {
-
-            // 建立 Ary
-            $instAry = Yii::$app->session->get('Share.instAry');
-            $payTitle = Yii::$app->session->get('Share.payTitle');
-
-            // 基本資料
-            $FormVotes = new FormVotes;
-            $voteInfo = $FormVotes->getVoteInfo($voteID);
-            $parties = $FormVotes->getVoteParty($voteID);
-
-            return $this->render('select-creator', [
-                'voteID' => $voteID,
-                'dataProvider' => $model->getDataProvider($personUser),
-                'searchModel'  => $model->getSearchModel($personUser),
-                'filterItem'   => $model::$filterItem,
-                'showTable'    => true,
-                'voteInfo'      => $voteInfo,
-                'parties'      => array_flip($parties),
-                // Ary
-                'instSelectAry' => ArrayHelper::map($instAry ?: [],'instCode','instName'),
-                'instAry'     => $instAry,
-                'payTitleAry' => ArrayHelper::map($payTitle ?: [],'tCode','title'),
-                'payTitle'  => $payTitle,
-                'onJobAry'  => Yii::$app->params['ct.ballots.onJobAry'],
-            ]);
-        }
-        
-        //開始建立查詢
-        return $this->render('select-creator', [
-            'voteID' => $voteID,
-            'filterItem' => $model::$filterItem,
-            'showTable'  => false,
-            // Ary
-            'instSelectAry' => ArrayHelper::map(Yii::$app->session->get('Share.instAry'),'instCode','instName'),
-            'payTitleAry' => ArrayHelper::map(Yii::$app->session->get('Share.payTitle'),'tCode','title'),
-            'onJobAry'      => Yii::$app->params['ct.ballots.onJobAry'],
-        ]);
-    }
-
-    /**
-     * 清除選票
-     */
-    public function actionSelectClear($voteID)
-    {
-        Yii::$app->session->remove(\app\models\FormBallotsCreator::$sessionKey);
-        return $this->redirect(['select-creator','voteID'=>$voteID]);
     }
 
     /**

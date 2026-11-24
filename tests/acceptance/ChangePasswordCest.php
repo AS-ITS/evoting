@@ -119,7 +119,7 @@ class ChangePasswordCest
         $I->dontSee('帳號或密碼錯誤');
 
         // 步驟 7: 驗證舊密碼無法登入
-        $I->amOnPage('/auth/logout?type=user');  // 先登出
+        $I->sendAjaxPostRequest('/auth/logout?type=user');  // 先登出（只接受 POST）
         $this->loginAdmin($I, 'test_change_pwd', 'TestPass123');
         $I->see('帳號或密碼錯誤');
     }

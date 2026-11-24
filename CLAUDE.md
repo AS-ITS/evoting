@@ -54,6 +54,8 @@ php tests/e2e/run.php --suite=pages,modals # selected suites
 ```
 New screens: add the route to `tests/e2e/suites/pages.php` to get the shared page checks.
 
+**State-changing actions are POST-only** (VerbFilter): delete, delete-all, switch, create-round, logout and so on return 405 on GET. In views, use `data-method="post"` with `data-confirm`; `data-bs-confirm` is ignored by `yii.js`. A link inside an `ActiveForm` also needs `data-form` pointing to a standalone hidden form, otherwise `yii.js` submits (and validates) the surrounding form. In tests, use `$I->postPage()` (functional, follows redirects) or `Browser::post()` (E2E). CSRF is off in the test configs; start the E2E server with `TEST_CSRF=1` to check that POSTs carry a token.
+
 **Test Server Notes:**
 - The `router-test.php` script routes all requests through `index-test.php` which uses the test configuration
 - Test configuration connects to the `voting_test` database (defined in `.env` as `TEST_DB_*`)

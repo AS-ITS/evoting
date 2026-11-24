@@ -47,7 +47,7 @@ $has = function (array $messages, ...$needles) {
 $clearAll = function () use ($admin, $edit, $deleteLinksJs) {
     $admin->go($edit);
     foreach ($admin->js($deleteLinksJs) ?: [] as $href) {
-        $admin->go($href, $edit);
+        $admin->post($href);
     }
 };
 
@@ -99,8 +99,10 @@ foreach ([
     ['admin', '/elect/delete-file?voteID=..&file=e2e_doc1.txt'],
 ] as [$who, $u]) {
     $br = $who === 'admin' ? $admin : $guest;
-    $status = $br->js('fetch('.json_encode($br->url($u)).", {redirect: 'manual'}).then(r => r.status)");
-    $admin->check("回 404：$u", $status === 404, "HTTP $status");
+    // 刪除附件只接受 POST：以 POST 送出，確認路徑檢查仍擋下（不是被 405 先擋掉）
+    $method = strpos($u, '/elect/delete-file') === 0 ? 'POST' : 'GET';
+    $status = $br->status($u, $method);
+    $admin->check("回 404：$method $u", $status === 404, "HTTP $status");
 }
 $admin->go($edit);
 $admin->check('攻擊後附件數量不變（3 個）', count($admin->js($listJs)) === 3);
@@ -108,8 +110,18 @@ $admin->check('攻擊後附件數量不變（3 個）', count($admin->js($listJs
 // ---- 刪除 ----
 $hrefs = $admin->js($deleteLinksJs);
 $admin->check('刪除連結帶檔名（非序號）', $hrefs && !array_filter($hrefs, function ($h) { return preg_match('/[?&]file=\d+(&|$)/', $h); }));
-$admin->go($hrefs[0], $edit);
-$admin->check('刪除單一附件成功', $has($admin->flashes(), '檔案刪除成功'));
+// 實際點擊上傳視窗內的刪除連結（位於上傳表單內，以 data-form 的獨立表單 POST 送出）：先確認，按「確定」後刪除
+$admin->go($edit);
+$admin->openModal($uploadBtn, '#fileUpload');
+$fileOk = "[...document.querySelectorAll('.modal.show button')].find(e => /^(確定|OK|Ok)$/i.test(e.innerText.trim()) && e.offsetParent !== null)";
+$admin->click("document.querySelector('#fileUpload a#delete-file')");
+$admin->check('刪除附件：出現確認對話框', $admin->waitFor("!!($fileOk)", 4000));
+$admin->sleep(400);
+$admin->click($fileOk);
+$admin->waitLoad();
+$admin->check('刪除單一附件成功', $has($admin->flashes(), '檔案刪除成功'), implode(' | ', $admin->flashes()));
+$admin->go($edit);
+$admin->check('刪除單一附件後剩 2 個', count($admin->js($listJs)) === 2);
 $clearAll();
 $admin->go($edit);
 $admin->check('附件全部刪光', count($admin->js($listJs)) === 0);

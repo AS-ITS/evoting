@@ -12,7 +12,7 @@ $this->params['title'] = $title;
 $this->params['voteInfo'] = $voteInfo;
 
 echo Html::tag('div',
-    Html::a('建立新一輪投票', ['round/create', 'voteID' => $voteID], ['class' => 'btn btn-primary mb-2'])
+    Html::a('建立新一輪投票', ['round/create', 'voteID' => $voteID], ['class' => 'btn btn-primary mb-2', 'data-method' => 'post'])
 , ['class' => 'btn-group']);
 echo \app\widgets\Alert::widget();
 $dataProvider->sort = false;
@@ -57,6 +57,9 @@ echo GridView::widget([
                         'round/switch',
                         'voteID' => $model->voteID,
                         'round' => $model->round,
+                    ], [
+                        'data-method' => 'post',
+                        'data-confirm' => "確定切換到第 {$model->round} 輪？\n切換後投票者將看到第 {$model->round} 輪的題目與候選人。",
                     ]);
                 }
             },

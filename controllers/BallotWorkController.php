@@ -97,7 +97,6 @@ class BallotWorkController extends \app\components\Controller
             'verbs' => [
                 'class' => \yii\filters\VerbFilter::className(),
                 'actions' => [
-                    'https' => ['post','get'],
                 ],
             ],
         ];

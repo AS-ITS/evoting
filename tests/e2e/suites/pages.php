@@ -56,7 +56,6 @@ $pages = [
     '選票列表' => "/ballot/index?voteID=$AP",
     '選票列表（表決）' => "/ballot/index?voteID=$NA",
     '選票密碼查詢' => "/ballot/select-passwd?voteID=$AN",
-    '選票建立者查詢' => "/ballot/select-creator?voteID=$AP",
     '選票匯入' => "/ballot/import?voteID=$AP",
     '紙本選票列印' => "/ballot/print?voteID=$AP&questionID=1",
     // 開票作業

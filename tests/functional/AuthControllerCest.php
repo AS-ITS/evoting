@@ -122,7 +122,7 @@ class AuthControllerCest
     public function testLogout(FunctionalTester $I)
     {
         $I->amLoggedInAsAdmin('sa');
-        $I->amOnPage('/auth/logout');
+        $I->postPage('/auth/logout');
         // 登出後應該重導
         $I->seeResponseCodeIsSuccessful();
     }
@@ -132,7 +132,7 @@ class AuthControllerCest
      */
     public function testLogoutWhenNotLoggedIn(FunctionalTester $I)
     {
-        $I->amOnPage('/auth/logout');
+        $I->postPage('/auth/logout');
         // 應該重導到首頁或登入頁
         $I->seeResponseCodeIsSuccessful();
     }

@@ -70,7 +70,7 @@ class RoundControllerCest
      */
     public function testSwitchRound(FunctionalTester $I)
     {
-        $I->amOnPage('/round/switch?voteID=AnonPartyTest&round=1');
+        $I->postPage('/round/switch?voteID=AnonPartyTest&round=1');
         $I->seeResponseCodeIsSuccessful();
     }
 
@@ -112,7 +112,7 @@ class RoundControllerCest
      */
     public function testSwitchToNonExistentRound(FunctionalTester $I)
     {
-        $I->amOnPage('/round/switch?voteID=AnonPartyTest&round=999');
+        $I->postPage('/round/switch?voteID=AnonPartyTest&round=999');
         // 不存在的輪次應重導回輪次管理頁面（302）或顯示錯誤訊息
         $I->seeResponseCodeIsSuccessful();
         $I->dontSeeInCurrentUrl('/round/switch');
@@ -123,7 +123,7 @@ class RoundControllerCest
      */
     public function testCreatePage(FunctionalTester $I)
     {
-        $I->amOnPage('/round/create?voteID=AnonPartyTest');
+        $I->postPage('/round/create?voteID=AnonPartyTest');
         $I->dontSeeResponseCodeIs(500);
         $I->dontSeeResponseCodeIs(403);
     }
@@ -151,7 +151,7 @@ class RoundControllerCest
 
         $roundCountBefore = Round::find()->where(['voteID' => $voteID])->count();
         $I->amOnPage('/round/index?voteID=' . $voteID);
-        $I->amOnPage('/round/create?voteID=' . $voteID);
+        $I->postPage('/round/create?voteID=' . $voteID);
         $I->seeInCurrentUrl('round/update');
         $I->seeInCurrentUrl('round=' . ($maxRound + 1));
         \PHPUnit\Framework\Assert::assertEquals(
@@ -174,7 +174,7 @@ class RoundControllerCest
 
         $roundCountBefore = Round::find()->where(['voteID' => $voteID])->count();
         $I->amOnPage('/round/index?voteID=' . $voteID);
-        $I->amOnPage('/round/create?voteID=' . $voteID);
+        $I->postPage('/round/create?voteID=' . $voteID);
         $I->seeInCurrentUrl('round/index');
         \PHPUnit\Framework\Assert::assertEquals(
             $roundCountBefore,

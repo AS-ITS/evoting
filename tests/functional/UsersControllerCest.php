@@ -106,7 +106,7 @@ class UsersControllerCest
     public function testDeleteUserAccess(FunctionalTester $I)
     {
         // 測試刪除不存在的使用者
-        $I->amOnPage('/users/delete?cn=nonexistent_user');
+        $I->postPage('/users/delete?cn=nonexistent_user');
         // 應該重導回 index 並顯示錯誤訊息
         $I->seeResponseCodeIsSuccessful();
     }

@@ -61,7 +61,7 @@ $form = ActiveForm::begin([
                     '<button type="button" class="btn bg-white border" style="color: #28a745;" data-bs-toggle="modal" data-bs-target="#photo-view">
                         ' . FAS::icon('eye') . ' 預覽
                     </button>
-                    <a id="delete-photo" href="'.Url::to(['delete-photo', 'id' => $model->id, 'voteID' => $model->voteID]).'" class="btn bg-white border text-danger">
+                    <a id="delete-photo" href="'.Html::encode(Url::to(['delete-photo', 'id' => $model->id, 'voteID' => $model->voteID])).'" class="btn bg-white border text-danger" data-confirm="確定刪除照片?" data-method="post" data-form="candi-post-form">
                         ' . FAS::icon('times') . ' 刪除
                     </a>'
                 ).
@@ -213,13 +213,16 @@ if ($action == 'create') {
         'div',
         Html::a('刪除候選人', ['candi/delete', 'voteID' => $voteInfo->voteID, 'id' => $model->id], [
             'class' => 'btn btn-danger me-2', 'style' => 'width: auto',
-            'data' => ['bs-confirm' => "確定要刪除此候選人？\n* 此操作將無法還原！"],
+            // 位於候選人表單內：以 data-form 指定獨立表單送出，避免送出（並驗證）整張表單
+            'data' => ['confirm' => "確定要刪除此候選人？\n* 此操作將無法還原！", 'method' => 'post', 'form' => 'candi-post-form'],
         ]) .
             Html::a('返回列表', ['candi/data', 'voteID' => $voteInfo->voteID], ['class' => 'btn btn-secondary me-3', 'style' => 'width: auto']),
         ['class' => 'row justify-content-center mb-2']
     );
 }
 ActiveForm::end();
+// 刪除候選人、刪除照片用的獨立表單（action 由連結的 href 帶入）
+echo Html::beginForm('', 'post', ['id' => 'candi-post-form', 'class' => 'd-none']) . Html::endForm();
 
 $round = $voteInfo->round;
 $url = Url::to(['question/get-party-questions', 'voteID' => $voteInfo->voteID, 'round' => $round]);
@@ -272,16 +275,7 @@ $this->registerJs(<<<JS
         }
     });
 
-    // 刪除照片
-    $('#delete-photo').click(function(e){
-        e.preventDefault();
-        var href = $(this).attr('href');
-        appDialog.confirm("確定刪除照片?", function(ok) {
-            if (ok) {
-                window.location.href = href;
-            }
-        });
-    });
+    // 刪除照片：由 data-confirm／data-method（yii.js）確認後以 POST 送出
     document.getElementById('formcandidata-instcode').addEventListener('change', (event) => {
         if($("#formcandidata-instname").val() == '')
         {

@@ -25,6 +25,16 @@ ssh -L 18080:localhost:8080 <dev 主機> 'cd <專案目錄> && APP_ENV=testing p
 php tests/e2e/run.php --base=http://localhost:18080
 ```
 
+### 開啟 CSRF 驗證
+
+測試環境預設關閉 CSRF 驗證（acceptance 測試以 PhpBrowser 送出，不帶 token）。這時漏帶 token 的 POST 也會成功，看不出問題。以 `TEST_CSRF=1` 啟動測試伺服器，E2E 會用正式環境的 CSRF 驗證跑一次：
+
+```bash
+APP_ENV=testing TEST_CSRF=1 php -S localhost:8080 -t web web/router-test.php
+```
+
+acceptance 測試必須用未開啟的伺服器執行。
+
 ### 參數
 
 | 參數 | 環境變數 | 預設 | 說明 |
@@ -52,6 +62,7 @@ php tests/e2e/run.php --base=http://localhost:18080
 | `voting` | 建立候選設定與候選人後，投票者開啟投票說明與投票畫面、關閉圈選須知、勾選、下一步到確認頁並確認已圈選姓名看得見；兩位投票者（獨立瀏覽器環境）實際送出表決選票、竄改送出他場次候選人須被拒；管理端選票列表多出 2 張、不提供「建立選票」、投票者顯示「—」，選票修改頁正常；最後刪除本次選票與測試候選人 |
 | `anon` | 短網址導向投票說明頁；以 fixture 投票密碼（明碼 `testdef*`）登入匿名投票 → 投票說明 → 投票畫面 → 圈選 → 確認 → 實際送出 → 投票完成頁，並確認同一密碼不可再投；已投票密碼在另一瀏覽器重新登入會看到「此密碼已完成投票」；另一組密碼登入後由管理者「清除登入狀態」，投票者須重新登入且可再次登入 |
 | `layout` | 投票密碼頁密碼欄與眼睛按鈕、候選設定頁標題徽章、「自訂規則」核取方塊 |
+| `post-only` | 會變更資料的操作只接受 POST：以 GET 開啟刪除、切換網址回 405；刪除選票、刪除候選人、重啟投票、切換輪次會先出現確認對話框，按「取消」資料不變；刪除選票與切換輪次按「確定」後以 POST 執行成功。會刪除 `AnonPartyTest` 的 1 張選票，`AnonNoPartyTest` 的輪次切換後會還原 |
 
 測試會在測試資料庫與 FilePool 建立資料（附件、照片、候選設定與候選人、開票結果），結束前會刪除附件、照片與測試候選人並還原設定；`anon` 組會實際送出一張選票（該密碼標記為已投票），並清除該場次所有登入狀態，`NoAuthVoteTest` 的候選設定與開票結果會保留。重新載入 fixture 即可全部還原。
 
@@ -73,6 +84,7 @@ APP_ENV=testing CSP_MODE=report-only CSP_POLICY=strict php -S localhost:8080 -t 
 
 ## 注意事項
 
+- 刪除、切換等只接受 POST 的操作，用 `Browser::post()` 從目前頁面送出（會帶 CSRF token），不可用 `go()`（GET 會回 405）；只要狀態碼時用 `Browser::status($path, 'POST')`。
 - 以測試專用路由 `/index-test.php/test/login?user=<cn>` 登入（`tests/_support/TestLoginController.php`，只由 `config/test.php` 掛載），測試伺服器須以 `APP_ENV=testing` 啟動，否則回 404。
 - 點擊對話框內的按鈕前，先用 `Browser::openModal()` 等淡入動畫結束，否則結果不穩定。
 - 只有一、兩個字元的文字檔會被偵測為 `application/octet-stream`，測試檔請用正常長度的內容。

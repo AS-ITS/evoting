@@ -148,7 +148,7 @@ class PasswdControllerCest
         );
 
         $I->stopFollowingRedirects();
-        $I->amOnPage('/passwd/delete-all?voteID=AnonPartyTest&mark=p2_delete_smoke');
+        $I->postPage('/passwd/delete-all?voteID=AnonPartyTest&mark=p2_delete_smoke');
         $I->seeResponseCodeIs(302);
     }
 }

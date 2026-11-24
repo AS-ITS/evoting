@@ -167,7 +167,6 @@ return [
     'ct.candi.width' => ['1' => '窄', '2' => '寬'], // 寬度
 
     // ===== ballots ======
-    'ct.ballots.onJobAry'  => ['0' => '離職', '1' => '在職'],
     'ct.ballots.selectNum' => ['0' => '廢票', '1' => '有效票'],
 
     // ===== passwd ======
