@@ -197,8 +197,7 @@ Check permissions in controllers using `behaviors()` with AccessControl filter o
 ### Frontend Architecture
 
 **Asset System:**
-- AdminLTE 3.1.0 admin template
-- Bootstrap 5 framework
+- Bootstrap 5 framework (layouts are plain Bootstrap 5; AdminLTE is not used. `frontend/AdminLTE3_ComVer` only holds project JS, the name is historical)
 - Custom asset bundles in `/assets/`
 - Frontend libraries in `/frontend/` (see `frontend/README.md`). Dialogs: kartik-v/yii2-dialog and Bootstrap 5 Modal.
 

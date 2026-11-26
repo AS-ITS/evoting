@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "00799b3ae4fa371c527f82e33a623d78",
+    "content-hash": "c1692651b481bf72a5ff098eb12e5929",
     "packages": [
         {
             "name": "as-its-dev3/yii2-dynamicform",
@@ -114,21 +114,6 @@
                 "source": "https://github.com/Bacon/BaconQrCode/tree/v3.1.1"
             },
             "time": "2026-04-05T21:06:35+00:00"
-        },
-        {
-            "name": "bower-asset/adminlte",
-            "version": "v3.1.0",
-            "source": {
-                "type": "git",
-                "url": "git@github.com:almasaeed2010/AdminLTE.git",
-                "reference": "c641d7f5716ed47e76f70ab16e05ae41420120b8"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/almasaeed2010/AdminLTE/zipball/c641d7f5716ed47e76f70ab16e05ae41420120b8",
-                "reference": "c641d7f5716ed47e76f70ab16e05ae41420120b8"
-            },
-            "type": "bower-asset"
         },
         {
             "name": "bower-asset/inputmask",

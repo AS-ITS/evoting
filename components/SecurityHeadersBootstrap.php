@@ -90,7 +90,7 @@ class SecurityHeadersBootstrap implements BootstrapInterface
     /**
      * CSP 政策內容
      *
-     * - compat（預設）：AdminLTE / Bootstrap / Yii 需 inline script 與 style，過渡用政策；不允許 eval
+     * - compat（預設）：Bootstrap / Yii 需 inline script 與 style，過渡用政策；不允許 eval
      *   （E2E 盤點與實際載入的前端套件均未使用 eval）
      * - strict：不允許任何 unsafe-*，為最終目標。搭配 report-only 用於測試環境找出違規
      *   （見 tests/e2e/README.md 的 CSP 違規收集）；修正完成前不可搭配 enforce

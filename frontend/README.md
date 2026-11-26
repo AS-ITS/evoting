@@ -6,7 +6,7 @@
 
 | 目錄 | 版本 | 用途 |
 | --- | --- | --- |
-| AdminLTE3_ComVer | 1.0 | 依 AdminLTE 調整的專案樣式 |
+| AdminLTE3_ComVer | 專案自製 | 專案共用 JS（`js/main.js`）；目錄名稱沿用舊名，不含 AdminLTE |
 | url-modal | 專案自製 | UrlModal 的 AJAX 內容載入；原始碼隨 Git 追蹤 |
 | [bootstrap-select](https://github.com/snapappointments/bootstrap-select/) | 1.13.18 | 下拉選單 |
 | [bootstrap-steps](https://github.com/ycs77/bootstrap-steps) | 1.0.3 | 步驟列 |
@@ -16,4 +16,4 @@
 | [Sortable](https://github.com/SortableJS/Sortable) | 1.15.7 | 拖放排序 |
 | [summernote](https://summernote.org/) | 0.8.18 | WYSIWYG 編輯器 |
 
-AdminLTE 本體由 Composer `bower-asset/adminlte` v3.1.0 提供，不在此目錄。
+版面只使用 Bootstrap 5，不使用 AdminLTE。
