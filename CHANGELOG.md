@@ -34,6 +34,7 @@
 * E2E `voting` 組改為實際送出：兩位投票者送出表決選票，竄改送出的他場次候選人必須被拒，並檢查後台選票列表與修改頁；`pages` 組新增表決投票的選票列表
 * 新增 E2E `post-only` 組：檢查以 GET 呼叫回 405、確認提示會出現、按「取消」資料不變、按「確定」後以 POST 執行。測試伺服器可用 `TEST_CSRF=1` 開啟 CSRF 驗證，確認瀏覽器送出的 POST 有帶到 token
 * 位於表單內的刪除連結（選票、候選人、候選人照片、附件）改以獨立的隱藏表單送出，不會連同所在的表單一起送出並驗證
+* 相依套件在現有版本範圍內更新：phpoffice/phpspreadsheet 5.12.0（CSV 匯出不再把以長數字開頭的文字截成 15 位數字）、select2/select2 4.1.0（下拉選單，用於候選人設定、建立問題、輪次匯入問題）、guzzlehttp/guzzle 7.17.0、paragonie/constant_time_encoding 3.1.5，以及 symfony/console、finder、string、var-dumper、yaml 7.4.24。開發用套件：phpunit 9.6.39、behat/gherkin 4.19.0、symfony/browser-kit 6.4.51、symfony/dom-crawler 6.4.49
 
 ### Removed
 
