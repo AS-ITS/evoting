@@ -12,6 +12,7 @@
 * 送出或修改選票時，只檢查候選人屬於本場次。竄改送出的候選人 id，可以把票投給同一輪其他組別的候選人，並計入該組得票。現在每位候選人都必須屬於選票的輪次，以及投票者組別或共同投票（N）的問題；只要有一位不符，整張選票不寫入。投票者送出、後台建立選票、後台修改選票都適用
 * 表決投票不支援分組、共用投票、女性保留名額、場次碼與「查看投票資訊須驗證」。原本只在前端鎖住這些欄位，現在後端也會拒絕這些組合
 * 刪除投票、使用者、投票密碼、選票、候選人、候選人照片、附件，以及建立輪次、切換輪次、管理員登出，原本用 GET 就能執行。Yii 只對 POST 驗證 CSRF token，而 SameSite=Strict 以網域判定是否同站，其他 `*.sinica.edu.tw` 網頁上的連結或圖片就能讓已登入的管理者執行這些操作。現在一律只接受 POST，GET 回 405。各 controller 原本的 `'https' => ['post', 'get']` 並不對應任何 action，已移除
+* symfony/mailer 與 symfony/mime 升至 7.4.24，修正 CVE-2026-133751（中間人可繞過 `require_tls`）與 CVE-2026-133755（STARTTLS 之後信任中間人注入的回應）。以 SMTP 寄信時適用；egulias/email-validator 一併升至 4.0.5
 
 ### Fixed
 
@@ -33,6 +34,7 @@
 * E2E `voting` 組改為實際送出：兩位投票者送出表決選票，竄改送出的他場次候選人必須被拒，並檢查後台選票列表與修改頁；`pages` 組新增表決投票的選票列表
 * 新增 E2E `post-only` 組：檢查以 GET 呼叫回 405、確認提示會出現、按「取消」資料不變、按「確定」後以 POST 執行。測試伺服器可用 `TEST_CSRF=1` 開啟 CSRF 驗證，確認瀏覽器送出的 POST 有帶到 token
 * 位於表單內的刪除連結（選票、候選人、候選人照片、附件）改以獨立的隱藏表單送出，不會連同所在的表單一起送出並驗證
+* 相依套件在現有版本範圍內更新：phpoffice/phpspreadsheet 5.12.0（CSV 匯出不再把以長數字開頭的文字截成 15 位數字）、select2/select2 4.1.0（下拉選單，用於候選人設定、建立問題、輪次匯入問題）、guzzlehttp/guzzle 7.17.0、paragonie/constant_time_encoding 3.1.5，以及 symfony/console、finder、string、var-dumper、yaml 7.4.24。開發用套件：phpunit 9.6.39、behat/gherkin 4.19.0、symfony/browser-kit 6.4.51、symfony/dom-crawler 6.4.49
 
 ### Removed
 
