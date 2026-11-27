@@ -5,7 +5,7 @@
 ## 技術基礎
 
 - PHP 8.2+、Yii 2、MariaDB 10.6+
-- Bootstrap 5、AdminLTE 3
+- Bootstrap 5
 - Composer 管理 PHP 相依；`frontend/` 為已納管的前端執行期資產
 - Codeception 執行 unit、functional 與 acceptance tests
 

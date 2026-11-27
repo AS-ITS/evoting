@@ -39,6 +39,7 @@
 ### Removed
 
 * 記名投票遺留的「選擇記名選票建立者」畫面（`ballot/select-creator`、`ballot/select-clear`）與代碼 `ct.ballots.onJobAry`。介面上沒有任何入口；查詢條件的單位、職稱原由院內人事系統提供，現已為空，且查詢的是管理員帳號而非投票者。匿名投票的建立選票（`ballot/select-passwd` → `ballot/creator`）不受影響
+* Composer 相依 `bower-asset/adminlte`（v3.1.0）。沒有任何資產包或版面載入它，版面只使用 Bootstrap 5；`frontend/AdminLTE3_ComVer` 是專案自己的 JS，目錄名稱為沿用舊名
 
 ## [1.1.2] - 2026-11-17
 
