@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-11-27
+
 ### Security
 
 * 送出或修改選票時，只檢查候選人屬於本場次。竄改送出的候選人 id，可以把票投給同一輪其他組別的候選人，並計入該組得票。現在每位候選人都必須屬於選票的輪次，以及投票者組別或共同投票（N）的問題；只要有一位不符，整張選票不寫入。投票者送出、後台建立選票、後台修改選票都適用
@@ -35,6 +37,7 @@
 * 新增 E2E `post-only` 組：檢查以 GET 呼叫回 405、確認提示會出現、按「取消」資料不變、按「確定」後以 POST 執行。測試伺服器可用 `TEST_CSRF=1` 開啟 CSRF 驗證，確認瀏覽器送出的 POST 有帶到 token
 * 位於表單內的刪除連結（選票、候選人、候選人照片、附件）改以獨立的隱藏表單送出，不會連同所在的表單一起送出並驗證
 * 相依套件在現有版本範圍內更新：phpoffice/phpspreadsheet 5.12.0（CSV 匯出不再把以長數字開頭的文字截成 15 位數字）、select2/select2 4.1.0（下拉選單，用於候選人設定、建立問題、輪次匯入問題）、guzzlehttp/guzzle 7.17.0、paragonie/constant_time_encoding 3.1.5，以及 symfony/console、finder、string、var-dumper、yaml 7.4.24。開發用套件：phpunit 9.6.39、behat/gherkin 4.19.0、symfony/browser-kit 6.4.51、symfony/dom-crawler 6.4.49
+* 安裝說明改為 clone `v1.1.3`；SBOM 以 1.1.3 重新產生
 
 ### Removed
 
@@ -175,7 +178,8 @@
 * Yii basic 模板殘件：`post-create-project-cmd`、`generateCookieValidationKey`、指向 Yii 官方的 `support`／placeholder `homepage`
 * 移除未參與產品安裝或執行的 vendored 前端建置 lockfile；執行期資產維持預先建置版本
 
-[Unreleased]: https://github.com/AS-ITS/evoting/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/AS-ITS/evoting/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/AS-ITS/evoting/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/AS-ITS/evoting/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/AS-ITS/evoting/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/AS-ITS/evoting/compare/v1.0.0...v1.1.0
