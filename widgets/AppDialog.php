@@ -64,8 +64,9 @@ window.appDialog = {
             window.alert(message);
             return;
         }
+        // 回傳對話框，呼叫端可自行關閉（如列印模式按 ESC 時）
         if (title) {
-            BootstrapDialog.alert({
+            return BootstrapDialog.alert({
                 size: BootstrapDialog.SIZE_LARGE,
                 type: BootstrapDialog.TYPE_INFO,
                 title: title,
@@ -73,9 +74,8 @@ window.appDialog = {
                 buttonLabel: '確定',
                 closable: false
             });
-            return;
         }
-        krajeeDialog.alert(message);
+        return krajeeDialog.alert(message);
     },
     warn: function (message) {
         if (!window.BootstrapDialog) {

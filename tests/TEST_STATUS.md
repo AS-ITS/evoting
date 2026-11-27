@@ -12,7 +12,7 @@
 | Functional | 232 通過 | 1540 |
 | Acceptance | 129 通過 | 379 |
 | **合計** | **1666 通過** | **9437** |
-| 瀏覽器 E2E（`tests/e2e/`） | 271 項檢查通過 | — |
+| 瀏覽器 E2E（`tests/e2e/`） | 285 項檢查通過 | — |
 
 GitHub CI 執行 unit + functional。Acceptance 與瀏覽器 E2E 需本機測試伺服器，見 [README.md](README.md) 與 [e2e/README.md](e2e/README.md)。
 
