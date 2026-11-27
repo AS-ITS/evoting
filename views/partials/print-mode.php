@@ -105,13 +105,41 @@ $this->registerJs(<<<JS
         return null;
     }
 
+    /** 目前是否為列印版面 */
+    var printLayoutOn = false;
+    /** 本頁是否進入過列印模式；進入過才以 ESC 切換列印／顯示 */
+    var printLayoutUsed = false;
+    /** 「ESC 切換…」提示框，切換時一併關閉 */
+    var printInfoDialog = null;
+
     /**
-     * 頁面顯示模式: print(列印模式)
+     * 切換列印版面（不開簽名欄位視窗）。已是該版面時不動作，避免 toggle 兩次又切回去
+     */
+    function setPrintLayout(on) {
+        if (on === printLayoutOn) {
+            return;
+        }
+        printLayoutOn = on;
+        if (on) {
+            printLayoutUsed = true;
+        }
+        $('main').children().first().toggleClass('container', !on).toggleClass('container-fluid', on);
+        $('.render-type, header, footer, .hide-print, #sign-area, #validate-area, .os-scrollbar-vertical, .show-print').toggle();
+    }
+
+    function closePrintInfoDialog() {
+        if (printInfoDialog && printInfoDialog.isOpened && printInfoDialog.isOpened()) {
+            printInfoDialog.close();
+        }
+        printInfoDialog = null;
+    }
+
+    /**
+     * 頁面顯示模式: print(列印模式，並選擇簽名欄位)、其他值為顯示模式
      */
     function renderType(type) {
         if (type == 'print') {
-            $('main').children().first().removeClass('container').addClass('container-fluid');
-            $('.render-type, header, footer, .hide-print, #sign-area, #validate-area, .os-scrollbar-vertical, .show-print').toggle();
+            setPrintLayout(true);
             var modal = printSignModal();
             if (modal) {
                 modal.show();
@@ -120,8 +148,8 @@ $this->registerJs(<<<JS
             }
         }
         else {
-            $('main').children().first().removeClass('container-fluid').addClass('container');
-            $('.render-type, header, footer, .hide-print, #sign-area, #validate-area, .os-scrollbar-vertical').toggle();
+            setPrintLayout(false);
+            closePrintInfoDialog();
             var modal = printSignModal();
             if (modal) {
                 modal.hide();
@@ -166,18 +194,40 @@ $this->registerJs(<<<JS
         } else {
             $('#print-sign-modal').modal('hide');
         }
-        appDialog.info('ESC或重新整理退出列印模式', '列印模式');
+        printInfoDialog = appDialog.info('ESC切換顯示／列印模式，重新整理退出列印模式', '列印模式') || null;
     });
 
     /**
-     * 退出列印模式
+     * ESC：進入過列印模式後，切換列印／顯示版面（保留已選的簽名欄位，不再開簽名欄位視窗）
+     *
+     * 掛在 window 的 capture 階段，才能在 Bootstrap 關閉對話框、下拉選單之前判斷當下狀態
+     * （Bootstrap 5 的委派事件掛在 document 的 capture 階段，且比這裡早註冊）：
+     * - 提示框開著：關閉提示框並回到顯示模式
+     * - 簽名欄位視窗開著：視窗自行關閉，並回到顯示模式（取消列印）
+     * - 其他對話框或下拉選單開著：只交給它們關閉，不切換
      */
-    function exitRenderPrint(e) {
-        if (e.key === 'Escape' && $('main').children().first().hasClass('container-fluid')) {
-            renderType('view');
+    window.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape' || e.repeat) {
+            return;
         }
-    }
-    $(document).keyup(exitRenderPrint);
+        if (printInfoDialog && printInfoDialog.isOpened && printInfoDialog.isOpened()) {
+            closePrintInfoDialog();
+            setPrintLayout(false);
+            return;
+        }
+        if ($('#print-sign-modal').hasClass('show')) {
+            setPrintLayout(false);
+            return;
+        }
+        if ($('.modal.show, .dropdown-menu.show').length) {
+            return;
+        }
+        if (printLayoutOn) {
+            setPrintLayout(false);
+        } else if (printLayoutUsed) {
+            setPrintLayout(true);
+        }
+    }, true);
 JS
 , $this::POS_END);
 
